@@ -1,0 +1,22 @@
+* if (typeof window.window != "undefined" && window.document)
+    return;
+if (window.require && window.define)
+    return; - для запуска autobind
+
+* примеры как сделать триггер ивентов на дом элемент/документ
+
+
+To polyfill:
+  querySelector
+  dataset
+  datalist
+  indexof
+
+
+Docs:
+content может быть фнукцией
+o.dialog запускает колбэки onok, oncancel при любом закрытии модального
+Плюсы
+адаптивное по умолчанию
+центрировние с помощью css
+модальное окно не дает выйти фокусу за пределы себя

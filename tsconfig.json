@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "allowJs": true
+    }
+}
+// this file needed for Visual Studio code, it disables decorator warnings...

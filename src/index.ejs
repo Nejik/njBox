@@ -115,7 +115,16 @@
   <script>
     var modal = new njBox({
                               elem: '.link',
-                              onhidden: function() {
+                              out: false,
+                              oncb: function(event) {
+                                switch (event) {
+                                  case 'show':
+                                  case 'shown':
+                                  case 'hide':
+                                  case 'hidden':
+                                  console.log(event);
+                                  break;
+                                }
                                 // console.log(this.v.container[0].njm_scrollbar);
                               }
                             })

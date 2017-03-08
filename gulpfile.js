@@ -26,7 +26,6 @@ const postcss = require('gulp-postcss');
 
 //images
 const imagemin = require('gulp-imagemin');
-const svgSprite = require('gulp-svg-sprite');
 
 
 //js

@@ -20,6 +20,7 @@ export function getDefaultInfo() {
 	//detect css3 support
 	let h = options;
 
+	h.nativeDialogSupport = document.createElement('dialog').showModal;
 	h.transition = styleSupport('transition');
 	h.transitionDuration = styleSupport('transitionDuration');
 	h.transform = styleSupport('transform');

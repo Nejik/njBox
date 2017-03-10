@@ -1266,7 +1266,10 @@ njBox.defaults = defaults;
 //autobind functions
 njBox.autobind = function () {
   $(njBox.defaults.autobind).each(function () {
-    if (this.njBox) return;
+    if (this.njBox) {
+      console.error('njBox, already inited on this element')
+      return;
+    }
     new njBox({
       elem: $(this)
     })

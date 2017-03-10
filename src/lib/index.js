@@ -149,7 +149,7 @@ class njBox {
   
   hide() {
     if (this.state.state !== 'shown') {
-      this._error('njBox, hide, we can hide only showed modal (probably animation is still running).')
+      this._error('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
       return;
     }
 
@@ -197,6 +197,33 @@ class njBox {
     this._cb('positioned');
 
     return this;
+  }
+  destroy() {
+    if(!this.state.inited || this.state.state !== 'inited') {
+      this._error('njBox, we can destroy only initialized && hidden modals.');
+      return;
+    }
+
+    if (this.els && this.els.length) {
+      this.els.off('click', this._handlers.elsClick)
+
+      if (this.o.clickels) {
+        $(this.o.clickels).off('click', this._handlers.elsClick)
+      }
+    }
+
+
+    this.v.container.removeClass('njb-relative');
+
+    this._globals = undefined;
+    this._handlers = undefined;
+    this.els = undefined;
+    this.items = undefined;
+    this.v = undefined;
+    this.o = {};
+
+    this._cb('destroyed');
+    
   }
   _getContainerSize() {
     var o = this.o;

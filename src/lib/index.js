@@ -130,16 +130,15 @@ class njBox {
 
     this._overlay('show');
 
-    this._cb('before_insert');//calls before inserting items to page
-
     //set event handlers
     this._setEventsHandlers();
+
+    //insert wrap
+    this.v.container[0].appendChild(this.v.wrap[0]);
 
     //draw modal on screen
     this._drawItem(this.active);
 
-    //insert wrap
-    this.v.container[0].appendChild(this.v.wrap[0]);
     this.position();
 
     this._anim('show');
@@ -489,7 +488,7 @@ class njBox {
       dom.modal[0].appendChild(modalFragment)
     }
 
-    this._cb('item_dom_created', item);
+    this._cb('item_domready', item);
   }
   _insertItemBodyContent(item) {
     var o = this.o;
@@ -574,14 +573,14 @@ class njBox {
       return;
     }
 
-    this._cb('item_insert', item, index);
+    this._cb('item_prepare', item);
 
     //insert index item
     this._insertSelectorElements();
 
     this.v.items[0].appendChild(item.dom.modalOuter[0]);
 
-    this._cb('item_inserted', item, index);
+    this._cb('item_inserted', item);
   }
   _insertSelectorElements() {
     var items = this.items,
@@ -817,7 +816,7 @@ class njBox {
     }
     this.v.focusCatcher.on('focus', h.focusCatch)
 
-    this._cb('setEventHandlers');
+    this._cb('events_setted');
   }
   _removeEventsHandlers() {
     var h = this._handlers;
@@ -846,7 +845,7 @@ class njBox {
 
     this.v.focusCatcher.off('focus', h.focusCatch)
 
-    this._cb('removeEventHandlers');
+    this._cb('events_removed');
   }
 
 

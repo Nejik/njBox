@@ -1,17 +1,17 @@
-.njm-relative {
+.njb-relative {
   position: relative !important;
 }
-.njm-absolute {
+.njb-absolute {
   position: absolute !important;
 }
-.njm-hidden {
+.njb-hidden {
   display: none;
 }
-.njm-hideScrollbar {
+.njb-hideScrollbar {
   overflow: hidden !important;
 }
 
-.njm-focus-catch {
+.njb-focus-catch {
   outline: none;
   width: 0;
   height: 0;
@@ -21,7 +21,7 @@
   position: absolute;
 }
 
-.njm-overlay {
+.njb-overlay {
   width: 100%;
   height: 100%;
   position: fixed;top: 0;right: 0;bottom: 0;left: 0;
@@ -35,27 +35,27 @@
   
   transition: opacity 200ms;
 }
-.njm-overlay.njm-visible {
+.njb-overlay.njb-visible {
   opacity: 0.8;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
   filter: alpha(opacity=80);
 }
 
-.njm-wrap {
+.njb-wrap {
   outline: none;
   width: 100%;
   height: 100%;
   position: fixed;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
   overflow: hidden;
 }
-.njm-items {
+.njb-items {
   outline: none;
   width: 100%;
   height: 100%;
   position: absolute;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
   overflow: hidden;
 }
-.njm-outer {
+.njb-outer {
   width: 100%;
   height: 100%;
   position: absolute;top: 0;left: 0;
@@ -71,14 +71,14 @@
   user-select: none;
   box-sizing: border-box;
 }
-.njm-outer:before {
+.njb-outer:before {
   content: '';
   display: inline-block;
   height: 100%;
   vertical-align: middle;
 }
 
-.njm {
+.njb {
   max-width: 100%;
   outline: none !important;
   display: inline-block;
@@ -91,7 +91,7 @@
 
   user-select: text;
 }
-.njm img {
+.njb img {
   width: auto;
   width:auto\9;
   height:auto;
@@ -102,7 +102,7 @@
   box-sizing: border-box;
 }
 
-.njm-close-system {
+.njb-close-system {
   border: none;
   background: none;
   appearance: none;
@@ -125,14 +125,14 @@
 
   transition: 200ms;
 }
-.njm-close-system:active {
+.njb-close-system:active {
   transform: scale(0.8) !important;
 }
 
-.njm-autoheight .njm-outer {
+.njb-autoheight .njb-outer {
 	overflow-y: hidden;
 }
-.njm-autoheight--true .njm__body {
+.njb-autoheight--true .njb__body {
 	overflow-y: auto;
 }
 
@@ -140,10 +140,10 @@
 
 
 /*animations*/
-.njm-animation {
+.njb-animation {
   overflow-x: hidden;
 }
-.njm-anim-reverse {
+.njb-anim-reverse {
   animation-direction: reverse !important;
 }
 
@@ -189,7 +189,7 @@
 
 
 /*pulse animation uses in modal windows, when user try to close modal with outside click*/
-.njm_pulse {
+.njb_pulse {
   animation: pulseModal 200ms ease-in-out 1;
 }
 /*perspective fixes troubles with font in webkit*/
@@ -223,14 +223,14 @@
 
 
 /*theme*/
-.njm-close-system {
+.njb-close-system {
   animation: closeSystemOut 250ms;
   animation-fill-mode: forwards;
 }
-.njm-visible .njm-close-system {
+.njb-visible .njb-close-system {
   animation: closeSystemIn 250ms;
 }
-.njm .njm-close-system {
+.njb .njb-close-system {
   top: -20px;
   right: -20px;
   animation:none;
@@ -261,21 +261,21 @@
   }
 }
 
-/*here we use nested selector .njm-content .njm because we also can have .njm-image .njm with image, and for this case we need other design  */
-.njm {
+/*here we use nested selector .njb-content .njb because we also can have .njb-image .njb with image, and for this case we need other design  */
+.njb {
   border-radius: 2px;
   background-color: #fff;
   margin: 10px;
 }
-.njm .njm__header {
+.njb .njb__header {
   padding: 5px;
 }
-.njm .njm__body {
+.njb .njb__body {
   padding: 5px;
 }
-.njm .njm__footer {
+.njb .njb__footer {
   padding: 5px;
 }
-.njm--image img {
+.njb--image img {
   background-color: rgba(255,255,255,.1);
 }

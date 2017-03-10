@@ -133,7 +133,7 @@ export let defaults = {
 
 	content: undefined,//(string) content for modal
 	_missedContent: 'njBox plugin: meow, put some content here...',//this string uses, when slide have no content
-	type: '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template simila to html, but template inserted without .njm__body tag, directly to .njm
+	type: '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template simila to html, but template inserted without .njb__body tag, directly to .njb
 	header: undefined,//(html) html that will be added as modal header (for first slide)
 	footer: undefined,//(html) html that will be added as modal footer (for first slide)
 
@@ -146,22 +146,22 @@ export let defaults = {
 	duration: 'auto',//(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
 
 	templates: {
-		wrap: '<div class="njm-wrap"><div class="njm-items"></div></div>',
-		overlay: '<div class="njm-overlay"></div>',
-		modalOuter: '<div class="njm-outer" data-njm-outer></div>',
-		modal: '<aside class="njm"></aside>',
-		body: '<div class="njm__body" data-njm-body></div>',
-		header: '<header class="njm__header" data-njm-header></header>',
-		footer: '<footer class="njm__footer" data-njm-footer></footer>',
-		close: '<button type="button" class="njm-close-system" data-njm-close>×</button>',
-		focusCatcher: '<a href="#!" class="njm-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
+		wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
+		overlay: '<div class="njb-overlay"></div>',
+		modalOuter: '<div class="njb-outer" data-njb-outer></div>',
+		modal: '<aside class="njb"></aside>',
+		body: '<div class="njb__body" data-njb-body></div>',
+		header: '<header class="njb__header" data-njb-header></header>',
+		footer: '<footer class="njb__footer" data-njb-footer></footer>',
+		close: '<button type="button" class="njb-close-system" data-njb-close>×</button>',
+		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
 		//todo, in gallery
-		// _preloader:   '<div class="njm-preloader"><div class="njm-preloader-inner"><div class="bar1"></div><div class="bar2"></div><div class="bar3"></div></div></div>'
-		// ui:          '<div class="njm-ui"><div class="njm-ui-title-outer"><div class="njm-ui-title-inner" data-njm-title></div></div></div>',
-		// count:       '<div class="njm-ui-count"><span data-njm-current></span> / <span data-njm-total></span></div>',
-		// prev:        '<button type="button" class="njm-arrow njm-prev" data-njm-prev></button>',
-		// next:        '<button type="button" class="njm-arrow njm-next" data-njm-next></button>'
+		// _preloader:   '<div class="njb-preloader"><div class="njb-preloader-inner"><div class="bar1"></div><div class="bar2"></div><div class="bar3"></div></div></div>'
+		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
+		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
+		// prev:        '<button type="button" class="njb-arrow njb-prev" data-njb-prev></button>',
+		// next:        '<button type="button" class="njb-arrow njb-next" data-njb-next></button>'
 	},
 
 	text: {
@@ -186,5 +186,5 @@ export let defaults = {
 
 	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), *[tabindex]:not(*[tabindex="-1"]), *[contenteditable]',//(selector) this elements we will try to focus on popup shown after custom o.focus
 	
-	autobind: '[data-toggle~="modal"]'//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
+	autobind: '[data-toggle~="box"]'//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 };

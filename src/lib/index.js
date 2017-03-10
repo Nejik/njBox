@@ -37,6 +37,9 @@ class njBox {
   }
 
   _init(opts) {
+    //run only on first init, because we can't if we will try to do that before any initializations, it maybe a sutiation, where script was injected in head, and we have no even body tag
+    if (!njBox.g) njBox.g = getDefaultInfo();
+    
     let o = this.o = $.extend({}, njBox.defaults, opts);
 
     this.active = 0;
@@ -116,12 +119,12 @@ class njBox {
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
 
-    if (!this.v.container[0].njm_instances) {
-      this.v.container[0].njm_instances = 1;
+    if (!this.v.container[0].njb_instances) {
+      this.v.container[0].njb_instances = 1;
     } else {
-      this.v.container[0].njm_instances++;
+      this.v.container[0].njb_instances++;
     }
-    this.v.container.addClass('njm-open');
+    this.v.container.addClass('njb-open');
 
     this._scrollbar('hide');
 
@@ -143,6 +146,7 @@ class njBox {
 
     return this;
   }
+  
   hide() {
     if (this.state.state !== 'shown') {
       this._error('njBox, hide, we can hide only showed modal (probably animation is still running).')
@@ -240,8 +244,8 @@ class njBox {
     if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
     if (!this.state.autoheightAdded) {
-      this.v.wrap.addClass('njm-autoheight');
-      (o.autoheight === true) ? this.v.wrap.addClass('njm-autoheight--true') : this.v.wrap.addClass('njm-autoheight--image')
+      this.v.wrap.addClass('njb-autoheight');
+      (o.autoheight === true) ? this.v.wrap.addClass('njb-autoheight--true') : this.v.wrap.addClass('njb-autoheight--image')
       this.state.autoheightAdded = true
     }
 
@@ -298,13 +302,13 @@ class njBox {
       return dataProcessed;
     }
 
-    if (dataO.njmOptions) {
+    if (dataO.njbOptions) {
       try {
-        dataProcessed = $.parseJSON(dataO.njmOptions);
-        delete dataO.njmOptions;
+        dataProcessed = $.parseJSON(dataO.njbOptions);
+        delete dataO.njbOptions;
       }
       catch (e) {
-        this._error('njBox, fail to parse options from njm-options');
+        this._error('njBox, fail to parse options from njb-options');
         return;
       }
     }
@@ -331,9 +335,9 @@ class njBox {
     function choosePrefixedData(data) {
       var prefixedData = {};
 
-      for (var p in data) {//use only data properties with njm prefix
-        if (data.hasOwnProperty(p) && /^njm[A-Z]+/.test(p)) {
-          var shortName = p.match(/^njm(.*)/)[1],
+      for (var p in data) {//use only data properties with njb prefix
+        if (data.hasOwnProperty(p) && /^njb[A-Z]+/.test(p)) {
+          var shortName = p.match(/^njb(.*)/)[1],
             shortNameLowerCase = shortName.charAt(0).toLowerCase() + shortName.slice(1);
 
           prefixedData[shortNameLowerCase] = transformType(data[p]);
@@ -453,7 +457,7 @@ class njBox {
           return;
         }
         //insert header info
-        var headerInput = (dom.header[0].getAttribute('data-njm-header') !== null) ? headerInput = dom.header : headerInput = dom.header.find('[data-njm-header]')
+        var headerInput = (dom.header[0].getAttribute('data-njb-header') !== null) ? headerInput = dom.header : headerInput = dom.header.find('[data-njb-header]')
         headerInput[0].innerHTML = item.header;
 
         modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
@@ -468,7 +472,7 @@ class njBox {
           return;
         }
         //insert footer info
-        var footerInput = (dom.footer[0].getAttribute('data-njm-footer') !== null) ? footerInput = dom.footer : footerInput = dom.footer.find('[data-njm-footer]')
+        var footerInput = (dom.footer[0].getAttribute('data-njb-footer') !== null) ? footerInput = dom.footer : footerInput = dom.footer.find('[data-njb-footer]')
         footerInput[0].innerHTML = item.footer;
 
         modalFragment.appendChild(dom.footer[0])
@@ -530,7 +534,7 @@ class njBox {
     }
     //check if container not relative position
     if (this.v.container[0] !== this.v.body[0] && this.v.container.css('position') === 'static') {
-      this.v.container.addClass('njm-relative');
+      this.v.container.addClass('njb-relative');
     }
 
     //create core elements
@@ -543,11 +547,11 @@ class njBox {
     this.v.wrap[0].njBox = this;
     if (o.zindex) this.v.wrap.css('zIndex', o.zindex);
 
-    this.v.items = this.v.wrap.find('.njm-items');
+    this.v.items = this.v.wrap.find('.njb-items');
 
     //if container custom element(not body), use forcely absolute position
     if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
-    if (o.position === 'absolute') this.v.wrap.addClass('njm-absolute');
+    if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
     // insert outside close button
     if (o.close === 'outside') {
@@ -698,7 +702,7 @@ class njBox {
         that._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
         return;
       }
-      if ($(el).closest('.njm-close-system, .njm-arrow').length) return;//don't remember why it here O_o
+      if ($(el).closest('.njb-close-system, .njb-arrow').length) return;//don't remember why it here O_o
 
 
       that.state.clickedEvent = e;
@@ -724,7 +728,7 @@ class njBox {
 
     h.wrap_out = function (e) {
       var $el = $(e.target),
-        prevent = $el.closest('.njm, [data-njm-close]').length;
+        prevent = $el.closest('.njb, [data-njb-close]').length;
       if (prevent) return;
 
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
@@ -734,11 +738,11 @@ class njBox {
         if (o.dialog && that._cb('cancel') === false) return;
         that.hide();
       } else {
-        that.items[that.active].dom.modal.addClass('njm_pulse');
+        that.items[that.active].dom.modal.addClass('njb_pulse');
         that._setFocusInPopup();
 
         setTimeout(function () {
-          that.items[that.active].dom.modal.removeClass('njm_pulse');
+          that.items[that.active].dom.modal.removeClass('njb_pulse');
         }, that._getAnimTime(that.items[that.active].dom.modal[0]))
       }
 
@@ -788,9 +792,9 @@ class njBox {
       .on('resize', h.wrap_resize)
       .on('scroll', h.wrap_scroll)
       .on('keydown', h.wrap_keydown)
-      .delegate('[data-njm-close]', 'click', h.wrap_close)
-      .delegate('[data-njm-ok]', 'click', h.wrap_ok)
-      .delegate('[data-njm-cancel]', 'click', h.wrap_cancel)
+      .delegate('[data-njb-close]', 'click', h.wrap_close)
+      .delegate('[data-njb-ok]', 'click', h.wrap_ok)
+      .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
 
 
     h.window_resize = function (e) {
@@ -825,9 +829,9 @@ class njBox {
       .off('resize', h.wrap_resize)
       .off('scroll', h.wrap_scroll)
       .off('keydown', h.wrap_keydown)
-      .undelegate('[data-njm-close]', 'click', h.wrap_close)
-      .undelegate('[data-njm-ok]', 'click', h.wrap_ok)
-      .undelegate('[data-njm-cancel]', 'click', h.wrap_cancel)
+      .undelegate('[data-njb-close]', 'click', h.wrap_close)
+      .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
+      .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
 
     this.v.window.off('resize', h.window_resize)
       .off('scroll', h.window_scroll)
@@ -859,9 +863,9 @@ class njBox {
             var sb = (document.documentElement.scrollHeight || document.body.scrollHeight) > document.documentElement.clientHeight;//check for scrollbar existance (we can have no scrollbar on simple short pages)
 
             //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
-            if (!this.v.container[0].njm_scrollbar && !this.state.scrollbarHidden && (sb || this.v.html.css('overflowY') === 'scroll' || this.v.body.css('overflowY') === 'scroll')) {
+            if (!this.v.container[0].njb_scrollbar && !this.state.scrollbarHidden && (sb || this.v.html.css('overflowY') === 'scroll' || this.v.body.css('overflowY') === 'scroll')) {
               //existing of that variable means that other instance of popup hides scrollbar on this element already
-              this.v.html.addClass('njm-hideScrollbar');
+              this.v.html.addClass('njb-hideScrollbar');
               this.v.html.css('paddingRight', parseInt(this.v.html.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
             }
           } else {
@@ -870,7 +874,7 @@ class njBox {
             //don't add padding to container if no scrollbar (simple short page) or popup already opened
             // if (!this.state.scrollbarHidden && (sb || this.v.container.css('overflowY') === 'scroll')) {
 
-              this.v.container.addClass('njm-hideScrollbar');
+              this.v.container.addClass('njb-hideScrollbar');
               // this.v.container.css('paddingRight', parseInt(this.v.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
 
             // }
@@ -880,7 +884,7 @@ class njBox {
           // if(this.state.scrollbarHidden) {
           //fixes case when we have 2 modals on one container, and after first close, first popup shows scrollbar
           //how many elements hides scrollbar on this element...
-          (this.v.container[0].njm_scrollbar) ? this.v.container[0].njm_scrollbar++ : this.v.container[0].njm_scrollbar = 1;
+          (this.v.container[0].njb_scrollbar) ? this.v.container[0].njb_scrollbar++ : this.v.container[0].njb_scrollbar = 1;
           // }
         }
         break;
@@ -888,16 +892,16 @@ class njBox {
       case 'show':
         if (!this.state.scrollbarHidden) return;
 
-        if (--this.v.container[0].njm_scrollbar) {
+        if (--this.v.container[0].njb_scrollbar) {
           delete this.state.scrollbarHidden;
           return;
         } else {
           // ie 7 don't support delete on dom elements
-          this.v.container[0].njm_scrollbar = null;
+          this.v.container[0].njb_scrollbar = null;
         }
 
         if (this.v.container[0] === this.v.body[0]) {
-          this.v.html.removeClass('njm-hideScrollbar');
+          this.v.html.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.v.html.css('paddingRight')) - njBox.g.scrollbarSize;
 
           if (computedPadding) {//if greater than 0
@@ -907,7 +911,7 @@ class njBox {
           }
         } else {
 
-          this.v.container.removeClass('njm-hideScrollbar');
+          this.v.container.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.v.container.css('paddingRight')) - njBox.g.scrollbarSize;
 
           if (computedPadding) {//if greater than 0
@@ -936,13 +940,13 @@ class njBox {
           if (o.overlayassist) this.v.overlay.css('transitionDuration', this._globals.animShowDur + 'ms')
 
           //insert overlay div
-          if (o.position === 'absolute') this.v.overlay.addClass('njm-absolute');
+          if (o.position === 'absolute') this.v.overlay.addClass('njb-absolute');
           this.v.container[0].appendChild(this.v.overlay[0]);
 
           // this.v.overlay[0].clientHeight;
 
           setTimeout(function () {//this prevent page from scrolling in chrome while background transition is working..., also needed as reflow
-            that.v.overlay.addClass('njm-visible');
+            that.v.overlay.addClass('njb-visible');
           }, 0)
 
           this.state.overlayVisible = true;
@@ -953,7 +957,7 @@ class njBox {
         if (!this.state.overlayVisible) return;
         if (o.overlayassist) this.v.overlay.css('transitionDuration', this._globals.animHideDur + 'ms')
 
-        this.v.overlay.removeClass('njm-visible');
+        this.v.overlay.removeClass('njb-visible');
 
         setTimeout(function () {
           that.v.overlay[0].parentNode.removeChild(that.v.overlay[0])
@@ -1078,16 +1082,11 @@ class njBox {
 
     switch (type) {
       case 'show':
-        this.v.wrap.addClass('njm-visible');
+        this.v.wrap.addClass('njb-visible');
 
-        this.v.document.on('animationend', function() {
-            console.log('end')
-          })
         if (animShow) {
           if (o.animclass) modal.addClass(o.animclass);
 
-          console.log(modal);
-          
           modal.addClass(animShow);
 
           setTimeout(shownCallback, animShowDur);
@@ -1096,12 +1095,12 @@ class njBox {
         }
         break;
       case 'hide':
-        this.v.wrap.removeClass('njm-visible')
+        this.v.wrap.removeClass('njb-visible')
 
         if (animHide) {
 
           if (o.animclass) modal.addClass(o.animclass);
-          if (animHide === animShow) modal.addClass('njm-anim-reverse');
+          if (animHide === animShow) modal.addClass('njb-anim-reverse');
           modal.addClass(animHide);
 
           setTimeout(hiddenCallback, animHideDur)
@@ -1118,7 +1117,7 @@ class njBox {
     }
     function hiddenCallback() {
       if (o.animclass) modal.removeClass(o.animclass);
-      if (animHide === animShow) modal.removeClass('njm-anim-reverse');
+      if (animHide === animShow) modal.removeClass('njb-anim-reverse');
       modal.removeClass(animHide);
 
       that._clear();
@@ -1130,8 +1129,8 @@ class njBox {
   _clear() {
     var o = this.o;
 
-    this.v.container[0].njm_instances--;
-    if (this.v.container[0].njm_instances === 0) this.v.container.removeClass('njm-open');
+    this.v.container[0].njb_instances--;
+    if (this.v.container[0].njb_instances === 0) this.v.container.removeClass('njb-open');
 
     if (o['class']) this.v.wrap.removeClass(o['class']);
 
@@ -1206,7 +1205,7 @@ class njBox {
 
     if (o.dialog && (type === 'ok' || type === 'cancel')) {
       let modal = this.items[this.active].dom.modal,
-          prompt_input = modal.find('[data-njm-prompt-input]'),
+          prompt_input = modal.find('[data-njb-prompt-input]'),
           prompt_value;
       if(prompt_input.length) prompt_value = prompt_input[0].value || null;
       
@@ -1257,6 +1256,7 @@ class njBox {
     return this;
   }
 }
+njBox.prototype.showModal = njBox.prototype.show;
 //global options
 
 //addons
@@ -1272,14 +1272,20 @@ njBox.autobind = function () {
     })
   })
 }
+if (typeof window !== 'undefined') {//autobind only in browser and on document ready
+  $(function() {
+    njBox.autobind();
+  })
+}
+
 njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
                         content: function(rawitem) {
-                          return `<div class="njm__body">
+                          return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                   </div>
-                                  <div class="njm__footer">
-                                    <button data-njm-ok>${this.o.text.ok}</button>
+                                  <div class="njb__footer">
+                                    <button data-njb-ok>${this.o.text.ok}</button>
                                   </div>`;
                         },
                         type:'template',
@@ -1292,12 +1298,12 @@ njBox.alert = function (content, okCb, cancelCb) {
 njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
                         content: function(rawitem) {
-                          return `<div class="njm__body">
+                          return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                   </div>
-                                  <div class="njm__footer">
-                                    <button data-njm-ok>${this.o.text.ok}</button>
-                                    <button data-njm-cancel>${this.o.text.cancel}</button>
+                                  <div class="njb__footer">
+                                    <button data-njb-ok>${this.o.text.ok}</button>
+                                    <button data-njb-cancel>${this.o.text.cancel}</button>
                                   </div>`;
                         },
                         type:'template',
@@ -1316,15 +1322,15 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
 
   return new njBox({
                         content: function(rawitem) {
-                          return `<div class="njm__body">
+                          return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                     <div>
-                                      <input data-njm-prompt-input type="text" placeholder="${placeholder || ''}" />
+                                      <input data-njb-prompt-input type="text" placeholder="${placeholder || ''}" />
                                     </div>
                                   </div>
-                                  <div class="njm__footer">
-                                    <button data-njm-ok>${this.o.text.ok}</button>
-                                    <button data-njm-cancel>${this.o.text.cancel}</button>
+                                  <div class="njb__footer">
+                                    <button data-njb-ok>${this.o.text.ok}</button>
+                                    <button data-njb-cancel>${this.o.text.cancel}</button>
                                   </div>`;
                         },
                         type:'template',
@@ -1335,5 +1341,4 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
                       }).show()
 }
 
-if (!njBox.g) njBox.g = getDefaultInfo();
 export default njBox;

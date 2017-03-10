@@ -1,4 +1,4 @@
-
+*нужен firstFocusable метод, что-бы фокусить первый фокус элементв диалоге, а не autofocus или o.focus
 
 To polyfill:
   querySelector

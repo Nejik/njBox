@@ -647,18 +647,20 @@ class njBox {
       }
     }
   }
-  _setFocusInPopup() {
+  _setFocusInPopup(item, initialFocus) {
     var o = this.o,
       focusElement;
     
-    focusElement = this.items[this.active].dom.modal.find('[autofocus]')
+    if (initialFocus) {
+      focusElement = item.dom.modal.find('[autofocus]')
 
-    if (!focusElement && !focusElement.length && o.focus) {
-        focusElement = this.items[this.active].dom.modal.find(o.focus);
+      if (!focusElement && !focusElement.length && o.focus) {
+        focusElement = item.dom.modal.find(o.focus);
+      }
     }
     
     if(!focusElement || !focusElement.length) {
-      focusElement = this.items[this.active].dom.modal.find(o._focusable);
+      focusElement = item.dom.modal.find(this.o._focusable);
     }
 
     //first try to focus elements inside modal
@@ -666,14 +668,12 @@ class njBox {
       focusElement[0].focus();
     } else if (o.close === "outside") {//then try to focus close buttons
       this.v.close[0].focus()
-    } else if (o.close === "inside" && this.items[this.active].dom.close) {//if type:"template" is used we have no close button here
-      this.items[this.active].dom.close[0].focus();
+    } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
+      item.dom.close[0].focus();
     } else {//if no, focus popup itself
-      this.items[this.active].dom.modal[0].focus();
+      item.dom.modal[0].focus();
     }
   }
-
-
 
   _setClickHandlers() {//initial click handlers
     var o = this.o;
@@ -743,7 +743,7 @@ class njBox {
         that.hide();
       } else {
         that.items[that.active].dom.modal.addClass('njb_pulse');
-        that._setFocusInPopup();
+        that._setFocusInPopup(this.items[this.active]);
 
         setTimeout(function () {
           that.items[that.active].dom.modal.removeClass('njb_pulse');
@@ -817,7 +817,7 @@ class njBox {
 
 
     h.focusCatch = function (e) {
-      that._setFocusInPopup();
+      that._setFocusInPopup(that.items[that.active]);
     }
     this.v.focusCatcher.on('focus', h.focusCatch)
 
@@ -1118,7 +1118,7 @@ class njBox {
       modal.removeClass(animShow);
 
       that._cb('shown');
-      that._setFocusInPopup();
+      that._setFocusInPopup(that.items[that.active], true);
     }
     function hiddenCallback() {
       if (o.animclass) modal.removeClass(o.animclass);

@@ -1,10 +1,3 @@
-* если подключать в хэде, то плагин не работает
-* if (typeof window.window != "undefined" && window.document)
-    return;
-if (window.require && window.define)
-    return; - для запуска autobind
-
-* примеры как сделать триггер ивентов на дом элемент/документ
 
 
 To polyfill:
@@ -16,10 +9,13 @@ To polyfill:
 
 
 Docs:
-content может быть фнукцией
-o.dialog запускает колбэки onok, oncancel при любом закрытии модального
-сделать пример для max-height: calc(100vh - 100px - 20px);
-data_gathered, item_domready, item_prepare, item_inserted
+*content может быть функцией
+*onok, oncancel срабатывают перед hide
+*returnValue можно получить с помощью this.returnValue в колбэке, либо первым аргументом в onok, oncancel
+*есть data-njb-return
+*сделать пример для max-height: calc(100vh - 100px - 20px);
+*data_gathered, item_domready, item_prepare, item_inserted
+* примеры как сделать триггер ивентов на дом элемент/документ
 
 
 Плюсы

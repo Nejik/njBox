@@ -32,8 +32,9 @@
 </head>
 
 <body>
-  <a href="#modal" class="link" data-toggle="box">link</a>
+  <a href="#modal" class="link">link</a>
   <div id="modal">
+    <button data-njb-ok>ok</button>
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet, quasi, tempora quo mollitia accusantium nisi consequatur dolores unde consequuntur facere omnis adipisci harum accusamus. Temporibus quo illum ullam molestias perspiciatis?</div>
     <div>Laudantium unde voluptatum fugit amet itaque asperiores ipsum et animi debitis, minus officiis ab incidunt consectetur sapiente sint corporis, perspiciatis tempore? Obcaecati adipisci voluptates sunt illum reiciendis id, voluptatibus praesentium.</div>
     <div>Dolores eum, beatae vitae necessitatibus atque sapiente porro repudiandae voluptate quaerat ad molestiae tempora, saepe numquam. Blanditiis hic, tenetur similique quisquam eum, non soluta laudantium perferendis aliquam saepe accusantium reprehenderit.</div>
@@ -45,21 +46,14 @@
   <script>
     // var modal = new njBox({
     //                           elem: '.link',
-    //                           out: false,
-
-    //                           // oncb: function(event) {
-    //                           //   switch (event) {
-    //                           //     case 'show':
-    //                           //     case 'shown':
-    //                           //     case 'hide':
-    //                           //     case 'hidden':
-    //                           //     console.log(event);
-    //                           //     break;
-    //                           //   }
-    //                           //   // console.log(this.v.container[0].njm_scrollbar);
-    //                           // }
+                              
+    //                           onok: function () {
+    //                             console.log(arguments)
+    //                           }
     //                         })
-               
+    new njBox.prompt('lol', function() {
+      console.log(this)
+    })
   </script>
 </body>
 

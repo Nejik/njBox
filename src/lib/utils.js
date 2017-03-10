@@ -105,8 +105,8 @@ export let defaults = {
 	click: true,//(boolean) should we set click handler on element(o.elem)?
 	clickels: '',//(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few links to open one modal window)
 
-	overlay: true,//(boolean) should we show overlay? true - show overlay for every popup
-	overlayassist: true,//(boolean) if true, animation durations of modal will automatically sets to overlay to be in sync
+	backdrop: true,//(boolean) should we show backdrop? true - show backdrop for every popup
+	backdropassist: true,//(boolean) if true, animation durations of modal will automatically sets to backdrop to be in sync
 	scrollbar: 'hide',//(show || hide) should we hide scrollbar from page?
 	out: true,//(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc: true,//(boolean) close modal when esc button pressed?
@@ -147,7 +147,7 @@ export let defaults = {
 
 	templates: {
 		wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
-		overlay: '<div class="njb-overlay"></div>',
+		backdrop: '<div class="njb-backdrop"></div>',
 		modalOuter: '<div class="njb-outer" data-njb-outer></div>',
 		modal: '<aside class="njb"></aside>',
 		body: '<div class="njb__body" data-njb-body></div>',

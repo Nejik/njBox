@@ -118,6 +118,7 @@ class njBox {
     }
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
+    this.returnValue = null;
 
     if (!this.v.container[0].njb_instances) {
       this.v.container[0].njb_instances = 1;
@@ -128,7 +129,7 @@ class njBox {
 
     this._scrollbar('hide');
 
-    this._overlay('show');
+    this._backdrop('show');
 
     //set event handlers
     this._setEventsHandlers();
@@ -156,8 +157,9 @@ class njBox {
       h = this._handlers;
 
     if (this._cb('hide') === false) return;//callback hide
+    if (this.state.clickedEl) this.state.clickedEl.focus();
 
-    this._overlay('hide');
+    this._backdrop('hide');
 
     this._removeEventsHandlers();
 
@@ -182,10 +184,10 @@ class njBox {
         this.v.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' })
       }
 
-      //overlay positioning
-      this.v.overlay.css({ 'width': 'auto', 'height': 'auto' });
-      this.v.overlay[0].clientHeight;
-      this.v.overlay.css({
+      //backdrop positioning
+      this.v.backdrop.css({ 'width': 'auto', 'height': 'auto' });
+      this.v.backdrop[0].clientHeight;
+      this.v.backdrop.css({
         'width': this.state.dimensions.containerScrollWidth + 'px',
         'height': this.state.dimensions.containerScrollHeight + 'px'
       });
@@ -734,7 +736,7 @@ class njBox {
 
 
       if (o.out) {
-        if (o.dialog && that._cb('cancel') === false) return;
+        if (that._cb('cancel') === false) return;
         that.hide();
       } else {
         that.items[that.active].dom.modal.addClass('njb_pulse');
@@ -770,7 +772,7 @@ class njBox {
     h.wrap_close = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
       
-      if (o.dialog && that._cb('cancel') === false) return;
+      if (that._cb('cancel') === false) return;
       that.hide();
     }
     h.wrap_ok = function (e) {
@@ -925,44 +927,44 @@ class njBox {
         break;
     }
   }
-  _overlay(type) {
+  _backdrop(type) {
     var o = this.o,
       that = this;
 
     switch (type) {
       case 'show':
-        this.v.overlay = $(o.templates.overlay);
+        this.v.backdrop = $(o.templates.backdrop);
 
-        if (this.state.overlayVisible) return;
+        if (this.state.backdropVisible) return;
 
-        if (o.overlay === true) {
-          if (o.overlayassist) this.v.overlay.css('transitionDuration', this._globals.animShowDur + 'ms')
+        if (o.backdrop === true) {
+          if (o.backdropassist) this.v.backdrop.css('transitionDuration', this._globals.animShowDur + 'ms')
 
-          //insert overlay div
-          if (o.position === 'absolute') this.v.overlay.addClass('njb-absolute');
-          this.v.container[0].appendChild(this.v.overlay[0]);
+          //insert backdrop div
+          if (o.position === 'absolute') this.v.backdrop.addClass('njb-absolute');
+          this.v.container[0].appendChild(this.v.backdrop[0]);
 
-          // this.v.overlay[0].clientHeight;
+          // this.v.backdrop[0].clientHeight;
 
           setTimeout(function () {//this prevent page from scrolling in chrome while background transition is working..., also needed as reflow
-            that.v.overlay.addClass('njb-visible');
+            that.v.backdrop.addClass('njb-visible');
           }, 0)
 
-          this.state.overlayVisible = true;
+          this.state.backdropVisible = true;
         }
         break;
 
       case 'hide':
-        if (!this.state.overlayVisible) return;
-        if (o.overlayassist) this.v.overlay.css('transitionDuration', this._globals.animHideDur + 'ms')
+        if (!this.state.backdropVisible) return;
+        if (o.backdropassist) this.v.backdrop.css('transitionDuration', this._globals.animHideDur + 'ms')
 
-        this.v.overlay.removeClass('njb-visible');
+        this.v.backdrop.removeClass('njb-visible');
 
         setTimeout(function () {
-          that.v.overlay[0].parentNode.removeChild(that.v.overlay[0])
-          if (o.overlayassist) that.v.overlay[0].style.cssText = '';
-          delete that.state.overlayVisible;
-        }, that._getAnimTime(that.v.overlay[0]))
+          that.v.backdrop[0].parentNode.removeChild(that.v.backdrop[0])
+          if (o.backdropassist) that.v.backdrop[0].style.cssText = '';
+          delete that.state.backdropVisible;
+        }, that._getAnimTime(that.v.backdrop[0]))
         break;
     }
   }
@@ -1113,6 +1115,7 @@ class njBox {
       modal.removeClass(animShow);
 
       that._cb('shown');
+      that._setFocusInPopup();
     }
     function hiddenCallback() {
       if (o.animclass) modal.removeClass(o.animclass);
@@ -1121,6 +1124,7 @@ class njBox {
 
       that._clear();
       that._cb('hidden');
+      that.state.state = 'inited';
     }
   }
 
@@ -1180,9 +1184,6 @@ class njBox {
       this.state.state = type;
     }
 
-    //do some dirty stuff on callbacks
-    this._cbStuff(type);
-
     //trigger callbacks
 
     //trigger on modal instance
@@ -1202,35 +1203,20 @@ class njBox {
     //trigger callback from options with "on" prefix (onshow, onhide)
     var clearArgs = Array.prototype.slice.call(arguments, 1);
 
-    if (o.dialog && (type === 'ok' || type === 'cancel')) {
+    if (type === 'ok' || type === 'cancel') {
       let modal = this.items[this.active].dom.modal,
-          prompt_input = modal.find('[data-njb-prompt-input]'),
+          prompt_input = modal.find('[data-njb-return]'),
           prompt_value;
       if(prompt_input.length) prompt_value = prompt_input[0].value || null;
       
       clearArgs.unshift(prompt_value)
+      this.returnValue = prompt_value;
     }
 
     if (typeof o['on' + type] === 'function') {
       callbackResult = o['on' + type].apply(this, clearArgs);
     }
     return callbackResult;
-  }
-  _cbStuff(type) {
-    var o = this.o;
-
-    switch (type) {
-      case 'shown':
-        this._setFocusInPopup();
-
-        break;
-      case 'hide':
-        if (this.state.clickedEl) this.state.clickedEl.focus();
-        break;
-      case 'hidden':
-        this.state.state = 'inited';
-        break;
-    }
   }
 
   //event emitter
@@ -1291,7 +1277,6 @@ njBox.alert = function (content, okCb, cancelCb) {
                                   </div>`;
                         },
                         type:'template',
-                        dialog: true,
                         out: false,
                         onok: okCb,
                         oncancel: cancelCb
@@ -1309,7 +1294,6 @@ njBox.confirm = function (content, okCb, cancelCb) {
                                   </div>`;
                         },
                         type:'template',
-                        dialog: true,
                         out: false,
                         onok: okCb,
                         oncancel: cancelCb
@@ -1327,7 +1311,7 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
                           return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                     <div>
-                                      <input data-njb-prompt-input type="text" placeholder="${placeholder || ''}" />
+                                      <input data-njb-return type="text" placeholder="${placeholder || ''}" />
                                     </div>
                                   </div>
                                   <div class="njb__footer">
@@ -1336,7 +1320,6 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
                                   </div>`;
                         },
                         type:'template',
-                        dialog: true,
                         out: false,
                         onok: okCb,
                         oncancel: cancelCb

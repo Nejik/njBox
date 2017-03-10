@@ -650,10 +650,13 @@ class njBox {
   _setFocusInPopup() {
     var o = this.o,
       focusElement;
+    
+    focusElement = this.items[this.active].dom.modal.find('[autofocus]')
 
-    if (o.focus) {
-      focusElement = this.items[this.active].dom.modal.find(o.focus);
+    if (!focusElement && !focusElement.length && o.focus) {
+        focusElement = this.items[this.active].dom.modal.find(o.focus);
     }
+    
     if(!focusElement || !focusElement.length) {
       focusElement = this.items[this.active].dom.modal.find(o._focusable);
     }

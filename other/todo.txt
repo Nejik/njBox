@@ -19,6 +19,7 @@ Docs:
 *сделать пример для max-height: calc(100vh - 100px - 20px);
 *data_gathered, item_domready, item_prepare, item_inserted
 * примеры как сделать триггер ивентов на дом элемент/документ
+*пример static margin top https://github.com/dolce/iziModal/issues/68
 
 
 Плюсы

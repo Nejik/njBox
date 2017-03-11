@@ -35,7 +35,7 @@
   <a href="#modal" class="link">link</a>
   <div id="modal">
     <input type="text" data-njb-return><br>
-    <button data-njb-ok autofocus>ok</button>
+    <button data-njb-close autofocus>ok</button>
     
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eveniet, quasi, tempora quo mollitia accusantium nisi consequatur dolores unde consequuntur facere omnis adipisci harum accusamus. Temporibus quo illum ullam molestias perspiciatis?</div>
     <div>Laudantium unde voluptatum fugit amet itaque asperiores ipsum et animi debitis, minus officiis ab incidunt consectetur sapiente sint corporis, perspiciatis tempore? Obcaecati adipisci voluptates sunt illum reiciendis id, voluptatibus praesentium.</div>
@@ -46,9 +46,10 @@
   </div>
   
   <script>
+    
     var modal = new njBox({
                               elem: '.link',
-                              
+                              autoheight:true,
                               onok: function () {
                                 console.log(this.returnValue)
                               }

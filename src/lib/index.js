@@ -1278,6 +1278,16 @@ njBox.prototype.showModal = njBox.prototype.show;
 njBox.a = {}
 //default settings
 njBox.defaults = defaults;
+
+njBox.get = function(elem) {
+  var el = $(elem)[0];
+
+  if(el) {
+    return el.njBox || null;
+  } else {
+    return null;
+  };
+}
 //autobind functions
 njBox.autobind = function () {
   $(njBox.defaults.autobind).each(function () {

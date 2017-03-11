@@ -32,9 +32,6 @@
 </head>
 
 <body>
-  <div class="container">
-      lol
-    </div>
   <a href="#modal" class="link">link</a>
   <div id="modal">
     <input type="text" data-njb-return><br>
@@ -51,7 +48,6 @@
   <script>
     var modal = new njBox({
                               elem: '.link',
-                              container: '.container',
                               
                               onok: function () {
                                 console.log(this.returnValue)

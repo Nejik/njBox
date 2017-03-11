@@ -20,7 +20,7 @@ export function getDefaultInfo() {
 	//detect css3 support
 	let h = options;
 
-	h.nativeDialogSupport = document.createElement('dialog').showModal;
+	h.nativeDialogSupport = !!document.createElement('dialog').showModal;
 	h.transition = styleSupport('transition');
 	h.transitionDuration = styleSupport('transitionDuration');
 	h.transform = styleSupport('transform');
@@ -184,7 +184,7 @@ export let defaults = {
 
 	},
 
-	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), *[tabindex]:not(*[tabindex="-1"]), *[contenteditable]',//(selector) this elements we will try to focus on popup shown after custom o.focus
+	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), *[tabindex]:not(*[tabindex="-1"]), *[contenteditable]',//(selector) this elements we will try to focus in popup shown after custom o.focus
 	
-	autobind: '[data-toggle~="box"]'//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
+	autobind: '[data-toggle~="box"], [data-toggle~="modal"]'//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 };

@@ -83,12 +83,10 @@ class njBox {
       $elem[0].njBox = this; //prevent multiple initialization on one element
 
       this._globals.gatheredOptions = this._gatherData($elem);
-      console.log(this._globals.passedOptions);
-      console.log(this._globals.gatheredOptions);
 
       //extend global options with gathered from dom element
       $.extend(true, this.o, this._globals.gatheredOptions)
-      console.log(this.o);
+
 
       //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
       this.els = this._gatherElements();

@@ -39,12 +39,10 @@ class njBox {
   _init(opts) {
     //run only on first init, because we can't if we will try to do that before any initializations, it maybe a sutiation, where script was injected in head, and we have no even body tag
     if (!njBox.g) njBox.g = getDefaultInfo();
-    
-    let o = this.o = $.extend({}, njBox.defaults, opts);
 
     this.active = 0;
 
-    //inner options, current state of app
+    //inner options, current state of app, this.state clears after every hide
     this.state = {};
 
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
@@ -61,6 +59,10 @@ class njBox {
 
       //... other will be added later
     }
+    
+    this._globals.passedOptions = opts;
+
+    let o = this.o = $.extend({}, njBox.defaults, opts);
 
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
@@ -80,8 +82,13 @@ class njBox {
       }
       $elem[0].njBox = this; //prevent multiple initialization on one element
 
+      this._globals.gatheredOptions = this._gatherData($elem);
+      console.log(this._globals.passedOptions);
+      console.log(this._globals.gatheredOptions);
+
       //extend global options with gathered from dom element
-      $.extend(true, this.o, this._gatherData($elem))
+      $.extend(true, this.o, this._globals.gatheredOptions)
+      console.log(this.o);
 
       //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
       this.els = this._gatherElements();

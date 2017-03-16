@@ -1,0 +1,367 @@
+.njb-relative {
+  position: relative !important;
+}
+.njb-absolute {
+  position: absolute !important;
+}
+.njb-hidden {
+  display: none;
+}
+.njb-hideScrollbar {
+  overflow: hidden !important;
+}
+.njb-focus-catch {
+  outline: none;
+  width: 0;
+  height: 0;
+  line-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  position: absolute;
+}
+.njb-backdrop {
+  width: 100%;
+  height: 100%;
+  position: fixed;top: 0;right: 0;bottom: 0;left: 0;
+  background-color: #000;
+
+  -webkit-backface-visibility: hidden;
+
+          backface-visibility: hidden;
+
+  opacity: 0;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=1)";
+  filter: alpha(opacity=1);
+  
+  -webkit-transition: opacity 200ms;
+  
+  transition: opacity 200ms;
+}
+.njb-backdrop.njb-visible {
+  opacity: 0.8;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  filter: alpha(opacity=80);
+}
+.njb-wrap {
+  outline: none;
+  width: 100%;
+  height: 100%;
+  position: fixed;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
+  overflow: hidden;
+}
+.njb-items {
+  outline: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
+  overflow: hidden;
+}
+.njb-outer {
+  width: 100%;
+  height: 100%;
+  position: absolute;top: 0;left: 0;
+  overflow: auto;
+  text-align: center;
+  white-space: nowrap;
+
+  -webkit-transition: left 350ms, -webkit-transform 350ms;
+
+  transition: left 350ms, -webkit-transform 350ms;
+
+  transition: left 350ms, transform 350ms;
+
+  transition: left 350ms, transform 350ms, -webkit-transform 350ms;
+  
+  /*for ie <=7 */
+  *padding-top:50px;
+
+  -webkit-user-select: none;
+
+     -moz-user-select: none;
+
+      -ms-user-select: none;
+
+          user-select: none;
+  box-sizing: border-box;
+}
+.njb-outer:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+}
+.njb {
+  max-width: 100%;
+  outline: none !important;
+  display: inline-block;
+  position: relative;
+  text-align: left;
+  text-align: initial;
+  vertical-align: middle;
+
+  white-space: normal;
+
+  -webkit-user-select: text;
+
+     -moz-user-select: text;
+
+      -ms-user-select: text;
+
+          user-select: text;
+}
+.njb img {
+  width: auto;
+  width:auto\9;
+  height:auto;
+  max-width: 100%;
+
+  vertical-align: middle;/*remove space under the picture*/
+
+  box-sizing: border-box;
+}
+.njb-close-system {
+  border: none;
+  background: none;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  position: absolute;right: 20px;top: 20px;
+  display: inline-block;
+  cursor: pointer;
+  padding: 0;
+
+  text-decoration: none;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 0 0 5px #000;
+  overflow: hidden;
+
+  -webkit-transition: 200ms;
+
+  transition: 200ms;
+}
+.njb-close-system:active {
+  -webkit-transform: scale(0.8) !important;
+          transform: scale(0.8) !important;
+}
+.njb-autoheight .njb-outer {
+	overflow-y: hidden;
+}
+.njb-autoheight--true .njb__body {
+	overflow-y: auto;
+}
+/*animations*/
+.njb-animation {
+  overflow-x: hidden;
+}
+.njb-anim-reverse {
+  -webkit-animation-direction: reverse !important;
+          animation-direction: reverse !important;
+}
+.fade, .fadeIn {
+
+  -webkit-animation: fade 250ms ease-in-out forwards;
+
+          animation: fade 250ms ease-in-out forwards;
+}
+.fadeOut {
+
+  -webkit-animation: fade 200ms ease-in-out reverse forwards;
+
+          animation: fade 200ms ease-in-out reverse forwards;
+}
+@-webkit-keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.scale, .scaleIn {
+
+  -webkit-animation: scale 250ms ease-in-out forwards;
+
+          animation: scale 250ms ease-in-out forwards;
+}
+.scaleOut {
+
+  -webkit-animation: scale 200ms ease-in-out reverse forwards;
+
+          animation: scale 200ms ease-in-out reverse forwards;
+}
+@-webkit-keyframes scale {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0.5);
+            transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+@keyframes scale {
+  0% {
+    opacity: 0;
+    -webkit-transform: scale(0.5);
+            transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+}
+/*pulse animation uses in modal windows, when user try to close modal with outside click*/
+.njb_pulse {
+  -webkit-animation: pulseModal 200ms ease-in-out 1;
+          animation: pulseModal 200ms ease-in-out 1;
+}
+/*perspective fixes troubles with font in webkit*/
+@-webkit-keyframes pulseModal {
+  0% {
+    -webkit-transform: scale(1) perspective(1px);
+    transform: scale(1) perspective(1px);
+
+  }
+  40% {
+    -webkit-transform: scale(1.05) perspective(1px);
+    transform: scale(1.05) perspective(1px);
+  }
+  60% {
+    -webkit-transform: scale(1.05) perspective(1px);
+    transform: scale(1.05) perspective(1px);
+  }
+  100% {
+    -webkit-transform: scale(1) perspective(1px);
+    transform: scale(1) perspective(1px);
+  }
+}
+@keyframes pulseModal {
+  0% {
+    -webkit-transform: scale(1) perspective(1px);
+    transform: scale(1) perspective(1px);
+
+  }
+  40% {
+    -webkit-transform: scale(1.05) perspective(1px);
+    transform: scale(1.05) perspective(1px);
+  }
+  60% {
+    -webkit-transform: scale(1.05) perspective(1px);
+    transform: scale(1.05) perspective(1px);
+  }
+  100% {
+    -webkit-transform: scale(1) perspective(1px);
+    transform: scale(1) perspective(1px);
+  }
+}
+/*theme*/
+.njb-close-system {
+  -webkit-animation: closeSystemOut 250ms;
+          animation: closeSystemOut 250ms;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+}
+.njb-visible .njb-close-system {
+  -webkit-animation: closeSystemIn 250ms;
+          animation: closeSystemIn 250ms;
+}
+.njb .njb-close-system {
+  top: -20px;
+  right: -20px;
+  -webkit-animation:none;
+          animation:none;
+}
+@-webkit-keyframes closeSystemIn {
+  0% {
+    -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+    opacity: 0;
+  }
+  50% {
+    -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateY(0px);
+            transform: translateY(0px);
+    opacity: 1;
+  }
+}
+@keyframes closeSystemIn {
+  0% {
+    -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+    opacity: 0;
+  }
+  50% {
+    -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateY(0px);
+            transform: translateY(0px);
+    opacity: 1;
+  }
+}
+@-webkit-keyframes closeSystemOut {
+  0% {
+    -webkit-transform: translateY(0px);
+            transform: translateY(0px);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+@keyframes closeSystemOut {
+  0% {
+    -webkit-transform: translateY(0px);
+            transform: translateY(0px);
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateY(-20px);
+            transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+/*here we use nested selector .njb-content .njb because we also can have .njb-image .njb with image, and for this case we need other design  */
+.njb {
+  border-radius: 2px;
+  background-color: #fff;
+  margin: 10px;
+}
+.njb .njb__header {
+  padding: 5px;
+}
+.njb .njb__body {
+  padding: 5px;
+}
+.njb .njb__footer {
+  padding: 5px;
+}
+.njb--image img {
+  background-color: rgba(255, 255, 255, .1);
+}

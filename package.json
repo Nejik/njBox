@@ -5,7 +5,7 @@
     "start": "gulp",
     "prod": "gulp prod"
   },
-  "main": "./prod/njBox.js",
+  "main": "./dist/njBox.min.js",
   "module": "./src/lib/index.js",
   "babel": {
     "presets": [
@@ -37,6 +37,7 @@
     "file-loader": "^0.10.0",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-concat": "^2.6.1",
+    "gulp-cssnano": "^2.1.2",
     "gulp-ejs": "^3.0.0",
     "gulp-if": "^2.0.2",
     "gulp-imagemin": "^3.1.1",

@@ -8,7 +8,7 @@ const isVerbose = argv.verbose;
 let isDevelopment = process.env.NODE_ENV !== "production" && argv.env !== "production";
 const port = process.env.PORT || 3000;
 
-const distString = isDevelopment ? 'dist' : 'prod';
+const distString = isDevelopment ? 'build' : 'dist';
 const dist = root.resolve(distString);
 
 
@@ -36,8 +36,6 @@ let paths = {
   css: {
     dir: root.resolve('src/css'),
     src: [root.resolve('src/css/styles.css')],
-    concatGulp: 'gulp.styles.css',//final name of css file builed by gulp
-    concatWebpack: 'webpack.styles.css',//final name of css file builed by webpack
     concatProd: 'njBox.css', 
     dist: dist,
     webpackStyleName: 'webpack.styles.css',//temporary file with builded styles from webpack, after build it will be merged in main styles files
@@ -47,6 +45,7 @@ let paths = {
   js: {
     src: [root.resolve('src/lib/index.js')],
     concat: 'njBox.js',//final name of builded js file
+    concatMin: 'njBox.min.js',
     dist: dist
   }
 }

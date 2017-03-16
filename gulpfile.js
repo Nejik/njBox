@@ -22,6 +22,7 @@ const ejs = require('gulp-ejs');
 
 //styles
 const postcss = require('gulp-postcss');
+const cssNano = require('gulp-cssnano');
 
 
 //images
@@ -38,7 +39,7 @@ global.HMR = true;
 
 
 gulp.task('clean', function () {
-  return del(['dist','prod'])
+  return del(['build','dist'])
 })
 
 gulp.task('setProduction', function (cb) {
@@ -88,20 +89,7 @@ gulp.task('html', function () {
             .pipe(gulpIf(config.isDevelopment, bs.stream()))
 })
 
-gulp.task('css:createEmptyFiles', function (cb) {
-  //create styles empty placeholder files to avoid errors in console
-  if (!fs.existsSync(config.dist)){
-    fs.mkdirSync(config.dist);
-  }
-  fs.writeFileSync(path.join(config.dist, config.css.concatGulp), '');
-  fs.writeFileSync(path.join(config.dist, config.css.concatWebpack), '');
-
-  
-  cb();
-})
-
-//hot reloading durinig development without webpack works much much faster
-gulp.task('css:common', function () {
+gulp.task('css', function () {
   return gulp .src(config.css.src)
               .pipe(plumber({
                 errorHandler: function (error) {
@@ -119,26 +107,47 @@ gulp.task('css:common', function () {
               .pipe(gulpIf(config.isDevelopment, sourcemaps.init()))
               .pipe(postcss(postcssConfig.plugins))
               .pipe(gulpIf(config.isDevelopment, sourcemaps.write()))
-              .pipe(rename(config.css.concatGulp))
+              .pipe(rename(config.css.concatProd))
+              .pipe(gulp.dest(config.css.dist))
+              .pipe(gulpIf(!config.isDevelopment, cssNano({
+                safe:true,
+                autoprefixer: false,
+              })))
+              .pipe(rename({ suffix: '.min' }))
               .pipe(gulp.dest(config.css.dist))
 })
 
-gulp.task('css:mergeStyles', function (cb) {
-  return gulp .src([path.join(config.dist, config.css.concatGulp), path.join(config.dist, config.css.concatWebpack)])
-              .pipe(concat(config.css.concatProd))
-              .pipe(gulp.dest(config.css.dist))
-
-})
-gulp.task('css:cleanFiles', function () {
-  return del([path.join(config.dist, config.css.concatGulp), path.join(config.dist, config.css.concatWebpack)])
-})
-
-gulp.task('css', gulp.series('css:createEmptyFiles', 'css:common'))
 
 
 
 
 gulp.task('webpack', function (callback) {
+  webpack(webpackConfig, function(err, stats) {
+
+    //error handling
+    if (err) {
+      console.error(err.stack || err);
+      if (err.details) {
+        console.error(err.details);
+      }
+      return;
+    }
+    const info = stats.toJson();
+    if (stats.hasErrors()) {
+      console.error(info.errors);
+    }
+    if (stats.hasWarnings()) {
+      console.warn(info.warnings)
+    }
+
+
+    callback();
+  });
+})
+gulp.task('webpack:min', function (callback) {
+  webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
+  webpackConfig.output.filename = config.js.concatMin;
+
   webpack(webpackConfig, function(err, stats) {
 
     //error handling
@@ -220,6 +229,6 @@ gulp.task('serve', function (cb) {//serve contains js task, because of webpack i
 
 gulp.task('build', gulp.parallel('html', 'css', 'webpack'))
 
-gulp.task('prod', gulp.series(gulp.parallel('clean', 'setProduction'), gulp.parallel('css', 'webpack'), 'css:mergeStyles', 'css:cleanFiles'))
+gulp.task('prod', gulp.series(gulp.parallel('clean', 'setProduction'), gulp.parallel('css', gulp.series('webpack', 'webpack:min'))))
 
 gulp.task('default', gulp.series('html', 'css', gulp.parallel('serve','watch')))

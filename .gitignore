@@ -50,7 +50,7 @@ debug.log
 .git
 .vscode
 node_modules
-dist
+build
 design
 backup
 src/old

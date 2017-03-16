@@ -32,9 +32,9 @@ let postcssConfig = {
 }
 
 if (!config.isDevelopment) {
-    postcssConfig.plugins.push(cssNano({
-                             safe:true,
-                             autoprefixer:false//autoprefixer in cssNano works in delete mode, while in cssNext in add mode. Disable delete mode.
-                            }))
+    // postcssConfig.plugins.push(cssNano({
+    //                          safe:true,
+    //                          autoprefixer:false//autoprefixer in cssNano works in delete mode, while in cssNext in add mode. Disable delete mode.
+    //                         }))
   }
 module.exports = postcssConfig;

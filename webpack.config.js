@@ -73,11 +73,6 @@ const webpackConfig = {
     }),
     // Emit a JSON file with assets paths
     // https://github.com/sporto/assets-webpack-plugin#options
-    new WriteFilePlugin({
-      test: /\.css$/,
-      log: false
-    }),
-    new ExtractTextPlugin(config.css.concatWebpack)
   ],
 
   module: {
@@ -97,24 +92,6 @@ const webpackConfig = {
             }
           }
         ]
-      },
-      {
-      test: /\.css$/,
-      use: ExtractTextPlugin.extract({
-              fallback: "style-loader",
-              use: [
-                {
-                  loader: 'css-loader',
-                  options: {
-                    url:false,
-                    sourceMap: config.isDevelopment,
-                    importLoaders: 1
-                  }
-                },
-                'postcss-loader'
-              ]
-            })
-      
       }
     ],
   }
@@ -126,7 +103,7 @@ if (config.isDevelopment) {
   webpackConfig.plugins.push(new webpack.NoEmitOnErrorsPlugin());
 } else {
   webpackConfig.plugins.push(new webpack.optimize.AggressiveMergingPlugin());
-  webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
+  // webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
 }
 
 module.exports = webpackConfig;

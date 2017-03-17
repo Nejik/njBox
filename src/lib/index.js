@@ -51,6 +51,10 @@ class njBox {
     }
     this._handlers = {};//all callback functions we used in event listeners lives here
 
+    this._globals.passedOptions = opts;
+    let o = this.o = $.extend({}, njBox.defaults, opts);
+    if(o.jquery) $ = o.jquery;
+
     this.v = {
       document: $(document),
       window: $(window),
@@ -60,10 +64,7 @@ class njBox {
       //... other will be added later
     }
     
-    this._globals.passedOptions = opts;
 
-    let o = this.o = $.extend({}, njBox.defaults, opts);
-    if(o.jquery) $ = o.jquery;
 
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {

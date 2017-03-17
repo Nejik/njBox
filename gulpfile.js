@@ -113,8 +113,8 @@ gulp.task('css', function () {
                 safe:true,
                 autoprefixer: false,
               })))
-              .pipe(rename({ suffix: '.min' }))
-              .pipe(gulp.dest(config.css.dist))
+              .pipe(gulpIf(!config.isDevelopment, rename({ suffix: '.min' })))
+              .pipe(gulpIf(!config.isDevelopment, gulp.dest(config.css.dist)))
 })
 
 
@@ -173,7 +173,7 @@ gulp.task('webpack:min', function (callback) {
 
 gulp.task('watch', function () {
   gulp.watch(config.html.watch, gulp.series('html'));//build and reload html
-  gulp.watch(config.css.watch, gulp.series('css:common'));//build css
+  gulp.watch(config.css.watch, gulp.series('css'));//build css
   gulp.watch("dist/*.css").on('change', bs.reload);//reload css
 })
 

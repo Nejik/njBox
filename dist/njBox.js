@@ -167,6 +167,7 @@ var njBox = function () {
       this._globals.passedOptions = opts;
 
       var o = this.o = $.extend({}, njBox.defaults, opts);
+      if (o.jquery) $ = o.jquery;
 
       //we should have dom element or at least content option for creating item
       if (!o.elem && !o.content) {
@@ -2066,7 +2067,7 @@ var defaults = exports.defaults = {
 	},
 
 	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), *[tabindex]:not(*[tabindex="-1"]), *[contenteditable]', //(selector) this elements we will try to focus in popup shown after custom o.focus
-
+	jquery: undefined, //link to jquery (for modules)
 	autobind: '[data-toggle~="box"], [data-toggle~="modal"]' //(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 };
 

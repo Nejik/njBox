@@ -5,7 +5,7 @@
 */
 import j from 'lib/j'
 //by default we use jQuery, it makes possible to run plugin with jQuery (low ie support for example)
-const $ = window.jQuery || j;
+let $ = window.jQuery || j;
 
 import {
   getDefaultInfo,
@@ -63,6 +63,7 @@ class njBox {
     this._globals.passedOptions = opts;
 
     let o = this.o = $.extend({}, njBox.defaults, opts);
+    if(o.jquery) $ = o.jquery;
 
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {

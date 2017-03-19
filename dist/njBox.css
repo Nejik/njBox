@@ -347,19 +347,21 @@
     opacity: 0;
   }
 }
-/*here we use nested selector .njb-content .njb because we also can have .njb-image .njb with image, and for this case we need other design  */
-.njb {
+/*here we use nested selector ".njb--content .njb" because we also can have ".njb--image .njb" with image, and for this case we need other design  */
+.njb--content {
+}
+.njb--content {
   border-radius: 2px;
   background-color: #fff;
   margin: 10px;
 }
-.njb .njb__header {
+.njb--content .njb__header {
   padding: 5px;
 }
-.njb .njb__body {
+.njb--content .njb__body {
   padding: 5px;
 }
-.njb .njb__footer {
+.njb--content .njb__footer {
   padding: 5px;
 }
 .njb--image img {

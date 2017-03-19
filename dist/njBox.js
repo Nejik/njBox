@@ -155,6 +155,10 @@ var njBox = function () {
       this._globals = {};
       this._handlers = {}; //all callback functions we used in event listeners lives here
 
+      this._globals.passedOptions = opts;
+      var o = this.o = $.extend({}, njBox.defaults, opts);
+      if (o.jquery) $ = o.jquery;
+
       this.v = {
         document: $(document),
         window: $(window),
@@ -163,11 +167,6 @@ var njBox = function () {
 
         //... other will be added later
       };
-
-      this._globals.passedOptions = opts;
-
-      var o = this.o = $.extend({}, njBox.defaults, opts);
-      if (o.jquery) $ = o.jquery;
 
       //we should have dom element or at least content option for creating item
       if (!o.elem && !o.content) {
@@ -307,7 +306,7 @@ var njBox = function () {
       }
       this._setMaxHeight(this.items[this.active]);
 
-      this._cb('positioned');
+      this._cb('position');
 
       return this;
     }
@@ -407,13 +406,13 @@ var njBox = function () {
 
       if (!bodyBorderBox) height -= bodyPadding;
 
-      v.body.css('maxHeight', height + 'px');
+      if (item.type === 'image') {
+        var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
 
-      // if (that.slides[index].type === 'image') {
-      //   var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
-
-      //   v.$img.css('maxHeight', autoheightImg + 'px');
-      // }
+        v.img.css('maxHeight', autoheightImg + 'px');
+      } else {
+        v.body.css('maxHeight', height + 'px');
+      }
     }
     //return array with raw options gathered from items from which gallery/modal will be created, this method will be replaced in gallery addon
 
@@ -649,23 +648,30 @@ var njBox = function () {
       switch (item.type) {
         case 'text':
           'textContent' in item.dom.body[0] ? item.dom.body[0].textContent = item.content : item.dom.body[0].innerText = item.content;
-
+          item.o.status = 'loaded';
           break;
         case 'html':
           item.dom.body[0].innerHTML = item.content;
-
+          item.o.status = 'loaded';
           break;
         case 'selector':
           this._getItemFromSelector(item);
-
+          item.o.status = 'loaded';
+          break;
+        case 'image':
+          this._insertImage(item);
           break;
         default:
           this._error('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
+          item.o.status = 'loaded';
           return;
           break;
       }
-
-      item.o.status = 'loaded';
+      if (item.type === 'image') {
+        item.dom.modal.addClass('njb--image');
+      } else {
+        item.dom.modal.addClass('njb--content');
+      }
     }
   }, {
     key: '_getItemFromSelector',
@@ -674,6 +680,107 @@ var njBox = function () {
 
       if (!item.o.contentEl.length) {
         item.dom.body[0].innerHTML = item.content; //if we don't find element with this selector
+      }
+    }
+  }, {
+    key: '_insertImage',
+    value: function _insertImage(item) {
+      var that = this,
+          o = this.o,
+          img = document.createElement('img'),
+          $img = $(img),
+          ready,
+          loaded;
+
+      item.o.status = 'loading';
+      item.dom.img = $img;
+
+      item._handlerError = function () {
+        $img.off('error', item._handlerError).off('abort', item._handlerError);
+        delete item._handlerError;
+
+        // that._preloader('hide', index);
+
+        item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
+
+        that._cb('img_error', item); //img_ready, img_load callbacks
+        // rendered();
+
+        item.o.status = 'error';
+      };
+      $img.on('error', item._handlerError).on('abort', item._handlerError);
+
+      if (item.title) img.title = item.title;
+      img.src = item.content;
+
+      ready = img.width + img.height > 0;
+      loaded = img.complete && img.width + img.height > 0;
+
+      if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
+        checkShow(true);
+      } else {
+        // this._preloader('show', index);
+
+        item._handlerImgReady = function () {
+          $img.off('njb_ready', item._handlerImgReady);
+          checkShow('ready');
+        };
+        $img.on('njb_ready', item._handlerImgReady);
+        findImgSize(img);
+
+        item._handlerLoad = function () {
+          $img.off('load', item._handlerLoad);
+          checkShow('load');
+        };
+        $img.on('load', item._handlerLoad);
+      }
+
+      function checkShow(ev) {
+        that._cb('item_img_' + ev, item); //img_ready, img_load callbacks
+
+        if (ev !== o.img && ev !== true) return;
+
+        item.o.status = 'loaded';
+        // that._preloader('hide', item);
+
+        $img.attr('width', 'auto'); //for IE <= 10
+
+        //insert content
+        item.dom.body[0].appendChild(img);
+      }
+      //helper function for image type
+      function findImgSize(img) {
+        var counter = 0,
+            interval,
+            njbSetInterval = function njbSetInterval(delay) {
+          if (interval) {
+            clearInterval(interval);
+          }
+
+          interval = setInterval(function () {
+            if (img.width > 0) {
+              $img.triggerHandler('njb_ready');
+
+              clearInterval(interval);
+              return;
+            }
+
+            if (counter > 200) {
+              clearInterval(interval);
+            }
+
+            counter++;
+            if (counter === 5) {
+              njbSetInterval(10);
+            } else if (counter === 40) {
+              njbSetInterval(50);
+            } else if (counter === 100) {
+              njbSetInterval(500);
+            }
+          }, delay);
+        };
+
+        njbSetInterval(1);
       }
     }
   }, {
@@ -1295,7 +1402,7 @@ var njBox = function () {
     value: function _clear() {
       var o = this.o;
 
-      this.v.container[0].njb_instances--;
+      if (this.v.container) this.v.container[0].njb_instances--;
       if (this.v.container[0].njb_instances === 0) this.v.container.removeClass('njb-open');
 
       if (o['class']) this.v.wrap.removeClass(o['class']);
@@ -2005,6 +2112,8 @@ var defaults = exports.defaults = {
 	focus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
+	img: 'load', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+
 	// selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
 	// delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
 
@@ -2050,8 +2159,7 @@ var defaults = exports.defaults = {
 		_missedContent: 'njBox plugin: meow, put some content here...', //text for case, when slide have no content
 		// preloader:    'Loading...',//title on preloader element
 
-		//todo, перенести тексты в галлерею
-		// imageError:   '<a href="%url%">This image</a> can not be loaded.',
+		imageError: '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',
 
 		// current:      'Current slide',

@@ -314,7 +314,7 @@ class njBox {
     if (item.type === 'image') {
       var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
 
-      v.img.css('maxHeight', autoheightImg + 'px');
+      if(v.img) v.img.css('maxHeight', autoheightImg + 'px');
     } else {
       v.body.css('maxHeight', height + 'px');
     }
@@ -543,7 +543,7 @@ class njBox {
         item.o.status = 'loaded';
         break;
       case 'image':
-        this._insertImage(item);
+        if(o.imgload === 'init') this._insertImage(item);
         break;
       default:
         this._error('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
@@ -551,7 +551,7 @@ class njBox {
         return;
         break;
     }
-    if(item.type === 'image') {
+    if (item.type === 'image') {
       item.dom.modal.addClass('njb--image');
     } else {
       item.dom.modal.addClass('njb--content');
@@ -581,12 +581,13 @@ class njBox {
 
       // that._preloader('hide', index);
 
-       item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
+      item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
 
       that._cb('img_error', item);//img_ready, img_load callbacks
       // rendered();
 
       item.o.status = 'error';
+      item.o.imageInserted = true;
     }
     $img.on('error', item._handlerError).on('abort', item._handlerError);
 
@@ -613,6 +614,7 @@ class njBox {
         checkShow('load');
       }
       $img.on('load', item._handlerLoad)
+      
     }
 
     function checkShow(ev) {
@@ -627,6 +629,7 @@ class njBox {
 
       //insert content
       item.dom.body[0].appendChild(img);
+      item.o.imageInserted = true;
     }
     //helper function for image type
     function findImgSize(img) {
@@ -718,6 +721,7 @@ class njBox {
 
     //insert index item
     this._insertSelectorElements();
+    if(o.imgload === 'show') this._insertImageElements();
 
     this.v.items[0].appendChild(item.dom.modalOuter[0]);
 
@@ -757,6 +761,22 @@ class njBox {
         item.dom.body[0].innerHTML = '';//clear body for case when first time we can't find contentEl on page
         item.dom.body[0].appendChild(contentEl[0]);
         item.o.contentElInserted = true;
+      }
+    }
+  }
+  _insertImageElements() {
+    var items = this.items,
+      item;
+
+    for (var i = 0, l = items.length; i < l; i++) {
+      if (items[i].type === 'image') {
+        item = items[i];
+
+        if (item.o.imageInserted) {
+          continue;
+        }
+        
+        this._insertImage(item);
       }
     }
   }

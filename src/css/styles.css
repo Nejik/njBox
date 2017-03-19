@@ -263,7 +263,7 @@
 
 /*here we use nested selector ".njb--content .njb" because we also can have ".njb--image .njb" with image, and for this case we need other design  */
 .njb--content {
-  & .njb {
+  & {
     border-radius: 2px;
     background-color: #fff;
     margin: 10px;

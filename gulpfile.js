@@ -174,7 +174,7 @@ gulp.task('webpack:min', function (callback) {
 gulp.task('watch', function () {
   gulp.watch(config.html.watch, gulp.series('html'));//build and reload html
   gulp.watch(config.css.watch, gulp.series('css'));//build css
-  gulp.watch("dist/*.css").on('change', bs.reload);//reload css
+  gulp.watch("build/*.css").on('change', bs.reload);//reload css
 })
 
 gulp.task('serve', function (cb) {//serve contains js task, because of webpack integration

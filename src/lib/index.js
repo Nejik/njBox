@@ -310,13 +310,14 @@ class njBox {
 
     if (!bodyBorderBox) height -= bodyPadding;
 
-    v.body.css('maxHeight', height + 'px');
 
-    // if (that.items[index].type === 'image') {
-    //   var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
+    if (item.type === 'image') {
+      var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
 
-    //   v.$img.css('maxHeight', autoheightImg + 'px');
-    // }
+      v.img.css('maxHeight', autoheightImg + 'px');
+    } else {
+      v.body.css('maxHeight', height + 'px');
+    }
   }
   //return array with raw options gathered from items from which gallery/modal will be created, this method will be replaced in gallery addon
   _createRawItems() {

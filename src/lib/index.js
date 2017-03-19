@@ -53,7 +53,7 @@ class njBox {
 
     this._globals.passedOptions = opts;
     let o = this.o = $.extend({}, njBox.defaults, opts);
-    if(o.jquery) $ = o.jquery;
+    if (o.jquery) $ = o.jquery;
 
     this.v = {
       document: $(document),
@@ -63,7 +63,7 @@ class njBox {
 
       //... other will be added later
     }
-    
+
 
 
     //we should have dom element or at least content option for creating item
@@ -73,7 +73,7 @@ class njBox {
     }
     if (o.elem) {
       let $elem = $(o.elem);
-      if(!$elem.length) {
+      if (!$elem.length) {
         this._error(`njBox, element not found (${o.elem})`);
         return;
       }
@@ -205,7 +205,7 @@ class njBox {
     return this;
   }
   destroy() {
-    if(!this.state.inited || this.state.state !== 'inited') {
+    if (!this.state.inited || this.state.state !== 'inited') {
       this._error('njBox, we can destroy only initialized && hidden modals.');
       return;
     }
@@ -229,7 +229,7 @@ class njBox {
     this.o = {};
 
     this._cb('destroyed');
-    
+
   }
   _getContainerSize() {
     var o = this.o;
@@ -312,7 +312,7 @@ class njBox {
 
     v.body.css('maxHeight', height + 'px');
 
-    // if (that.slides[index].type === 'image') {
+    // if (that.items[index].type === 'image') {
     //   var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
 
     //   v.$img.css('maxHeight', autoheightImg + 'px');
@@ -419,7 +419,7 @@ class njBox {
     } else {
       evaluatedContent = item.content;
     }
-    
+
     return {
       content: evaluatedContent || this.o.text._missedContent,
       type: item.type || this._type(item.content || this.o.text._missedContent),
@@ -531,30 +531,135 @@ class njBox {
     switch (item.type) {
       case 'text':
         'textContent' in item.dom.body[0] ? item.dom.body[0].textContent = item.content : item.dom.body[0].innerText = item.content;
-
+        item.o.status = 'loaded';
         break;
       case 'html':
         item.dom.body[0].innerHTML = item.content;
-
+        item.o.status = 'loaded';
         break;
       case 'selector':
         this._getItemFromSelector(item);
-
+        item.o.status = 'loaded';
+        break;
+      case 'image':
+        this._insertImage(item);
         break;
       default:
         this._error('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
+        item.o.status = 'loaded';
         return;
         break;
     }
-
-
-    item.o.status = 'loaded';
+    if(item.type === 'image') {
+      item.dom.modal.addClass('njb--image');
+    } else {
+      item.dom.modal.addClass('njb--content');
+    }
   }
   _getItemFromSelector(item) {
     item.o.contentEl = $(item.content);
 
     if (!item.o.contentEl.length) {
       item.dom.body[0].innerHTML = item.content;//if we don't find element with this selector
+    }
+  }
+  _insertImage(item) {
+    var that = this,
+      o = this.o,
+      img = document.createElement('img'),
+      $img = $(img),
+      ready,
+      loaded;
+
+    item.o.status = 'loading';
+    item.dom.img = $img;
+
+    item._handlerError = function () {
+      $img.off('error', item._handlerError).off('abort', item._handlerError);
+      delete item._handlerError;
+
+      // that._preloader('hide', index);
+
+       item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
+
+      that._cb('img_error', item);//img_ready, img_load callbacks
+      // rendered();
+
+      item.o.status = 'error';
+    }
+    $img.on('error', item._handlerError).on('abort', item._handlerError);
+
+    if (item.title) img.title = item.title;
+    img.src = item.content;
+
+    ready = img.width + img.height > 0;
+    loaded = img.complete && img.width + img.height > 0;
+
+    if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
+      checkShow(true);
+    } else {
+      // this._preloader('show', index);
+
+      item._handlerImgReady = function () {
+        $img.off('njb_ready', item._handlerImgReady);
+        checkShow('ready');
+      }
+      $img.on('njb_ready', item._handlerImgReady)
+      findImgSize(img);
+
+      item._handlerLoad = function () {
+        $img.off('load', item._handlerLoad);
+        checkShow('load');
+      }
+      $img.on('load', item._handlerLoad)
+    }
+
+    function checkShow(ev) {
+      that._cb('item_img_' + ev, item);//img_ready, img_load callbacks
+
+      if (ev !== o.img && ev !== true) return;
+
+      item.o.status = 'loaded';
+      // that._preloader('hide', item);
+
+      $img.attr('width', 'auto')//for IE <= 10
+
+      //insert content
+      item.dom.body[0].appendChild(img);
+    }
+    //helper function for image type
+    function findImgSize(img) {
+      var counter = 0,
+        interval,
+        njbSetInterval = function (delay) {
+          if (interval) {
+            clearInterval(interval);
+          }
+
+          interval = setInterval(function () {
+            if (img.width > 0) {
+              $img.triggerHandler('njb_ready');
+
+              clearInterval(interval);
+              return;
+            }
+
+            if (counter > 200) {
+              clearInterval(interval);
+            }
+
+            counter++;
+            if (counter === 5) {
+              njbSetInterval(10);
+            } else if (counter === 40) {
+              njbSetInterval(50);
+            } else if (counter === 100) {
+              njbSetInterval(500);
+            }
+          }, delay);
+        };
+
+      njbSetInterval(1);
     }
   }
   _createDom() {
@@ -683,7 +788,7 @@ class njBox {
   _setFocusInPopup(item, initialFocus) {
     var o = this.o,
       focusElement;
-    
+
     if (initialFocus) {
       focusElement = item.dom.modal.find('[autofocus]')
 
@@ -691,8 +796,8 @@ class njBox {
         focusElement = item.dom.modal.find(o.focus);
       }
     }
-    
-    if(!focusElement || !focusElement.length) {
+
+    if (!focusElement || !focusElement.length) {
       focusElement = item.dom.modal.find(this.o._focusable);
     }
 
@@ -807,7 +912,7 @@ class njBox {
     }
     h.wrap_close = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
-      
+
       if (that._cb('cancel') === false) return;
       that.hide();
     }
@@ -911,8 +1016,8 @@ class njBox {
             //don't add padding to container if no scrollbar (simple short page) or popup already opened
             // if (!this.state.scrollbarHidden && (sb || this.v.container.css('overflowY') === 'scroll')) {
 
-              this.v.container.addClass('njb-hideScrollbar');
-              // this.v.container.css('paddingRight', parseInt(this.v.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
+            this.v.container.addClass('njb-hideScrollbar');
+            // this.v.container.css('paddingRight', parseInt(this.v.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
 
             // }
           }
@@ -1168,7 +1273,7 @@ class njBox {
   _clear() {
     var o = this.o;
 
-    this.v.container[0].njb_instances--;
+    if (this.v.container) this.v.container[0].njb_instances--;
     if (this.v.container[0].njb_instances === 0) this.v.container.removeClass('njb-open');
 
     if (o['class']) this.v.wrap.removeClass(o['class']);
@@ -1241,10 +1346,10 @@ class njBox {
 
     if (type === 'ok' || type === 'cancel') {
       let modal = this.items[this.active].dom.modal,
-          prompt_input = modal.find('[data-njb-return]'),
-          prompt_value;
-      if(prompt_input.length) prompt_value = prompt_input[0].value || null;
-      
+        prompt_input = modal.find('[data-njb-return]'),
+        prompt_value;
+      if (prompt_input.length) prompt_value = prompt_input[0].value || null;
+
       clearArgs.unshift(prompt_value)
       this.returnValue = prompt_value;
     }
@@ -1285,10 +1390,10 @@ njBox.a = {}
 //default settings
 njBox.defaults = defaults;
 
-njBox.get = function(elem) {
+njBox.get = function (elem) {
   var el = $(elem)[0];
 
-  if(el) {
+  if (el) {
     return el.njBox || null;
   } else {
     return null;
@@ -1307,43 +1412,43 @@ njBox.autobind = function () {
   })
 }
 if (typeof window !== 'undefined') {//autobind only in browser and on document ready
-  $(function() {
+  $(function () {
     njBox.autobind();
   })
 }
 
 njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
-                        content: function(rawitem) {
-                          return `<div class="njb__body">
+    content: function (rawitem) {
+      return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                   </div>
                                   <div class="njb__footer">
                                     <button data-njb-ok>${this.o.text.ok}</button>
                                   </div>`;
-                        },
-                        type:'template',
-                        out: false,
-                        onok: okCb,
-                        oncancel: cancelCb
-                      }).show()
+    },
+    type: 'template',
+    out: false,
+    onok: okCb,
+    oncancel: cancelCb
+  }).show()
 }
 njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
-                        content: function(rawitem) {
-                          return `<div class="njb__body">
+    content: function (rawitem) {
+      return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                   </div>
                                   <div class="njb__footer">
                                     <button data-njb-ok>${this.o.text.ok}</button>
                                     <button data-njb-cancel>${this.o.text.cancel}</button>
                                   </div>`;
-                        },
-                        type:'template',
-                        out: false,
-                        onok: okCb,
-                        oncancel: cancelCb
-                      }).show()
+    },
+    type: 'template',
+    out: false,
+    onok: okCb,
+    oncancel: cancelCb
+  }).show()
 }
 njBox.prompt = function (content, placeholder, okCb, cancelCb) {
   if (typeof placeholder === 'function') {
@@ -1353,8 +1458,8 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
   }
 
   return new njBox({
-                        content: function(rawitem) {
-                          return `<div class="njb__body">
+    content: function (rawitem) {
+      return `<div class="njb__body">
                                     ${content || this.o.text._missedContent}
                                     <div>
                                       <input data-njb-return type="text" placeholder="${placeholder || ''}" />
@@ -1364,12 +1469,12 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
                                     <button data-njb-ok>${this.o.text.ok}</button>
                                     <button data-njb-cancel>${this.o.text.cancel}</button>
                                   </div>`;
-                        },
-                        type:'template',
-                        out: false,
-                        onok: okCb,
-                        oncancel: cancelCb
-                      }).show()
+    },
+    type: 'template',
+    out: false,
+    onok: okCb,
+    oncancel: cancelCb
+  }).show()
 }
 
 export default njBox;

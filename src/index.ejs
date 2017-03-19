@@ -27,7 +27,7 @@
 </head>
 
 <body>
-  <a href="#modal" class="link">link</a>
+  <a href="https://pbs.twimg.com/media/CdlFCYmXIAAGkiH.jpg" class="link">link</a>
   <div id="modal">
     <input type="text" data-njb-return><br>
     <button data-njb-close autofocus>ok</button>
@@ -44,9 +44,8 @@
     
     var modal = new njBox({
                               elem: '.link',
-                              autoheight:true,
-                              onok: function () {
-                                console.log(this.returnValue)
+                              oncb: function() {
+                                console.log(arguments, this);
                               }
                             })
   </script>

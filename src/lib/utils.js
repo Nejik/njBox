@@ -116,6 +116,8 @@ export let defaults = {
 	focus: '',//(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
+	img:               'load',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+
 	// selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
 	// delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
 
@@ -168,8 +170,7 @@ export let defaults = {
 		_missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
 		// preloader:    'Loading...',//title on preloader element
 
-		//todo, перенести тексты в галлерею
-		// imageError:   '<a href="%url%">This image</a> can not be loaded.',
+		imageError:   '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',
 
 		// current:      'Current slide',

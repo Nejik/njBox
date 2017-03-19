@@ -261,20 +261,22 @@
   }
 }
 
-/*here we use nested selector .njb-content .njb because we also can have .njb-image .njb with image, and for this case we need other design  */
-.njb {
-  border-radius: 2px;
-  background-color: #fff;
-  margin: 10px;
-}
-.njb .njb__header {
-  padding: 5px;
-}
-.njb .njb__body {
-  padding: 5px;
-}
-.njb .njb__footer {
-  padding: 5px;
+/*here we use nested selector ".njb--content .njb" because we also can have ".njb--image .njb" with image, and for this case we need other design  */
+.njb--content {
+  & .njb {
+    border-radius: 2px;
+    background-color: #fff;
+    margin: 10px;
+  }
+  & .njb__header {
+    padding: 5px;
+  }
+  & .njb__body {
+    padding: 5px;
+  }
+  & .njb__footer {
+    padding: 5px;
+  }
 }
 .njb--image img {
   background-color: rgba(255,255,255,.1);

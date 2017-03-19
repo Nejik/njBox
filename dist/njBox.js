@@ -409,7 +409,7 @@ var njBox = function () {
       if (item.type === 'image') {
         var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
 
-        v.img.css('maxHeight', autoheightImg + 'px');
+        if (v.img) v.img.css('maxHeight', autoheightImg + 'px');
       } else {
         v.body.css('maxHeight', height + 'px');
       }
@@ -659,7 +659,7 @@ var njBox = function () {
           item.o.status = 'loaded';
           break;
         case 'image':
-          this._insertImage(item);
+          if (o.imgload === 'init') this._insertImage(item);
           break;
         default:
           this._error('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
@@ -699,7 +699,7 @@ var njBox = function () {
         $img.off('error', item._handlerError).off('abort', item._handlerError);
         delete item._handlerError;
 
-        // that._preloader('hide', index);
+        that._preloader('hide', item);
 
         item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
 
@@ -707,6 +707,7 @@ var njBox = function () {
         // rendered();
 
         item.o.status = 'error';
+        item.o.imageInserted = true;
       };
       $img.on('error', item._handlerError).on('abort', item._handlerError);
 
@@ -719,7 +720,7 @@ var njBox = function () {
       if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
         checkShow(true);
       } else {
-        // this._preloader('show', index);
+        this._preloader('show', item);
 
         item._handlerImgReady = function () {
           $img.off('njb_ready', item._handlerImgReady);
@@ -741,12 +742,13 @@ var njBox = function () {
         if (ev !== o.img && ev !== true) return;
 
         item.o.status = 'loaded';
-        // that._preloader('hide', item);
+        that._preloader('hide', item);
 
         $img.attr('width', 'auto'); //for IE <= 10
 
         //insert content
         item.dom.body[0].appendChild(img);
+        item.o.imageInserted = true;
       }
       //helper function for image type
       function findImgSize(img) {
@@ -842,6 +844,7 @@ var njBox = function () {
 
       //insert index item
       this._insertSelectorElements();
+      if (o.imgload === 'show') this._insertImageElements();
 
       this.v.items[0].appendChild(item.dom.modalOuter[0]);
 
@@ -882,6 +885,24 @@ var njBox = function () {
           item.dom.body[0].innerHTML = ''; //clear body for case when first time we can't find contentEl on page
           item.dom.body[0].appendChild(contentEl[0]);
           item.o.contentElInserted = true;
+        }
+      }
+    }
+  }, {
+    key: '_insertImageElements',
+    value: function _insertImageElements() {
+      var items = this.items,
+          item;
+
+      for (var i = 0, l = items.length; i < l; i++) {
+        if (items[i].type === 'image') {
+          item = items[i];
+
+          if (item.o.imageInserted) {
+            continue;
+          }
+
+          this._insertImage(item);
         }
       }
     }
@@ -1106,6 +1127,33 @@ var njBox = function () {
       this.v.focusCatcher.off('focus', h.focusCatch);
 
       this._cb('events_removed');
+    }
+  }, {
+    key: '_preloader',
+    value: function _preloader(type, item) {
+      var o = this.o,
+          that = this;
+
+      switch (type) {
+        case 'show':
+          item.o.preloader = true;
+          item.dom.preloader = $(o.templates.preloader);
+          item.dom.preloader.attr('title', o.text.preloader);
+
+          item.dom.modal.addClass('njb--loading');
+          item.dom.body[0].appendChild(item.dom.preloader[0]);
+          break;
+
+        case 'hide':
+          if (!item.o.preloader) return;
+
+          item.dom.preloader[0].parentElement.removeChild(item.dom.preloader[0]);
+          item.dom.modal.removeClass('njb--loading');
+          delete item.dom.preloader;
+          delete item.o.preloader;
+
+          break;
+      }
     }
   }, {
     key: '_scrollbar',
@@ -2112,7 +2160,10 @@ var defaults = exports.defaults = {
 	focus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
-	img: 'load', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
+	preload: '2 2', //(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide
+
 
 	// selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
 	// delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
@@ -2151,8 +2202,14 @@ var defaults = exports.defaults = {
 		header: '<header class="njb__header" data-njb-header></header>',
 		footer: '<footer class="njb__footer" data-njb-footer></footer>',
 		close: '<button type="button" class="njb-close-system" data-njb-close>×</button>',
-		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>'
+		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
+		//todo, in gallery
+		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>'
+		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
+		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
+		// prev:        '<button type="button" class="njb-arrow njb-prev" data-njb-prev></button>',
+		// next:        '<button type="button" class="njb-arrow njb-next" data-njb-next></button>'
 	},
 
 	text: {

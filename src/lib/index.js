@@ -153,7 +153,6 @@ class njBox {
 
     return this;
   }
-  
   hide() {
     if (this.state.state !== 'shown') {
       this._error('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
@@ -201,7 +200,7 @@ class njBox {
     }
     this._setMaxHeight(this.items[this.active]);
 
-    this._cb('positioned');
+    this._cb('position');
 
     return this;
   }

@@ -314,7 +314,7 @@ class njBox {
     if (item.type === 'image') {
       var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
 
-      if(v.img) v.img.css('maxHeight', autoheightImg + 'px');
+      if (v.img) v.img.css('maxHeight', autoheightImg + 'px');
     } else {
       v.body.css('maxHeight', height + 'px');
     }
@@ -543,7 +543,7 @@ class njBox {
         item.o.status = 'loaded';
         break;
       case 'image':
-        if(o.imgload === 'init') this._insertImage(item);
+        if (o.imgload === 'init') this._insertImage(item);
         break;
       default:
         this._error('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
@@ -579,7 +579,7 @@ class njBox {
       $img.off('error', item._handlerError).off('abort', item._handlerError);
       delete item._handlerError;
 
-      // that._preloader('hide', index);
+      that._preloader('hide', item);
 
       item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
 
@@ -600,7 +600,7 @@ class njBox {
     if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
       checkShow(true);
     } else {
-      // this._preloader('show', index);
+      this._preloader('show', item);
 
       item._handlerImgReady = function () {
         $img.off('njb_ready', item._handlerImgReady);
@@ -614,7 +614,7 @@ class njBox {
         checkShow('load');
       }
       $img.on('load', item._handlerLoad)
-      
+
     }
 
     function checkShow(ev) {
@@ -622,8 +622,9 @@ class njBox {
 
       if (ev !== o.img && ev !== true) return;
 
+      return;
       item.o.status = 'loaded';
-      // that._preloader('hide', item);
+      that._preloader('hide', item);
 
       $img.attr('width', 'auto')//for IE <= 10
 
@@ -721,7 +722,7 @@ class njBox {
 
     //insert index item
     this._insertSelectorElements();
-    if(o.imgload === 'show') this._insertImageElements();
+    if (o.imgload === 'show') this._insertImageElements();
 
     this.v.items[0].appendChild(item.dom.modalOuter[0]);
 
@@ -775,7 +776,7 @@ class njBox {
         if (item.o.imageInserted) {
           continue;
         }
-        
+
         this._insertImage(item);
       }
     }
@@ -1013,7 +1014,29 @@ class njBox {
   }
 
 
+  _preloader(type, item) {
+    var o = this.o,
+      that = this;
 
+    switch (type) {
+      case 'show':
+        item.o.preloader = true;
+        item.dom.preloader = $(o.templates.preloader)
+        item.dom.preloader.attr('title', o.text.preloader);
+        
+        item.dom.body[0].appendChild(item.dom.preloader[0])
+        break;
+
+      case 'hide':
+        if (!slide.o.preloader) return;
+
+        slide.dom.preloader[0].parentElement.removeChild(slide.dom.preloader[0]);
+        delete slide.dom.preloader;
+        delete slide.o.preloader;
+
+        break;
+    }
+  }
 
   _scrollbar(type) {
     var o = this.o;

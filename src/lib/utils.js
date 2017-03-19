@@ -162,7 +162,7 @@ export let defaults = {
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
 		//todo, in gallery
-		// _preloader:   '<div class="njb-preloader"><div class="njb-preloader-inner"><div class="bar1"></div><div class="bar2"></div><div class="bar3"></div></div></div>'
+		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>'
 		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
 		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
 		// prev:        '<button type="button" class="njb-arrow njb-prev" data-njb-prev></button>',

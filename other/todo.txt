@@ -11,15 +11,16 @@ To polyfill:
 
 
 Docs:
-*content может быть функцией
-*onok, oncancel срабатывают перед hide
-*returnValue можно получить с помощью this.returnValue в колбэке, либо первым аргументом в onok, oncancel
-*есть data-njb-return
-*autofocus аттрибут
-*сделать пример для max-height: calc(100vh - 100px - 20px);
-*data_gathered, item_domready, item_prepare, item_inserted
+* content может быть функцией
+* onok, oncancel срабатывают перед hide
+* returnValue можно получить с помощью this.returnValue в колбэке, либо первым аргументом в onok, oncancel
+* есть data-njb-return
+* autofocus аттрибут
+* сделать пример для max-height: calc(100vh - 100px - 20px);
+* data_gathered, item_domready, item_prepare, item_inserted
 * примеры как сделать триггер ивентов на дом элемент/документ
-*пример static margin top https://github.com/dolce/iziModal/issues/68
+* пример static margin top https://github.com/dolce/iziModal/issues/68
+* описать различия img ready/load
 
 
 Плюсы

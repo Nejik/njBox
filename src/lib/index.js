@@ -622,7 +622,6 @@ class njBox {
 
       if (ev !== o.img && ev !== true) return;
 
-      return;
       item.o.status = 'loaded';
       that._preloader('hide', item);
 
@@ -1024,15 +1023,17 @@ class njBox {
         item.dom.preloader = $(o.templates.preloader)
         item.dom.preloader.attr('title', o.text.preloader);
         
+        item.dom.modal.addClass('njb--loading');
         item.dom.body[0].appendChild(item.dom.preloader[0])
         break;
 
       case 'hide':
-        if (!slide.o.preloader) return;
+        if (!item.o.preloader) return;
 
-        slide.dom.preloader[0].parentElement.removeChild(slide.dom.preloader[0]);
-        delete slide.dom.preloader;
-        delete slide.o.preloader;
+        item.dom.preloader[0].parentElement.removeChild(item.dom.preloader[0]);
+        item.dom.modal.removeClass('njb--loading');
+        delete item.dom.preloader;
+        delete item.o.preloader;
 
         break;
     }

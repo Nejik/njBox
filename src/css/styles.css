@@ -78,6 +78,13 @@
   vertical-align: middle;
 }
 
+.njb-autoheight .njb-outer {
+	overflow-y: hidden;
+}
+.njb-autoheight--true .njb__body {
+	overflow-y: auto;
+}
+
 .njb {
   max-width: 100%;
   outline: none !important;
@@ -90,7 +97,14 @@
   white-space: normal;
 
   user-select: text;
+
+  &--loading {
+    & .njb__body {
+      overflow: visible;
+    }
+  }
 }
+
 .njb img {
   width: auto;
   width:auto\9;
@@ -129,20 +143,12 @@
   transform: scale(0.8) !important;
 }
 
-.njb-autoheight .njb-outer {
-	overflow-y: hidden;
-}
-.njb-autoheight--true .njb__body {
-	overflow-y: auto;
-}
+
 
 .njb-preloader {
 	width: 39px;
 	height: 49px;
-
-	margin-top: -19px;
-	margin-left: -24px;
-	position: absolute;top: 50%;left: 50%;z-index: 1;
+	position: relative;
 
   &__inner {
     animation: rotateme 4s linear infinite;

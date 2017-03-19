@@ -116,7 +116,7 @@ export let defaults = {
 	focus: '',//(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
-	img:               'load',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	img:               'ready',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload:           'show',//(init || show) should we load gallery images on init(before dialog open) or on open 
 	preload:           '2 2',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide
 

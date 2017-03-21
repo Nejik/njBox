@@ -97,6 +97,7 @@
   white-space: normal;
 
   user-select: text;
+  will-change: opacity, transform;
 
   &--loading {
     & .njb__body {
@@ -356,6 +357,9 @@
     padding: 5px;
   }
 }
-.njb--image img {
-  background-color: rgba(255,255,255,.1);
+.njb--image {
+  text-align: center;
+  & img {
+    background-color: rgba(255,255,255,.1);
+  }
 }

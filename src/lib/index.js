@@ -150,6 +150,11 @@ class njBox {
 
     this.position();
 
+    //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
+    this.v.wrap[0].style.display = 'none';
+	  this.v.wrap[0].clientHeight;
+	  this.v.wrap[0].style.display = 'block';
+
     this._anim('show');
 
     return this;
@@ -631,6 +636,9 @@ class njBox {
       //insert content
       item.dom.body[0].appendChild(img);
       item.o.imageInserted = true;
+
+      //animation after image loading
+      if(ev === 'load') that._anim('show', true)
     }
     //helper function for image type
     function findImgSize(img) {
@@ -1249,7 +1257,7 @@ class njBox {
     return Math.max.apply(Math, transitions);
   }
 
-  _anim(type, callback) {
+  _anim(type, nocallback) {
     var o = this.o,
       that = this,
       modalOuter = this.items[this.active].dom.modalOuter,
@@ -1293,7 +1301,7 @@ class njBox {
       if (o.animclass) modal.removeClass(o.animclass);
       modal.removeClass(animShow);
 
-      that._cb('shown');
+      if(!nocallback) that._cb('shown');
       that._setFocusInPopup(that.items[that.active], true);
     }
     function hiddenCallback() {
@@ -1302,7 +1310,7 @@ class njBox {
       modal.removeClass(animHide);
 
       that._clear();
-      that._cb('hidden');
+      if(!nocallback) that._cb('hidden');
       that.state.state = 'inited';
     }
   }

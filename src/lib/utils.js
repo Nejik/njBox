@@ -113,10 +113,10 @@ export let defaults = {
 	close: 'outside',//(inside || outside || boolean false) add close button inside or outside popup or don't add at all
 	autoheight: 'image',//(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
 
-	focus: '',//(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
+	autofocus: '',//(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
-	img:               'load',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	img:               'ready',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload:           'show',//(init || show) should we load gallery images on init(before dialog open) or on open 
 
 

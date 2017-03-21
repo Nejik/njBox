@@ -94,6 +94,7 @@ class njBox {
       //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
       this.els = this._gatherElements();
     }
+    
 
     //create items
     this.items = this._createItems(this._createRawItems());
@@ -749,7 +750,6 @@ class njBox {
         if (item.o.imageInserted) {
           continue;
         }
-
         this._insertImage(item);
       } else if (item.type === 'selector') {
         if (item.o.contentElInserted) {
@@ -814,8 +814,8 @@ class njBox {
     if (initialFocus) {
       focusElement = item.dom.modal.find('[autofocus]')
 
-      if (!focusElement && !focusElement.length && o.focus) {
-        focusElement = item.dom.modal.find(o.focus);
+      if (!focusElement && !focusElement.length && o.autofocus) {
+        focusElement = item.dom.modal.find(o.autofocus);
       }
     }
 

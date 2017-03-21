@@ -37,8 +37,9 @@ class njBox {
   }
 
   _init(opts) {
-    //run only on first init, because we can't if we will try to do that before any initializations, it maybe a sutiation, where script was injected in head, and we have no even body tag
+    //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
     if (!njBox.g) njBox.g = getDefaultInfo();
+
 
     this.active = 0;
 
@@ -1419,7 +1420,10 @@ class njBox {
     return this;
   }
 }
-njBox.prototype.showModal = njBox.prototype.show;
+//default checks
+if (document.body && !njBox.g) njBox.g = getDefaultInfo();
+
+// njBox.prototype.showModal = njBox.prototype.show;
 //global options
 
 //addons

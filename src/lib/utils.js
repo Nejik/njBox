@@ -8,7 +8,7 @@ export function getDefaultInfo() {
 	options.scrollbarSize = (scrollDiv.offsetWidth - scrollDiv.clientWidth) || 0;
 	document.body.removeChild(scrollDiv);
 	//end calculate scrollbar width
-
+	
 	//detect features
 
 	//ie8 and below
@@ -117,7 +117,7 @@ export let defaults = {
 
 	//gallery
 	img:               'load',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
-	imgload:           'init',//(init || show) should we load gallery images on init(before dialog open) or on open 
+	imgload:           'show',//(init || show) should we load gallery images on init(before dialog open) or on open 
 
 
 	// selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate

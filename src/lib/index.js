@@ -639,7 +639,8 @@ class njBox {
       item.o.imageInserted = true;
 
       //animation after image loading
-      if(ev === 'load') that._anim('show', true)
+      //todo add custom image animation, don't use global popup animation
+      // if(ev === 'load') that._anim('show', true)
     }
     //helper function for image type
     function findImgSize(img) {
@@ -814,7 +815,7 @@ class njBox {
     if (initialFocus) {
       focusElement = item.dom.modal.find('[autofocus]')
 
-      if (!focusElement && !focusElement.length && o.autofocus) {
+      if (!focusElement.length && o.autofocus) {
         focusElement = item.dom.modal.find(o.autofocus);
       }
     }

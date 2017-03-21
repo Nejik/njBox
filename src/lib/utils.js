@@ -120,8 +120,8 @@ export let defaults = {
 	imgload:           'show',//(init || show) should we load gallery images on init(before dialog open) or on open 
 
 
-	// selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
-	// delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
+	selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
+	delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
 
 	// arrows:            'outside',//(inside || outside || boolean false) add navigation arrows inside or outside popup or don't add at all
 

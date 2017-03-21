@@ -720,22 +720,29 @@ class njBox {
     this._cb('item_prepare', item);
 
     //insert index item
-    this._insertSelectorElements();
-    if (o.imgload === 'show') this._insertImageElements();
+    this._insertDelayedContent();
 
     this.v.items[0].appendChild(item.dom.modalOuter[0]);
 
     this._cb('item_inserted', item);
   }
-  _insertSelectorElements() {
-    var items = this.items,
+  _insertDelayedContent() {
+    var that = this,
+      o = this.o,
+      items = this.items,
       item,
       contentEl;
 
     for (var i = 0, l = items.length; i < l; i++) {
-      if (items[i].type === 'selector') {
-        item = items[i];
+      item = items[i];
 
+      if (item.type === 'image' && o.imgload === 'show') {
+        if (item.o.imageInserted) {
+          continue;
+        }
+
+        this._insertImage(item);
+      } else if (item.type === 'selector') {
         if (item.o.contentElInserted) {
           continue;
         }
@@ -763,22 +770,7 @@ class njBox {
         item.o.contentElInserted = true;
       }
     }
-  }
-  _insertImageElements() {
-    var items = this.items,
-      item;
 
-    for (var i = 0, l = items.length; i < l; i++) {
-      if (items[i].type === 'image') {
-        item = items[i];
-
-        if (item.o.imageInserted) {
-          continue;
-        }
-
-        this._insertImage(item);
-      }
-    }
   }
   _removeSelectorItemsElement() {
     var items = this.items,
@@ -1022,7 +1014,7 @@ class njBox {
         item.o.preloader = true;
         item.dom.preloader = $(o.templates.preloader)
         item.dom.preloader.attr('title', o.text.preloader);
-        
+
         item.dom.modal.addClass('njb--loading');
         item.dom.body[0].appendChild(item.dom.preloader[0])
         break;

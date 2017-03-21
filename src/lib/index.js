@@ -720,7 +720,7 @@ class njBox {
 
     this._cb('item_prepare', item);
 
-    //insert index item
+    //insert content in slides, where inserting is delayed to show event
     this._insertDelayedContent();
 
     this.v.items[0].appendChild(item.dom.modalOuter[0]);

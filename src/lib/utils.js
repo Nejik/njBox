@@ -111,7 +111,7 @@ export let defaults = {
 	out: true,//(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc: true,//(boolean) close modal when esc button pressed?
 	close: 'outside',//(inside || outside || boolean false) add close button inside or outside popup or don't add at all
-	autoheight: false,//(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
+	autoheight: 'image',//(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
 
 	focus: '',//(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 

@@ -756,7 +756,8 @@ var njBox = function () {
         item.o.imageInserted = true;
 
         //animation after image loading
-        if (ev === 'load') that._anim('show', true);
+        //todo add custom image animation, don't use global popup animation
+        // if(ev === 'load') that._anim('show', true)
       }
       //helper function for image type
       function findImgSize(img) {
@@ -873,7 +874,6 @@ var njBox = function () {
           if (item.o.imageInserted) {
             continue;
           }
-
           this._insertImage(item);
         } else if (item.type === 'selector') {
           if (item.o.contentElInserted) {
@@ -940,8 +940,8 @@ var njBox = function () {
       if (initialFocus) {
         focusElement = item.dom.modal.find('[autofocus]');
 
-        if (!focusElement && !focusElement.length && o.focus) {
-          focusElement = item.dom.modal.find(o.focus);
+        if (!focusElement.length && o.autofocus) {
+          focusElement = item.dom.modal.find(o.autofocus);
         }
       }
 
@@ -2158,10 +2158,10 @@ var defaults = exports.defaults = {
 	close: 'outside', //(inside || outside || boolean false) add close button inside or outside popup or don't add at all
 	autoheight: 'image', //(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
 
-	focus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
+	autofocus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
-	img: 'load', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
 
 

@@ -240,6 +240,13 @@ var njBox = function () {
 
       // find clicked element index and start gallery from this slide
       if (this.state.gallery) {
+        if (o.start - 1) {
+          //start from public option
+          if (typeof o.start === 'number' && this.items[o.start - 1]) {
+            //check if index is a number and slide with such index exist
+            this.state.active = o.start - 1;
+          }
+        }
         if (this.els && this.els.length) this.els.each(function (i, el) {
           if (that.state.clickedEl === el) {
             that.state.active = i;
@@ -2395,7 +2402,7 @@ var defaults = exports.defaults = {
 	title: false, //(string || boolean false) title for first slide if we call it via js
 	title_attr: 'title', //(string || boolean false) attribute from which we gather title for slide (used in images)
 
-	// start:             false,//(number) slide number, from which we should start
+	start: false, //(number) slide number, from which we should show gallery
 	loop: true, //(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
 	// imgclick:          true,//(boolean) should we change slide if user clicks on image?
 	// preload:           '3 3',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide

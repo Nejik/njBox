@@ -137,9 +137,9 @@ class njBox {
 
     // find clicked element index and start gallery from this slide
     if (this.state.gallery) {
-      if (parseInt(o.start)) {//start from public option
-        if (typeof o.start === 'number' && this.items[o.start]) {//check if index is a number and slide with such index exist
-          this.state.active = o.start;
+      if (o.start - 1) {//start from public option
+        if (typeof o.start === 'number' && this.items[o.start - 1]) {//check if index is a number and slide with such index exist
+          this.state.active = o.start - 1;
         }
       }
       if (this.els && this.els.length) this.els.each(function (i, el) {

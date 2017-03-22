@@ -91,13 +91,12 @@ class njBox {
       $.extend(true, this.o, this._globals.gatheredOptions)
 
 
-      //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
-      this.els = this._gatherElements();
+      //gather dom elements from which we will create modal window/gallery
+      this.els = this._gatherElements(o.selector);
     }
-    
 
     //create items
-    this.items = this._createItems(this._createRawItems());
+    this.items = this._createItems(this._createRawItems(o.selector));
 
     //create popup container dom elements
     this._createDom();
@@ -326,13 +325,33 @@ class njBox {
       v.body.css('maxHeight', height + 'px');
     }
   }
-  //return array with raw options gathered from items from which gallery/modal will be created, this method will be replaced in gallery addon
-  _createRawItems() {
-    return [this.o];
+  //return array with raw options gathered from items from which modal window/gallery will be created
+  _createRawItems(selector) {
+    var  o = this.o,
+        that = this;
+    if (o.selector) {
+      //we don't use methods such as Array.map because we want to support old browsers
+      var rawItems = [];
+      for (var index = 0; index < this.els.length; index++) {
+        var element = this.els[index];
+        rawItems.push(this._gatherData(element))
+      }
+
+      return rawItems;
+      
+    } else {
+      return [this.o];
+    }
   }
-  //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
-  _gatherElements() {
-    return this.o.el;
+  //gather dom elements from which we will create modal window/gallery
+  _gatherElements(selector) {
+    var o = this.o;
+    
+    if (selector) {
+      return this.o.el.find(selector);
+    } else {
+      return this.o.el;
+    }
   }
   _gatherData(el) {
     let o = this.o,

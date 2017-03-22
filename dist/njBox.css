@@ -113,7 +113,8 @@
 
       -ms-user-select: text;
 
-          user-select: text
+          user-select: text;
+  will-change: opacity, transform
 }
 .njb--loading {
 }
@@ -152,14 +153,80 @@
   text-align: center;
   text-shadow: 0 0 5px #000;
   overflow: hidden;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 
   -webkit-transition: 200ms;
 
-  transition: 200ms;
+  transition: 200ms
 }
 .njb-close-system:active {
   -webkit-transform: scale(0.8) !important;
           transform: scale(0.8) !important;
+}
+.njb-arrow {
+  border: none;
+  background: transparent;
+	position: absolute;z-index: 1;top: 50%;
+	width: 70px;
+	height: 70px;
+  padding: 0;
+	margin-top: -35px;
+	cursor: pointer;
+	color: #fff;
+	font-size: 26px;
+	text-shadow: 0 0 5px #000;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+
+	-webkit-transition: opacity 200ms, margin-right 200ms, -webkit-transform 200ms;
+
+	transition: opacity 200ms, margin-right 200ms, -webkit-transform 200ms;
+
+	transition: transform 200ms, opacity 200ms, margin-right 200ms;
+
+	transition: transform 200ms, opacity 200ms, margin-right 200ms, -webkit-transform 200ms;
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+	        user-select: none;
+
+	*background-color:#fff
+}
+.njb-arrow--prev {
+  left: 0;
+}
+.njb-arrow--prev:before {
+  content: '◄';
+  width: 70px;
+  line-height: 70px;
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  -webkit-transition: 100ms;
+  transition: 100ms;
+}
+.njb-arrow--next {
+  right: 0;
+}
+.njb-arrow--next:before {
+  content: '►';
+  width: 70px;
+  line-height: 70px;
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  -webkit-transition: 100ms;
+  transition: 100ms;
+}
+.njb-arrow:active {
+  -webkit-transform: scale(0.8);
+          transform: scale(0.8);
 }
 .njb-preloader {
 	width: 39px;
@@ -485,6 +552,9 @@
 }
 .njb--content .njb__footer {
   padding: 5px;
+}
+.njb--image {
+  text-align: center
 }
 .njb--image img {
   background-color: rgba(255, 255, 255, .1);

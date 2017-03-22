@@ -29,7 +29,7 @@
 <body>
   <!--<a href="https://upload.wikimedia.org/wikipedia/commons/0/0f/Grosser_Panda.JPG" class="link">link</a>-->
   <!--<a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" class="link">link</a>-->
-  <div class="gallery">
+  <div class="gallery" data-njb-gallery="a">
     <a href="https://upload.wikimedia.org/wikipedia/commons/3/39/Athene_noctua_(cropped).jpg">
       img1
     </a>
@@ -40,6 +40,7 @@
       img3
     </a>
   </div>
+  <button class="add">add</button>
   <!--<a href="#modal" class="link"data-njb-autofocus=".test3">link</a>-->
   <div id="modal">
     <input type="text" data-njb-return><br>
@@ -56,13 +57,7 @@
   <script src="njBox.js"></script>
   <script>
     
-    var modal = new njBox({
-                              elem: '.gallery',
-                              selector: 'a',
-                              onshown: function() {
-                                console.log(this.state.itemsOrder);
-                              }
-                            })
+    var gallery = new njBox('.gallery')
   </script>
 </body>
 

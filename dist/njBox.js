@@ -146,10 +146,10 @@ var njBox = function () {
       //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
       if (!njBox.g) njBox.g = (0, _utils.getDefaultInfo)();
 
-      this.active = 0;
-
       //inner options, current state of app, this.state clears after every hide
-      this.state = {};
+      this.state = {
+        active: 0
+      };
 
       //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
       this._globals = {};
@@ -191,8 +191,16 @@ var njBox = function () {
         //extend global options with gathered from dom element
         $.extend(true, this.o, this._globals.gatheredOptions);
 
-        //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
-        this.els = this._gatherElements();
+        //gather dom elements from which we will create modal window/gallery
+        this.els = this._gatherElements(o.gallery);
+      }
+      this._postProcessOptions();
+
+      if (this.state.gallery) {
+        this.v.prev = $(o.templates.prev);
+        this.v.prev[0].setAttribute('title', o.text.prev);
+        this.v.next = $(o.templates.next);
+        this.v.next[0].setAttribute('title', o.text.next);
       }
 
       //create items
@@ -213,9 +221,10 @@ var njBox = function () {
   }, {
     key: 'show',
     value: function show(index) {
-      if (index) this.active = parseInt(index); //index uses in gallery
+      if (index) this.state.active = parseInt(index - 1); //index uses in gallery
 
-      var o = this.o;
+      var o = this.o,
+          that = this;
 
       if (this.state.state !== 'inited') {
         this._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -228,6 +237,16 @@ var njBox = function () {
 
       if (this._cb('show') === false) return; //callback show (we can cancel showing popup, if show callback will return false)
       this.returnValue = null;
+
+      // find clicked element index and start gallery from this slide
+      if (this.state.gallery) {
+        if (this.els && this.els.length) this.els.each(function (i, el) {
+          if (that.state.clickedEl === el) {
+            that.state.active = i;
+            return;
+          }
+        });
+      }
 
       if (!this.v.container[0].njb_instances) {
         this.v.container[0].njb_instances = 1;
@@ -247,9 +266,15 @@ var njBox = function () {
       this.v.container[0].appendChild(this.v.wrap[0]);
 
       //draw modal on screen
-      this._drawItem(this.active);
+      this._drawItem(this.state.active);
+      if (that.state.gallery) this._drawItemSiblings();
 
       this.position();
+
+      //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
+      this.v.wrap[0].style.display = 'none';
+      this.v.wrap[0].clientHeight;
+      this.v.wrap[0].style.display = 'block';
 
       this._anim('show');
 
@@ -304,11 +329,29 @@ var njBox = function () {
           'height': this.state.dimensions.containerScrollHeight + 'px'
         });
       }
-      this._setMaxHeight(this.items[this.active]);
+
+      //we need autoheight for every slide in gallery
+      if (this.state.gallery) {
+        for (var index = 0; index < this.state.itemsOrder.length; index++) {
+          if (this.state.itemsOrder[index] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
+        }
+      } else {
+        this._setMaxHeight(this.items[this.state.active]);
+      }
 
       this._cb('position');
 
       return this;
+    }
+  }, {
+    key: 'prev',
+    value: function prev() {
+      this._changeItem(this.state.active - 1, 'prev');
+    }
+  }, {
+    key: 'next',
+    value: function next() {
+      this._changeItem(this.state.active + 1, 'next');
     }
   }, {
     key: 'destroy',
@@ -318,13 +361,7 @@ var njBox = function () {
         return;
       }
 
-      if (this.els && this.els.length) {
-        this.els.off('click', this._handlers.elsClick);
-
-        if (this.o.clickels) {
-          $(this.o.clickels).off('click', this._handlers.elsClick);
-        }
-      }
+      this._removeClickHandlers();
 
       this.v.container.removeClass('njb-relative');
 
@@ -336,6 +373,16 @@ var njBox = function () {
       this.o = {};
 
       this._cb('destroyed');
+    }
+  }, {
+    key: 'update',
+    value: function update() {
+      //gather dom elements from which we will create modal window/gallery
+      this.els = this._gatherElements(this.o.gallery);
+      this.items = this._createItems(this._createRawItems());
+
+      // this._removeClickHandlers();
+      this._setClickHandlers();
     }
   }, {
     key: '_getContainerSize',
@@ -414,19 +461,44 @@ var njBox = function () {
         v.body.css('maxHeight', height + 'px');
       }
     }
-    //return array with raw options gathered from items from which gallery/modal will be created, this method will be replaced in gallery addon
+    //return array with raw options gathered from items from which modal window/gallery will be created
 
   }, {
     key: '_createRawItems',
     value: function _createRawItems() {
-      return [this.o];
+      var o = this.o,
+          that = this;
+      if (this.state.gallery) {
+        //we don't use methods such as Array.map because we want to support old browsers
+        var rawItems = [];
+        for (var index = 0; index < this.els.length; index++) {
+          var element = this.els[index];
+          rawItems.push(this._gatherData(element));
+        }
+
+        return rawItems;
+      } else {
+        return [this.o];
+      }
     }
-    //gather dom elements from which we will create modal window/gallery, this method will be replaced in gallery addon
+    //gather dom elements from which we will create modal window/gallery
 
   }, {
     key: '_gatherElements',
-    value: function _gatherElements() {
-      return this.o.el;
+    value: function _gatherElements(selector) {
+      var o = this.o;
+
+      if (selector) {
+        return this.o.el.find(selector);
+      } else {
+        return this.o.el;
+      }
+    }
+  }, {
+    key: '_postProcessOptions',
+    value: function _postProcessOptions() {
+      var o = this.o;
+      if (o.gallery) this.state.gallery = true;
     }
   }, {
     key: '_gatherData',
@@ -509,16 +581,16 @@ var njBox = function () {
     value: function _createItems(els) {
       var items = [];
       for (var i = 0, l = els.length; i < l; i++) {
-        items.push(this._createItem(els[i]));
+        items.push(this._createItem(els[i], i));
       }
       return items;
     }
   }, {
     key: '_createItem',
-    value: function _createItem(item) {
+    value: function _createItem(item, index) {
       var normalizedItem = this._normalizeItem(item);
 
-      this._createDomForItem(normalizedItem);
+      this._createDomForItem(normalizedItem, index);
 
       return normalizedItem;
     }
@@ -564,18 +636,20 @@ var njBox = function () {
     }
   }, {
     key: '_createDomForItem',
-    value: function _createDomForItem(item) {
+    value: function _createDomForItem(item, index) {
       var o = this.o,
           dom = item.dom = {},
           modalFragment = document.createDocumentFragment();
 
       dom.modalOuter = $(o.templates.modalOuter);
       dom.modalOuter[0].njBox = this;
+      if (this.state.gallery) dom.modalOuter[0].setAttribute('data-njb-index', index);
 
       //main modal wrapper
       dom.modal = $(o.templates.modal);
       dom.modal[0].setAttribute('tabindex', '-1');
       dom.modal[0].njBox = this;
+
       if (!dom.modal.length) {
         this._error('njBox, error in o.templates.modal');
         return;
@@ -749,6 +823,10 @@ var njBox = function () {
         //insert content
         item.dom.body[0].appendChild(img);
         item.o.imageInserted = true;
+
+        //animation after image loading
+        //todo add custom image animation, don't use global popup animation
+        // if(ev === 'load') that._anim('show', true)
       }
       //helper function for image type
       function findImgSize(img) {
@@ -817,13 +895,18 @@ var njBox = function () {
       if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
       if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
+      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+        if (this.v.next[0]) this.v.wrap[0].appendChild(this.v.next[0]);
+        if (this.v.prev[0]) this.v.wrap[0].appendChild(this.v.prev[0]);
+        this.state.arrowsInserted = true;
+      }
+
       // insert outside close button
       if (o.close === 'outside') {
-        var closeBtn = this.v.close = $(o.templates.close);
-        var closeBtn = closeBtn[0];
-        closeBtn.setAttribute('title', o.text.close);
+        this.v.close = $(o.templates.close);
+        this.v.close[0].setAttribute('title', o.text.close);
 
-        this.v.wrap[0].appendChild(closeBtn);
+        this.v.wrap[0].appendChild(this.v.close[0]);
       }
 
       this.v.focusCatcher = $(o.templates.focusCatcher);
@@ -831,7 +914,7 @@ var njBox = function () {
     }
   }, {
     key: '_drawItem',
-    value: function _drawItem(index) {
+    value: function _drawItem(index, prepend) {
       var o = this.o,
           item = this.items[index];
 
@@ -842,57 +925,167 @@ var njBox = function () {
 
       this._cb('item_prepare', item);
 
-      //insert index item
-      this._insertDelayedContent();
+      //insert content in items, where inserting is delayed to show event
+      this._insertDelayedContent(item);
 
-      this.v.items[0].appendChild(item.dom.modalOuter[0]);
+      if (prepend) {
+        this.v.items[0].insertBefore(item.dom.modalOuter[0], this.v.items[0].firstChild);
+      } else {
+        this.v.items[0].appendChild(item.dom.modalOuter[0]);
+      }
 
       this._cb('item_inserted', item);
     }
   }, {
+    key: '_setItemsOrder',
+    value: function _setItemsOrder(currentIndex) {
+      var o = this.o,
+          prev = this.state.active - 1,
+          next = this.state.active + 1;
+
+      if (o.loop && this.items.length > 2) {
+        if (prev === -1) prev = this.items.length - 1;
+        if (next === this.items.length) next = 0;
+      }
+      if (!this.items[prev]) prev = null;
+      if (!this.items[next]) next = null;
+
+      this.state.itemsOrder = [prev, currentIndex, next];
+    }
+  }, {
+    key: '_drawItemSiblings',
+    value: function _drawItemSiblings() {
+      var o = this.o,
+          that = this;
+
+      this._setItemsOrder(this.state.active);
+
+      if (typeof this.state.itemsOrder[0] === 'number') {
+        this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
+        this._drawItem(this.state.itemsOrder[0], true);
+      }
+      if (typeof this.state.itemsOrder[2] === 'number') {
+        this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
+        this._drawItem(this.state.itemsOrder[2]);
+      }
+      this.position();
+    }
+  }, {
+    key: '_moveItem',
+    value: function _moveItem(item, value, unit) {
+      unit = unit || 'px';
+
+      //detect translate property
+      if (njBox.g.transform['3d']) {
+        item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)';
+      } else if (njBox.g.transform['css']) {
+        item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translateX(' + (value + unit) + ')';
+      } else {
+        item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit);
+      }
+    }
+  }, {
+    key: '_changeItem',
+    value: function _changeItem(nextIndex, dir) {
+      if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
+
+      var o = this.o,
+          that = this;
+
+      if (!this.items[nextIndex]) {
+        if (o.loop && this.items.length > 2) {
+          if (dir === 'next' && nextIndex === this.items.length) {
+            nextIndex = 0;
+          } else if (dir === 'prev' && nextIndex === -1) {
+            nextIndex = this.items.length - 1;
+          } else {
+            return;
+          }
+        } else {
+          return;
+        }
+      }
+
+      this.state.direction = dir;
+
+      this.state.itemChanging = true; //we can't change slide during current changing
+      this.state.itemsOrder_backup = this.state.itemsOrder.slice(); //copy current state
+      this._cb('change', nextIndex);
+
+      this.state.active = nextIndex;
+      this._setItemsOrder(nextIndex);
+
+      switch (dir) {
+        case 'prev':
+          this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle'; //hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+
+          this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
+          this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
+          break;
+        case 'next':
+          this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle'; //hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+
+          this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
+          this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
+          break;
+      }
+      this._setFocusInPopup(this.items[this.state.active]);
+
+      setTimeout(function () {
+        if (that.state.state !== 'shown') {
+          console.log(that.state.state);
+          that.state.itemChanging = false;
+          return; //case when we hide modal when slide is changing
+        }
+        //remove slide that was active before changing
+        removeSlide(that.items[that.state.itemsOrder_backup[1]]);
+
+        //remove third slide
+        var thirdItem = dir === 'prev' ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
+        if (that.items[thirdItem]) removeSlide(that.items[thirdItem]); //we should check if such slide exist, because it can be null, when o.loop is false
+
+        delete that.state.itemsOrder_backup;
+
+        that._drawItemSiblings();
+        that.state.itemChanging = false;
+        that._cb('changed', that.state.active);
+      }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
+
+      function removeSlide(item) {
+        item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0]);
+        item.dom.modalOuter[0].style.cssText = '';
+      }
+    }
+  }, {
     key: '_insertDelayedContent',
-    value: function _insertDelayedContent() {
+    value: function _insertDelayedContent(item) {
       var that = this,
           o = this.o,
-          items = this.items,
-          item,
           contentEl;
 
-      for (var i = 0, l = items.length; i < l; i++) {
-        item = items[i];
+      if (item.type === 'image' && o.imgload === 'show' && !item.o.imageInserted) {
+        this._insertImage(item);
+      } else if (item.type === 'selector' && !item.o.contentElInserted) {
+        contentEl = item.o.contentEl;
 
-        if (item.type === 'image' && o.imgload === 'show') {
-          if (item.o.imageInserted) {
-            continue;
-          }
-
-          this._insertImage(item);
-        } else if (item.type === 'selector') {
-          if (item.o.contentElInserted) {
-            continue;
-          }
-
+        //try to find element for popup again on every show
+        if (!contentEl || !contentEl.length) {
+          this._getItemFromSelector(item);
           contentEl = item.o.contentEl;
-
-          //try to find element for popup again on every show
-          if (!contentEl || !contentEl.length) {
-            this._getItemFromSelector(item);
-            contentEl = item.o.contentEl;
-          }
-          if (!contentEl || !contentEl.length) continue;
-
-          var style = contentEl[0].style.cssText;
-          if (style) item.o.contentElStyle = style;
-
-          var dn = contentEl.css('display') === 'none';
-          if (dn) {
-            item.o.contentElDisplayNone = true;
-            contentEl[0].style.display = 'block';
-          }
-          item.dom.body[0].innerHTML = ''; //clear body for case when first time we can't find contentEl on page
-          item.dom.body[0].appendChild(contentEl[0]);
-          item.o.contentElInserted = true;
         }
+        if (!contentEl || !contentEl.length) return;
+
+        var style = contentEl[0].style.cssText;
+        if (style) item.o.contentElStyle = style;
+
+        var dn = contentEl.css('display') === 'none';
+        if (dn) {
+          item.o.contentElDisplayNone = true;
+          contentEl[0].style.display = 'block';
+        }
+        item.dom.body[0].innerHTML = ''; //clear body for case when first time we can't find contentEl on page
+        item.dom.body[0].appendChild(contentEl[0]);
+        item.o.contentElInserted = true;
       }
     }
   }, {
@@ -932,8 +1125,8 @@ var njBox = function () {
       if (initialFocus) {
         focusElement = item.dom.modal.find('[autofocus]');
 
-        if (!focusElement && !focusElement.length && o.focus) {
-          focusElement = item.dom.modal.find(o.focus);
+        if (!focusElement.length && o.autofocus) {
+          focusElement = item.dom.modal.find(o.autofocus);
         }
       }
 
@@ -944,6 +1137,8 @@ var njBox = function () {
       //first try to focus elements inside modal
       if (focusElement && focusElement.length) {
         focusElement[0].focus();
+      } else if (this.state.gallery) {
+        this.v.next[0].focus();
       } else if (o.close === "outside") {
         //then try to focus close buttons
         this.v.close[0].focus();
@@ -964,12 +1159,12 @@ var njBox = function () {
       if (!o.click) return;
 
       if (this.els && this.els.length) {
-        this._handlers.elsClick = this._clickHandler();
-        this.els.off('click', this._handlers.elsClick).on('click', this._handlers.elsClick);
+        this.els.off('click', this._handlers.elsClick);
+        if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
 
-        if (o.clickels) {
-          $(o.clickels).off('click', this._handlers.elsClick).on('click', this._handlers.elsClick);
-        }
+        this._handlers.elsClick = this._clickHandler();
+        this.els.on('click', this._handlers.elsClick);
+        if (o.clickels) $(o.clickels).on('click', this._handlers.elsClick);
       }
     }
   }, {
@@ -1001,6 +1196,17 @@ var njBox = function () {
       };
     }
   }, {
+    key: '_removeClickHandlers',
+    value: function _removeClickHandlers() {
+      if (this.els && this.els.length) {
+        this.els.off('click', this._handlers.elsClick);
+
+        if (this.o.clickels) {
+          $(this.o.clickels).off('click', this._handlers.elsClick);
+        }
+      }
+    }
+  }, {
     key: '_setEventsHandlers',
     value: function _setEventsHandlers() {
       //all other event handlers
@@ -1018,7 +1224,7 @@ var njBox = function () {
 
       h.wrap_out = function (e) {
         var $el = $(e.target),
-            prevent = $el.closest('.njb, [data-njb-close]').length;
+            prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
         if (prevent) return;
 
         e.preventDefault ? e.preventDefault() : e.returnValue = false;
@@ -1027,12 +1233,12 @@ var njBox = function () {
           if (that._cb('cancel') === false) return;
           that.hide();
         } else {
-          that.items[that.active].dom.modal.addClass('njb_pulse');
-          that._setFocusInPopup(this.items[this.active]);
+          that.items[that.state.active].dom.modal.addClass('njb_pulse');
+          that._setFocusInPopup(this.items[this.state.active]);
 
           setTimeout(function () {
-            that.items[that.active].dom.modal.removeClass('njb_pulse');
-          }, that._getAnimTime(that.items[that.active].dom.modal[0]));
+            that.items[that.state.active].dom.modal.removeClass('njb_pulse');
+          }, that._getAnimTime(that.items[that.state.active].dom.modal[0]));
         }
       };
       h.wrap_resize = function () {
@@ -1054,6 +1260,16 @@ var njBox = function () {
 
             e.preventDefault ? e.preventDefault() : e.returnValue = false;
             break;
+          case 37:
+            //left arrow
+            that.prev();
+            e.preventDefault();
+            break;
+          case 39:
+            //right arrow
+            that.next();
+            e.preventDefault();
+            break;
         }
       };
       h.wrap_close = function (e) {
@@ -1074,8 +1290,16 @@ var njBox = function () {
         if (that._cb('cancel') === false) return;
         that.hide();
       };
+      h.wrap_prev = function (e) {
+        that.prev();
+        e.preventDefault();
+      };
+      h.wrap_next = function (e) {
+        that.next();
+        e.preventDefault();
+      };
 
-      this.v.wrap.on('click', h.wrap_out).on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel);
+      this.v.wrap.on('click', h.wrap_out).on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel).delegate('[data-njb-prev]', 'click', h.wrap_prev).delegate('[data-njb-next]', 'click', h.wrap_next);
 
       h.window_resize = function (e) {
         that.position();
@@ -1090,7 +1314,7 @@ var njBox = function () {
       this.v.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
 
       h.focusCatch = function (e) {
-        that._setFocusInPopup(that.items[that.active]);
+        that._setFocusInPopup(that.items[that.state.active]);
       };
       this.v.focusCatcher.on('focus', h.focusCatch);
 
@@ -1103,7 +1327,7 @@ var njBox = function () {
 
       this.v.container.off('resize', h.container_resize).off('scroll', h.container_scroll);
 
-      this.v.wrap.off('click', h.wrap_out).off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel);
+      this.v.wrap.off('click', h.wrap_out).off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel).undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
 
       this.v.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
 
@@ -1378,11 +1602,11 @@ var njBox = function () {
     }
   }, {
     key: '_anim',
-    value: function _anim(type, callback) {
+    value: function _anim(type, nocallback) {
       var o = this.o,
           that = this,
-          modalOuter = this.items[this.active].dom.modalOuter,
-          modal = this.items[this.active].dom.modal,
+          modalOuter = this.items[this.state.active].dom.modalOuter,
+          modal = this.items[this.state.active].dom.modal,
           animShow = this._globals.animShow,
           animHide = this._globals.animHide,
           animShowDur = this._globals.animShowDur,
@@ -1421,8 +1645,8 @@ var njBox = function () {
         if (o.animclass) modal.removeClass(o.animclass);
         modal.removeClass(animShow);
 
-        that._cb('shown');
-        that._setFocusInPopup(that.items[that.active], true);
+        if (!nocallback) that._cb('shown');
+        that._setFocusInPopup(that.items[that.state.active], true);
       }
       function hiddenCallback() {
         if (o.animclass) modal.removeClass(o.animclass);
@@ -1430,7 +1654,7 @@ var njBox = function () {
         modal.removeClass(animHide);
 
         that._clear();
-        that._cb('hidden');
+        if (!nocallback) that._cb('hidden');
         that.state.state = 'inited';
       }
     }
@@ -1450,18 +1674,25 @@ var njBox = function () {
 
       this._removeSelectorItemsElement();
 
-      this.active = 0;
-
       if (this.v.items && this.v.items.length) empty(this.v.items[0]); //we can't use innerHTML="" here, for IE(even 11) we need remove method
+
+      //clear inline position
+      for (var i = 0, l = this.items.length; i < l; i++) {
+        this.items[i].dom.modalOuter[0].style.cssText = '';
+      }
 
       function empty(el) {
         while (el.firstChild) {
           el.removeChild(el.firstChild);
         }
       }
+
+      var origGalleryState = this.state.gallery;
       this.state = {
         inited: true,
-        state: 'inited'
+        state: 'inited',
+        active: 0,
+        gallery: origGalleryState
       };
 
       this._cb('clear');
@@ -1482,7 +1713,7 @@ var njBox = function () {
       var o = this.o,
           callbackResult;
 
-      if (type === 'inited' || type === 'show' || type === 'shown' || type === 'hide' || type === 'hidden' || type === 'change' || type === 'changed' || type === 'destroy' || type === 'destroyed') {
+      if (type === 'inited' || type === 'show' || type === 'shown' || type === 'hide' || type === 'hidden' || type === 'destroy' || type === 'destroyed') {
         this.state.state = type;
       }
 
@@ -1504,7 +1735,7 @@ var njBox = function () {
       var clearArgs = Array.prototype.slice.call(arguments, 1);
 
       if (type === 'ok' || type === 'cancel') {
-        var modal = this.items[this.active].dom.modal,
+        var modal = this.items[this.state.active].dom.modal,
             prompt_input = modal.find('[data-njb-return]'),
             prompt_value = void 0;
         if (prompt_input.length) prompt_value = prompt_input[0].value || null;
@@ -2148,25 +2379,24 @@ var defaults = exports.defaults = {
 	out: true, //(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc: true, //(boolean) close modal when esc button pressed?
 	close: 'outside', //(inside || outside || boolean false) add close button inside or outside popup or don't add at all
-	autoheight: false, //(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
+	autoheight: 'image', //(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
 
-	focus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
+	autofocus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
-	img: 'load', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
 
 
-	// selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
-	// delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
+	gallery: '', //(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
 
-	// arrows:            'outside',//(inside || outside || boolean false) add navigation arrows inside or outside popup or don't add at all
+	arrows: true, //(boolean) add navigation arrows for galleries or not
 
-	// title:             false,//(string || boolean false) title for first slide if we call it via js
-	// title_attr:        'title',//(string || boolean false) attribute from which we gather title for slide (used in galleries)
+	title: false, //(string || boolean false) title for first slide if we call it via js
+	title_attr: 'title', //(string || boolean false) attribute from which we gather title for slide (used in images)
 
 	// start:             false,//(number) slide number, from which we should start
-	// loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 4 slides, option will be set to false automatically.
+	loop: true, //(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
 	// imgclick:          true,//(boolean) should we change slide if user clicks on image?
 	// preload:           '3 3',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
 
@@ -2197,11 +2427,11 @@ var defaults = exports.defaults = {
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
 		//todo, in gallery
-		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>'
+		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
 		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
-		// prev:        '<button type="button" class="njb-arrow njb-prev" data-njb-prev></button>',
-		// next:        '<button type="button" class="njb-arrow njb-next" data-njb-next></button>'
+		prev: '<button type="button" class="njb-arrow njb-arrow--prev" data-njb-prev></button>',
+		next: '<button type="button" class="njb-arrow njb-arrow--next" data-njb-next></button>'
 	},
 
 	text: {
@@ -2214,8 +2444,8 @@ var defaults = exports.defaults = {
 		// current:      'Current slide',
 		// total:        'Total slides',
 		close: 'Close (Esc)', //title on close button
-		// prev:         'Previous (Left arrow key)',//prev slide button title
-		// next:         'Next (Right arrow key)'//next slide button title
+		prev: 'Previous (Left arrow key)', //prev slide button title
+		next: 'Next (Right arrow key)', //next slide button title
 
 		ok: 'Ok', //text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		cancel: 'Cancel', //text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
@@ -2223,7 +2453,7 @@ var defaults = exports.defaults = {
 
 	},
 
-	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), *[tabindex]:not(*[tabindex="-1"]), *[contenteditable]', //(selector) this elements we will try to focus in popup shown after custom o.focus
+	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]', //(selector) this elements we will try to focus in popup shown after custom o.focus
 	jquery: undefined, //link to jquery (for modules)
 	autobind: '[data-toggle~="box"], [data-toggle~="modal"]' //(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 };

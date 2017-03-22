@@ -90,7 +90,7 @@ class njBox {
 
 
       //gather dom elements from which we will create modal window/gallery
-      this.els = this._gatherElements(o.selector);
+      this.els = this._gatherElements(o.gallery);
     }
     this._postProcessOptions();
 
@@ -248,13 +248,7 @@ class njBox {
       return;
     }
 
-    if (this.els && this.els.length) {
-      this.els.off('click', this._handlers.elsClick)
-
-      if (this.o.clickels) {
-        $(this.o.clickels).off('click', this._handlers.elsClick)
-      }
-    }
+    this._removeClickHandlers();
 
 
     this.v.container.removeClass('njb-relative');
@@ -268,6 +262,14 @@ class njBox {
 
     this._cb('destroyed');
 
+  }
+  update() {
+    //gather dom elements from which we will create modal window/gallery
+    this.els = this._gatherElements(this.o.gallery);
+    this.items = this._createItems(this._createRawItems());
+
+    // this._removeClickHandlers();
+    this._setClickHandlers();
   }
   _getContainerSize() {
     var o = this.o;
@@ -387,7 +389,7 @@ class njBox {
   }
   _postProcessOptions() {
     var o = this.o;
-    if (o.selector || o.delegate) this.state.gallery = true;
+    if (o.gallery) this.state.gallery = true;
   }
   _gatherData(el) {
     let o = this.o,
@@ -834,7 +836,7 @@ class njBox {
       this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
       this._drawItem(this.state.itemsOrder[2]);
     }
-
+    this.position();
   }
   _moveItem(item, value, unit) {
     unit = unit || 'px';
@@ -849,8 +851,6 @@ class njBox {
     }
   }
   _changeItem(nextIndex, dir) {
-    console.log('_changeItem', nextIndex, dir);
-
     if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
 
     var o = this.o,
@@ -1023,15 +1023,14 @@ class njBox {
 
     if (!o.click) return;
 
-    if (o.delegate) {
+    if(this.els && this.els.length) {
+      this.els.off('click', this._handlers.elsClick);
+      if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
 
-    } else if (this.els && this.els.length) {
+
       this._handlers.elsClick = this._clickHandler();
-      this.els.off('click', this._handlers.elsClick).on('click', this._handlers.elsClick)
-
-      if (o.clickels) {
-        $(o.clickels).off('click', this._handlers.elsClick).on('click', this._handlers.elsClick)
-      }
+      this.els.on('click', this._handlers.elsClick)
+      if (o.clickels) $(o.clickels).on('click', this._handlers.elsClick);
     }
 
 
@@ -1060,6 +1059,15 @@ class njBox {
       that.state.clickedEl = el;
 
       that.show();
+    }
+  }
+  _removeClickHandlers() {
+    if (this.els && this.els.length) {
+      this.els.off('click', this._handlers.elsClick)
+
+      if (this.o.clickels) {
+        $(this.o.clickels).off('click', this._handlers.elsClick)
+      }
     }
   }
   _setEventsHandlers() {//all other event handlers
@@ -1538,8 +1546,6 @@ class njBox {
 
     this._removeSelectorItemsElement();
 
-    this.state.active = 0;
-
     if (this.v.items && this.v.items.length) empty(this.v.items[0]);//we can't use innerHTML="" here, for IE(even 11) we need remove method
 
     //clear inline position
@@ -1557,6 +1563,7 @@ class njBox {
     this.state = {
       inited: true,
       state: 'inited',
+      active: 0,
       gallery: origGalleryState
     };
 

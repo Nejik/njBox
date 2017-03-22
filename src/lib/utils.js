@@ -129,7 +129,7 @@ export let defaults = {
 	title_attr:        'title',//(string || boolean false) attribute from which we gather title for slide (used in images)
 
 	// start:             false,//(number) slide number, from which we should start
-	// loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 4 slides, option will be set to false automatically.
+	loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
 	// imgclick:          true,//(boolean) should we change slide if user clicks on image?
 	// preload:           '3 3',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
 

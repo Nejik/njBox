@@ -112,9 +112,10 @@ class njBox {
   }
 
   show(index) {
-    if (index) this.active = parseInt(index);//index uses in gallery
+    if (index) this.active = parseInt(index - 1);//index uses in gallery
 
-    var o = this.o;
+    var o = this.o,
+        that = this;
 
     if (this.state.state !== 'inited') {
       this._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -127,6 +128,16 @@ class njBox {
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
     this.returnValue = null;
+
+    // find clicked element index and start gallery from this slide
+    if (o.selector || o.delegate) {
+      if (this.els && this.els.length) this.els.each(function (i, el) {
+        if (that.state.clickedEl === el) {
+          that.active = i;
+          return;
+        }
+      })
+    }
 
     if (!this.v.container[0].njb_instances) {
       this.v.container[0].njb_instances = 1;
@@ -152,8 +163,8 @@ class njBox {
 
     //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
     this.v.wrap[0].style.display = 'none';
-	  this.v.wrap[0].clientHeight;
-	  this.v.wrap[0].style.display = 'block';
+    this.v.wrap[0].clientHeight;
+    this.v.wrap[0].style.display = 'block';
 
     this._anim('show');
 
@@ -327,8 +338,8 @@ class njBox {
   }
   //return array with raw options gathered from items from which modal window/gallery will be created
   _createRawItems(selector) {
-    var  o = this.o,
-        that = this;
+    var o = this.o,
+      that = this;
     if (o.selector) {
       //we don't use methods such as Array.map because we want to support old browsers
       var rawItems = [];
@@ -338,7 +349,7 @@ class njBox {
       }
 
       return rawItems;
-      
+
     } else {
       return [this.o];
     }
@@ -346,7 +357,7 @@ class njBox {
   //gather dom elements from which we will create modal window/gallery
   _gatherElements(selector) {
     var o = this.o;
-    
+
     if (selector) {
       return this.o.el.find(selector);
     } else {
@@ -860,7 +871,9 @@ class njBox {
 
     if (!o.click) return;
 
-    if (this.els && this.els.length) {
+    if (o.delegate) {
+
+    } else if (this.els && this.els.length) {
       this._handlers.elsClick = this._clickHandler();
       this.els.off('click', this._handlers.elsClick).on('click', this._handlers.elsClick)
 
@@ -868,6 +881,8 @@ class njBox {
         $(o.clickels).off('click', this._handlers.elsClick).on('click', this._handlers.elsClick)
       }
     }
+
+
   }
   _clickHandler() {
     //this method creates closure with modal instance
@@ -1321,7 +1336,7 @@ class njBox {
       if (o.animclass) modal.removeClass(o.animclass);
       modal.removeClass(animShow);
 
-      if(!nocallback) that._cb('shown');
+      if (!nocallback) that._cb('shown');
       that._setFocusInPopup(that.items[that.active], true);
     }
     function hiddenCallback() {
@@ -1330,7 +1345,7 @@ class njBox {
       modal.removeClass(animHide);
 
       that._clear();
-      if(!nocallback) that._cb('hidden');
+      if (!nocallback) that._cb('hidden');
       that.state.state = 'inited';
     }
   }

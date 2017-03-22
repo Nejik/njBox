@@ -100,7 +100,7 @@ class njBox {
       this.v.next = $(o.templates.next)
       this.v.next[0].setAttribute('title', o.text.next);
     }
-    
+
     //create items
     this.items = this._createItems(this._createRawItems());
 
@@ -137,6 +137,11 @@ class njBox {
 
     // find clicked element index and start gallery from this slide
     if (this.state.gallery) {
+      if (parseInt(o.start)) {//start from public option
+        if (typeof o.start === 'number' && this.items[o.start]) {//check if index is a number and slide with such index exist
+          this.state.active = o.start;
+        }
+      }
       if (this.els && this.els.length) this.els.each(function (i, el) {
         if (that.state.clickedEl === el) {
           that.state.active = i;
@@ -226,7 +231,7 @@ class njBox {
     //we need autoheight for every slide in gallery
     if (this.state.gallery) {
       for (var index = 0; index < this.state.itemsOrder.length; index++) {
-        if(this.state.itemsOrder[index] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
+        if (this.state.itemsOrder[index] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
       }
     } else {
       this._setMaxHeight(this.items[this.state.active]);
@@ -767,8 +772,8 @@ class njBox {
     if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
     if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-      if(this.v.next[0]) this.v.wrap[0].appendChild(this.v.next[0]);
-      if(this.v.prev[0]) this.v.wrap[0].appendChild(this.v.prev[0]);
+      if (this.v.next[0]) this.v.wrap[0].appendChild(this.v.next[0]);
+      if (this.v.prev[0]) this.v.wrap[0].appendChild(this.v.prev[0]);
       this.state.arrowsInserted = true;
     }
 
@@ -855,7 +860,7 @@ class njBox {
 
     var o = this.o,
       that = this;
-    
+
     if (!this.items[nextIndex]) {
       if (o.loop && this.items.length > 2) {
         if (dir === 'next' && nextIndex === this.items.length) {
@@ -1002,7 +1007,7 @@ class njBox {
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
-    } else if(this.state.gallery) {
+    } else if (this.state.gallery) {
       this.v.next[0].focus()
     } else if (o.close === "outside") {//then try to focus close buttons
       this.v.close[0].focus()
@@ -1023,7 +1028,7 @@ class njBox {
 
     if (!o.click) return;
 
-    if(this.els && this.els.length) {
+    if (this.els && this.els.length) {
       this.els.off('click', this._handlers.elsClick);
       if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
 

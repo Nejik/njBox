@@ -64,14 +64,6 @@ class njBox {
 
       //... other will be added later
     }
-    //create arrows
-    if (o.selector || o.delegate) {
-      this.v.prev = $(o.templates.prev);
-      this.v.prev[0].setAttribute('title', o.text.prev);
-      this.v.next = $(o.templates.next)
-      this.v.next[0].setAttribute('title', o.text.next);
-    }
-
 
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
@@ -100,9 +92,17 @@ class njBox {
       //gather dom elements from which we will create modal window/gallery
       this.els = this._gatherElements(o.selector);
     }
+    this._postProcessOptions();
+
+    if (this.state.gallery) {
+      this.v.prev = $(o.templates.prev);
+      this.v.prev[0].setAttribute('title', o.text.prev);
+      this.v.next = $(o.templates.next)
+      this.v.next[0].setAttribute('title', o.text.next);
+    }
 
     //create items
-    this.items = this._createItems(this._createRawItems(o.selector));
+    this.items = this._createItems(this._createRawItems());
 
     //create popup container dom elements
     this._createDom();
@@ -136,7 +136,7 @@ class njBox {
     this.returnValue = null;
 
     // find clicked element index and start gallery from this slide
-    if (o.selector || o.delegate) {
+    if (this.state.gallery) {
       if (this.els && this.els.length) this.els.each(function (i, el) {
         if (that.state.clickedEl === el) {
           that.active = i;
@@ -343,10 +343,10 @@ class njBox {
     }
   }
   //return array with raw options gathered from items from which modal window/gallery will be created
-  _createRawItems(selector) {
+  _createRawItems() {
     var o = this.o,
       that = this;
-    if (o.selector) {
+    if (this.state.gallery) {
       //we don't use methods such as Array.map because we want to support old browsers
       var rawItems = [];
       for (var index = 0; index < this.els.length; index++) {
@@ -369,6 +369,10 @@ class njBox {
     } else {
       return this.o.el;
     }
+  }
+  _postProcessOptions() {
+    var o = this.o;
+    if(o.selector || o.delegate) this.state.gallery = true;
   }
   _gatherData(el) {
     let o = this.o,
@@ -743,7 +747,7 @@ class njBox {
     if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
     if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
-    if (o.arrows && !this.state.arrowsInserted && o.selector || o.delegate) {
+    if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
       this.v.wrap[0].appendChild(this.v.prev[0]);
       this.v.wrap[0].appendChild(this.v.next[0]);
       this.state.arrowsInserted = true;

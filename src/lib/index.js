@@ -227,6 +227,12 @@ class njBox {
 
     return this;
   }
+  prev() {
+    console.log('prev');
+  }
+  next() {
+    console.log('next');
+  }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
       this._error('njBox, we can destroy only initialized && hidden modals.');
@@ -372,7 +378,7 @@ class njBox {
   }
   _postProcessOptions() {
     var o = this.o;
-    if(o.selector || o.delegate) this.state.gallery = true;
+    if (o.selector || o.delegate) this.state.gallery = true;
   }
   _gatherData(el) {
     let o = this.o,
@@ -942,7 +948,7 @@ class njBox {
 
     h.wrap_out = function (e) {
       var $el = $(e.target),
-        prevent = $el.closest('.njb, [data-njb-close]').length;
+        prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
       if (prevent) return;
 
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
@@ -980,6 +986,14 @@ class njBox {
 
           (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
           break;
+        case 37://left arrow
+          that.prev();
+          e.preventDefault();
+          break;
+        case 39://right arrow
+          that.next();
+          e.preventDefault();
+          break;
       }
     }
     h.wrap_close = function (e) {
@@ -1000,6 +1014,14 @@ class njBox {
       if (that._cb('cancel') === false) return;
       that.hide();
     }
+    h.wrap_prev = function (e) {
+      that.prev();
+      e.preventDefault();
+    }
+    h.wrap_next = function (e) {
+      that.next();
+      e.preventDefault();
+    }
 
 
     this.v.wrap.on('click', h.wrap_out)
@@ -1009,6 +1031,8 @@ class njBox {
       .delegate('[data-njb-close]', 'click', h.wrap_close)
       .delegate('[data-njb-ok]', 'click', h.wrap_ok)
       .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+      .delegate('[data-njb-prev]', 'click', h.wrap_prev)
+      .delegate('[data-njb-next]', 'click', h.wrap_next)
 
 
     h.window_resize = function (e) {
@@ -1046,6 +1070,8 @@ class njBox {
       .undelegate('[data-njb-close]', 'click', h.wrap_close)
       .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
       .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+      .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
+      .undelegate('[data-njb-next]', 'click', h.wrap_next)
 
     this.v.window.off('resize', h.window_resize)
       .off('scroll', h.window_scroll)

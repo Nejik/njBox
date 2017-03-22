@@ -152,9 +152,9 @@
 	position: absolute;z-index: 1;top: 50%;
 	width: 70px;
 	height: 70px;
+  padding: 0;
 	margin-top: -35px;
 	cursor: pointer;
-	// opacity: 0;
 	color: #fff;
 	font-size: 26px;
 	text-shadow: 0 0 5px #000;

@@ -251,11 +251,6 @@ var njBox = function () {
 
       this.position();
 
-      //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
-      this.v.wrap[0].style.display = 'none';
-      this.v.wrap[0].clientHeight;
-      this.v.wrap[0].style.display = 'block';
-
       this._anim('show');
 
       return this;
@@ -754,10 +749,6 @@ var njBox = function () {
         //insert content
         item.dom.body[0].appendChild(img);
         item.o.imageInserted = true;
-
-        //animation after image loading
-        //todo add custom image animation, don't use global popup animation
-        // if(ev === 'load') that._anim('show', true)
       }
       //helper function for image type
       function findImgSize(img) {
@@ -851,7 +842,7 @@ var njBox = function () {
 
       this._cb('item_prepare', item);
 
-      //insert content in slides, where inserting is delayed to show event
+      //insert index item
       this._insertDelayedContent();
 
       this.v.items[0].appendChild(item.dom.modalOuter[0]);
@@ -874,6 +865,7 @@ var njBox = function () {
           if (item.o.imageInserted) {
             continue;
           }
+
           this._insertImage(item);
         } else if (item.type === 'selector') {
           if (item.o.contentElInserted) {
@@ -940,8 +932,8 @@ var njBox = function () {
       if (initialFocus) {
         focusElement = item.dom.modal.find('[autofocus]');
 
-        if (!focusElement.length && o.autofocus) {
-          focusElement = item.dom.modal.find(o.autofocus);
+        if (!focusElement && !focusElement.length && o.focus) {
+          focusElement = item.dom.modal.find(o.focus);
         }
       }
 
@@ -1386,7 +1378,7 @@ var njBox = function () {
     }
   }, {
     key: '_anim',
-    value: function _anim(type, nocallback) {
+    value: function _anim(type, callback) {
       var o = this.o,
           that = this,
           modalOuter = this.items[this.active].dom.modalOuter,
@@ -1429,7 +1421,7 @@ var njBox = function () {
         if (o.animclass) modal.removeClass(o.animclass);
         modal.removeClass(animShow);
 
-        if (!nocallback) that._cb('shown');
+        that._cb('shown');
         that._setFocusInPopup(that.items[that.active], true);
       }
       function hiddenCallback() {
@@ -1438,7 +1430,7 @@ var njBox = function () {
         modal.removeClass(animHide);
 
         that._clear();
-        if (!nocallback) that._cb('hidden');
+        that._cb('hidden');
         that.state.state = 'inited';
       }
     }
@@ -2156,12 +2148,12 @@ var defaults = exports.defaults = {
 	out: true, //(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc: true, //(boolean) close modal when esc button pressed?
 	close: 'outside', //(inside || outside || boolean false) add close button inside or outside popup or don't add at all
-	autoheight: 'image', //(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
+	autoheight: false, //(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
 
-	autofocus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
+	focus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
 
 	//gallery
-	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+	img: 'load', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
 
 
@@ -2231,7 +2223,7 @@ var defaults = exports.defaults = {
 
 	},
 
-	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]', //(selector) this elements we will try to focus in popup shown after custom o.focus
+	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), *[tabindex]:not(*[tabindex="-1"]), *[contenteditable]', //(selector) this elements we will try to focus in popup shown after custom o.focus
 	jquery: undefined, //link to jquery (for modules)
 	autobind: '[data-toggle~="box"], [data-toggle~="modal"]' //(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 };

@@ -64,7 +64,13 @@ class njBox {
 
       //... other will be added later
     }
-
+    //create arrows
+    if (o.selector || o.delegate) {
+      this.v.prev = $(o.templates.prev);
+      this.v.prev[0].setAttribute('title', o.text.prev);
+      this.v.next = $(o.templates.next)
+      this.v.next[0].setAttribute('title', o.text.next);
+    }
 
 
     //we should have dom element or at least content option for creating item
@@ -115,7 +121,7 @@ class njBox {
     if (index) this.active = parseInt(index - 1);//index uses in gallery
 
     var o = this.o,
-        that = this;
+      that = this;
 
     if (this.state.state !== 'inited') {
       this._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -737,13 +743,18 @@ class njBox {
     if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
     if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
+    if (o.arrows && !this.state.arrowsInserted && o.selector || o.delegate) {
+      this.v.wrap[0].appendChild(this.v.prev[0]);
+      this.v.wrap[0].appendChild(this.v.next[0]);
+      this.state.arrowsInserted = true;
+    }
+
     // insert outside close button
     if (o.close === 'outside') {
-      var closeBtn = this.v.close = $(o.templates.close);
-      var closeBtn = closeBtn[0];
-      closeBtn.setAttribute('title', o.text.close);
+      this.v.close = $(o.templates.close);
+      this.v.close[0].setAttribute('title', o.text.close);
 
-      this.v.wrap[0].appendChild(closeBtn);
+      this.v.wrap[0].appendChild(this.v.close[0]);
     }
 
     this.v.focusCatcher = $(o.templates.focusCatcher);

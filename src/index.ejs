@@ -58,7 +58,10 @@
     
     var modal = new njBox({
                               elem: '.gallery',
-                              selector: 'a'
+                              selector: 'a',
+                              onshown: function() {
+                                // console.log(this);
+                              }
                             })
   </script>
 </body>

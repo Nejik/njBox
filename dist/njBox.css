@@ -113,8 +113,7 @@
 
       -ms-user-select: text;
 
-          user-select: text;
-  will-change: opacity, transform
+          user-select: text
 }
 .njb--loading {
 }
@@ -486,9 +485,6 @@
 }
 .njb--content .njb__footer {
   padding: 5px;
-}
-.njb--image {
-  text-align: center
 }
 .njb--image img {
   background-color: rgba(255, 255, 255, .1);

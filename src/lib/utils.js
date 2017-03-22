@@ -123,10 +123,10 @@ export let defaults = {
 	selector:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
 	delegate:          '',//(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
 
-	// arrows:            'outside',//(inside || outside || boolean false) add navigation arrows inside or outside popup or don't add at all
+	arrows:            true,//(boolean) add navigation arrows for galleries or not
 
-	// title:             false,//(string || boolean false) title for first slide if we call it via js
-	// title_attr:        'title',//(string || boolean false) attribute from which we gather title for slide (used in galleries)
+	title:             false,//(string || boolean false) title for first slide if we call it via js
+	title_attr:        'title',//(string || boolean false) attribute from which we gather title for slide (used in images)
 
 	// start:             false,//(number) slide number, from which we should start
 	// loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 4 slides, option will be set to false automatically.
@@ -161,11 +161,11 @@ export let defaults = {
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
 		//todo, in gallery
-		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>'
+		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
 		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
-		// prev:        '<button type="button" class="njb-arrow njb-prev" data-njb-prev></button>',
-		// next:        '<button type="button" class="njb-arrow njb-next" data-njb-next></button>'
+		prev:        '<button type="button" class="njb-arrow njb-arrow--prev" data-njb-prev></button>',
+		next:        '<button type="button" class="njb-arrow njb-arrow--next" data-njb-next></button>'
 	},
 
 	text: {
@@ -178,8 +178,8 @@ export let defaults = {
 		// current:      'Current slide',
 		// total:        'Total slides',
 		close: 'Close (Esc)',//title on close button
-		// prev:         'Previous (Left arrow key)',//prev slide button title
-		// next:         'Next (Right arrow key)'//next slide button title
+		prev:         'Previous (Left arrow key)',//prev slide button title
+		next:         'Next (Right arrow key)',//next slide button title
 
 		ok: 'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		cancel: 'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type

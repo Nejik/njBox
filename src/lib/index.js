@@ -237,10 +237,10 @@ class njBox {
     return this;
   }
   prev() {
-    console.log('prev');
+    this._changeItem(this.state.active - 1, 'prev');
   }
   next() {
-    console.log('next');
+    this._changeItem(this.state.active + 1, 'next');
   }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
@@ -804,9 +804,8 @@ class njBox {
     this._cb('item_inserted', item);
   }
 
-  _setItemsOrder() {
+  _setItemsOrder(currentIndex) {
     var o = this.o,
-      current = this.state.active,
       prev = this.state.active - 1,
       next = this.state.active + 1;
 
@@ -817,13 +816,13 @@ class njBox {
     if (!this.items[prev]) prev = null;
     if (!this.items[next]) next = null;
 
-    this.state.itemsOrder = [prev, current, next];
+    this.state.itemsOrder = [prev, currentIndex, next];
   }
   _drawItemSiblings() {
     var o = this.o,
       that = this;
 
-    this._setItemsOrder();
+    this._setItemsOrder(this.state.active);
 
     if (typeof this.state.itemsOrder[0] === 'number') {
       this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
@@ -847,6 +846,81 @@ class njBox {
       item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
     }
   }
+  _changeItem(nextIndex, dir) {
+    console.log('_changeItem', nextIndex, dir);
+
+    if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
+
+    var o = this.o,
+      that = this;
+
+    if (!this.items[nextIndex]) {
+      if (o.loop) {
+        if (dir === 'next' && nextIndex === this.items.length) {
+          nextIndex = 0;
+        } else if (dir === 'prev' && nextIndex === -1) {
+          nextIndex = this.items.length - 1;
+        } else {
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
+
+    this.state.direction = dir;
+
+    this.state.itemChanging = true;//we can't change slide during current changing
+    this.state.itemsOrder_backup = this.state.itemsOrder.slice();//copy current state
+    this._cb('change', nextIndex);
+
+    this.state.active = nextIndex;
+    this._setItemsOrder(nextIndex);
+
+    switch (dir) {
+      case 'prev':
+        this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+
+        this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
+        this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
+        break;
+      case 'next':
+        this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+
+        this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
+        this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
+        break;
+    }
+    this._setFocusInPopup(this.items[this.state.active]);
+
+    setTimeout(function () {
+      if (that.state.state !== 'shown') {
+        console.log(that.state.state);
+        that.state.itemChanging = false;
+        return;//case when we hide modal when slide is changing
+      }
+      //remove slide that was active before changing
+      removeSlide(that.items[that.state.itemsOrder_backup[1]]);
+
+      //remove third slide
+      var thirdItem = (dir === 'prev') ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
+      if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
+
+      delete that.state.itemsOrder_backup;
+
+      that._drawItemSiblings();
+      that.state.itemChanging = false;
+      that._cb('changed', that.state.active);
+
+    }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
+
+    function removeSlide(item) {
+      item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0])
+      item.dom.modalOuter[0].style.cssText = '';
+    }
+  }
+
   _insertDelayedContent(item) {
     var that = this,
       o = this.o,
@@ -1489,8 +1563,6 @@ class njBox {
       type === 'shown' ||
       type === 'hide' ||
       type === 'hidden' ||
-      type === 'change' ||
-      type === 'changed' ||
       type === 'destroy' ||
       type === 'destroyed'
     ) {

@@ -1390,9 +1390,12 @@ class njBox {
         el.removeChild(el.firstChild);
       }
     }
+
+    var origGalleryState = this.state.gallery;
     this.state = {
       inited: true,
-      state: 'inited'
+      state: 'inited',
+      gallery: origGalleryState
     };
 
     this._cb('clear');

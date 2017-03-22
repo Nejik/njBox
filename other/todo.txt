@@ -1,11 +1,7 @@
-* сделать canchange флаг
 * убрать o.delegate, переименовать o.selector в o.gallery и сделать метод updateItems
-* выключать loop если меньше 3 слайдов
-* при хайде чистить translate на слайдах
 * проверить все ли очищается при хайде от галлереи
 
 *переименовать .v. на .dom. в глобальном скоупе
-* не работает tab на стрелки навигации
 * поработать над autoheight на мобильных, сделать кнопку рядом с закрыть отключающую autoheight
 
 
@@ -28,7 +24,7 @@ Docs:
 * примеры как сделать триггер ивентов на дом элемент/документ
 * пример static margin top https://github.com/dolce/iziModal/issues/68
 * описать различия img ready/load
-
+* option loop don't work with 2 slides, minimum - 3 slides
 
 Плюсы
 адаптивное по умолчанию

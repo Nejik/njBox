@@ -100,7 +100,7 @@ class njBox {
       this.v.next = $(o.templates.next)
       this.v.next[0].setAttribute('title', o.text.next);
     }
-
+    
     //create items
     this.items = this._createItems(this._createRawItems());
 
@@ -226,7 +226,7 @@ class njBox {
     //we need autoheight for every slide in gallery
     if (this.state.gallery) {
       for (var index = 0; index < this.state.itemsOrder.length; index++) {
-        this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
+        if(this.state.itemsOrder[index] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
       }
     } else {
       this._setMaxHeight(this.items[this.state.active]);
@@ -765,8 +765,8 @@ class njBox {
     if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
     if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-      this.v.wrap[0].appendChild(this.v.next[0]);
-      this.v.wrap[0].appendChild(this.v.prev[0]);
+      if(this.v.next[0]) this.v.wrap[0].appendChild(this.v.next[0]);
+      if(this.v.prev[0]) this.v.wrap[0].appendChild(this.v.prev[0]);
       this.state.arrowsInserted = true;
     }
 
@@ -804,12 +804,14 @@ class njBox {
     this._cb('item_inserted', item);
   }
 
+
+
   _setItemsOrder(currentIndex) {
     var o = this.o,
       prev = this.state.active - 1,
       next = this.state.active + 1;
 
-    if (o.loop) {
+    if (o.loop && this.items.length > 2) {
       if (prev === -1) prev = this.items.length - 1;
       if (next === this.items.length) next = 0;
     }
@@ -853,9 +855,9 @@ class njBox {
 
     var o = this.o,
       that = this;
-
+    
     if (!this.items[nextIndex]) {
-      if (o.loop) {
+      if (o.loop && this.items.length > 2) {
         if (dir === 'next' && nextIndex === this.items.length) {
           nextIndex = 0;
         } else if (dir === 'prev' && nextIndex === -1) {
@@ -920,6 +922,9 @@ class njBox {
       item.dom.modalOuter[0].style.cssText = '';
     }
   }
+
+
+
 
   _insertDelayedContent(item) {
     var that = this,
@@ -1007,6 +1012,9 @@ class njBox {
       item.dom.modal[0].focus();
     }
   }
+
+
+
 
 
 

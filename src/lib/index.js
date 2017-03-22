@@ -765,8 +765,8 @@ class njBox {
     if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
 
     if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-      this.v.wrap[0].appendChild(this.v.prev[0]);
       this.v.wrap[0].appendChild(this.v.next[0]);
+      this.v.wrap[0].appendChild(this.v.prev[0]);
       this.state.arrowsInserted = true;
     }
 
@@ -997,6 +997,8 @@ class njBox {
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
+    } else if(this.state.gallery) {
+      this.v.next[0].focus()
     } else if (o.close === "outside") {//then try to focus close buttons
       this.v.close[0].focus()
     } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here

@@ -1532,6 +1532,11 @@ class njBox {
 
     if (this.v.items && this.v.items.length) empty(this.v.items[0]);//we can't use innerHTML="" here, for IE(even 11) we need remove method
 
+    //clear inline position
+    for (var i = 0, l = this.items.length; i < l; i++) {
+      this.items[i].dom.modalOuter[0].style.cssText = '';
+    }
+
     function empty(el) {
       while (el.firstChild) {
         el.removeChild(el.firstChild);

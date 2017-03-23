@@ -118,8 +118,6 @@ class njBox {
   }
 
   show(index) {
-    if (index) this.state.active = parseInt(index - 1);//index uses in gallery
-
     var o = this.o,
       that = this;
 
@@ -135,20 +133,7 @@ class njBox {
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
     this.returnValue = null;
 
-    // find clicked element index and start gallery from this slide
-    if (this.state.gallery) {
-      if (o.start - 1) {//start from public option
-        if (typeof o.start === 'number' && this.items[o.start - 1]) {//check if index is a number and slide with such index exist
-          this.state.active = o.start - 1;
-        }
-      }
-      if (this.els && this.els.length) this.els.each(function (i, el) {
-        if (that.state.clickedEl === el) {
-          that.state.active = i;
-          return;
-        }
-      })
-    }
+    that.state.active = this._detectIndexForOpen(index);
 
     if (!this.v.container[0].njb_instances) {
       this.v.container[0].njb_instances = 1;
@@ -181,6 +166,28 @@ class njBox {
     this._anim('show');
 
     return this;
+  }
+  _detectIndexForOpen(indexFromShow) {
+    var o = this.o,
+      that = this,
+      index = 0;
+
+    if (indexFromShow) {//first we check if index we have as argument in show method
+      index = indexFromShow - 1;
+    } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
+      index = o.start - 1;
+    }
+    //if we have clicked element, take index from it
+    if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
+      this.els.each(function (i, el) {
+        if (that.state.clickedEl === el) {
+          index = i;
+          return;
+        }
+      })
+    }
+
+    return index;
   }
   hide() {
     if (this.state.state !== 'shown') {

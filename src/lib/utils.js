@@ -147,7 +147,7 @@ export let defaults = {
 	duration: 'auto',//(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
 
 	templates: {
-		wrap: '<div class="njb-wrap"><div class="njb-items" tabindex="-1"></div></div>',
+		wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop: '<div class="njb-backdrop"></div>',
 		modalOuter: '<div class="njb-outer" data-njb-outer></div>',
 		modal: '<aside class="njb" tabindex="-1"></aside>',

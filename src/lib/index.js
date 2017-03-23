@@ -260,28 +260,8 @@ class njBox {
     // this._removeClickHandlers();
     this._setClickHandlers();
   }
-  _detectIndexForOpen(indexFromShow) {
-    var o = this.o,
-      that = this,
-      index = 0;
 
-    if (indexFromShow) {//first we check if index we have as argument in show method
-      index = indexFromShow - 1;
-    } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
-      index = o.start - 1;
-    }
-    //if we have clicked element, take index from it
-    if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
-      this.els.each(function (i, el) {
-        if (that.state.clickedEl === el) {
-          index = i;
-          return;
-        }
-      })
-    }
 
-    return index;
-  }
   _getContainerSize() {
     var o = this.o;
 
@@ -641,112 +621,6 @@ class njBox {
       item.dom.body[0].innerHTML = item.content;//if we don't find element with this selector
     }
   }
-  _insertImage(item) {
-    var that = this,
-      o = this.o,
-      img = document.createElement('img'),
-      $img = $(img),
-      ready,
-      loaded;
-
-    item.o.status = 'loading';
-    item.dom.img = $img;
-
-    item._handlerError = function () {
-      $img.off('error', item._handlerError).off('abort', item._handlerError);
-      delete item._handlerError;
-
-      that._preloader('hide', item);
-
-      item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
-
-      that._cb('img_error', item);//img_ready, img_load callbacks
-      // rendered();
-
-      item.o.status = 'error';
-      item.o.imageInserted = true;
-    }
-    $img.on('error', item._handlerError).on('abort', item._handlerError);
-
-    if (item.title) img.title = item.title;
-    img.src = item.content;
-
-    ready = img.width + img.height > 0;
-    loaded = img.complete && img.width + img.height > 0;
-
-    if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
-      checkShow(true);
-    } else {
-      this._preloader('show', item);
-
-      item._handlerImgReady = function () {
-        $img.off('njb_ready', item._handlerImgReady);
-        checkShow('ready');
-      }
-      $img.on('njb_ready', item._handlerImgReady)
-      findImgSize(img);
-
-      item._handlerLoad = function () {
-        $img.off('load', item._handlerLoad);
-        checkShow('load');
-      }
-      $img.on('load', item._handlerLoad)
-
-    }
-
-    function checkShow(ev) {
-      that._cb('item_img_' + ev, item);//img_ready, img_load callbacks
-
-      if (ev !== o.img && ev !== true) return;
-
-      item.o.status = 'loaded';
-      that._preloader('hide', item);
-
-      $img.attr('width', 'auto')//for IE <= 10
-
-      //insert content
-      item.dom.body[0].appendChild(img);
-      item.o.imageInserted = true;
-
-      //animation after image loading
-      //todo add custom image animation, don't use global popup animation
-      // if(ev === 'load') that._anim('show', true)
-    }
-    //helper function for image type
-    function findImgSize(img) {
-      var counter = 0,
-        interval,
-        njbSetInterval = function (delay) {
-          if (interval) {
-            clearInterval(interval);
-          }
-
-          interval = setInterval(function () {
-            if (img.width > 0) {
-              $img.triggerHandler('njb_ready');
-
-              clearInterval(interval);
-              return;
-            }
-
-            if (counter > 200) {
-              clearInterval(interval);
-            }
-
-            counter++;
-            if (counter === 5) {
-              njbSetInterval(10);
-            } else if (counter === 40) {
-              njbSetInterval(50);
-            } else if (counter === 100) {
-              njbSetInterval(500);
-            }
-          }, delay);
-        };
-
-      njbSetInterval(1);
-    }
-  }
   _createDom() {
     var o = this.o;
 
@@ -816,164 +690,6 @@ class njBox {
 
     this._cb('item_inserted', item);
   }
-
-
-
-  _setItemsOrder(currentIndex) {
-    this.state.itemsOrder = this._getItemsOrder(currentIndex);
-  }
-  _getItemsOrder(currentIndex) {
-    var o = this.o,
-      prev = currentIndex - 1,
-      next = currentIndex + 1;
-
-    if (o.loop && this.items.length > 2) {
-      if (prev === -1) prev = this.items.length - 1;
-      if (next === this.items.length) next = 0;
-    }
-    if (!this.items[prev]) prev = null;
-    if (!this.items[next]) next = null;
-
-    return [prev, currentIndex, next];
-  }
-  _preload() {
-    var o = this.o,
-      that = this;
-
-    if (!o.preload || this.state.state !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
-
-    var temp = o.preload.split(' '),
-      prev = parseInt(temp[0]),
-      prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
-      next = parseInt(temp[1]),
-      nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
-
-    //load next
-    while (next--) {
-      preload.call(this, nextState);
-      nextState = this._getItemsOrder(nextState)[2];
-    }
-
-    //load previous
-    while (prev--) {
-      preload.call(this, prevState);
-      prevState = this._getItemsOrder(prevState)[0]
-    }
-
-    function preload(index) {
-      var item = this.items[index],
-        content = item.content;
-
-      if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
-    }
-  }
-  _drawItemSiblings() {
-    var o = this.o,
-      that = this;
-
-    this._setItemsOrder(this.state.active);
-
-    if (typeof this.state.itemsOrder[0] === 'number') {
-      this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
-      this._drawItem(this.state.itemsOrder[0], true);
-    }
-    if (typeof this.state.itemsOrder[2] === 'number') {
-      this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
-      this._drawItem(this.state.itemsOrder[2]);
-    }
-    this.position();
-    this._preload()
-  }
-  _moveItem(item, value, unit) {
-    unit = unit || 'px';
-
-    //detect translate property
-    if (njBox.g.transform['3d']) {
-      item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)'
-    } else if (njBox.g.transform['css']) {
-      item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translateX(' + (value + unit) + ')'
-    } else {
-      item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
-    }
-  }
-  _changeItem(nextIndex, dir) {
-    if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
-
-    var o = this.o,
-      that = this;
-
-    if (!this.items[nextIndex]) {
-      if (o.loop && this.items.length > 2) {
-        if (dir === 'next' && nextIndex === this.items.length) {
-          nextIndex = 0;
-        } else if (dir === 'prev' && nextIndex === -1) {
-          nextIndex = this.items.length - 1;
-        } else {
-          return;
-        }
-      } else {
-        return;
-      }
-    }
-    this.v.items[0].focus()
-
-
-    this.state.direction = dir;
-
-    this.state.itemChanging = true;//we can't change slide during current changing
-    this.state.itemsOrder_backup = this.state.itemsOrder.slice();//copy current state
-    this._cb('change', nextIndex);
-
-    this.state.active = nextIndex;
-    this._setItemsOrder(nextIndex);
-
-    
-
-    switch (dir) {
-      case 'prev':
-        this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
-
-        this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
-        this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
-        break;
-      case 'next':
-        this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
-
-        this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
-        this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
-        break;
-    }
-
-    setTimeout(function () {
-      if (that.state.state !== 'shown') {
-        that.state.itemChanging = false;
-        return;//case when we hide modal when slide is changing
-      }
-      //remove slide that was active before changing
-      removeSlide(that.items[that.state.itemsOrder_backup[1]]);
-
-      //remove third slide
-      var thirdItem = (dir === 'prev') ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
-      if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
-
-      delete that.state.itemsOrder_backup;
-
-      that._drawItemSiblings();
-      that._setFocusInPopup(that.items[that.state.active]);
-      that.state.itemChanging = false;
-      that._cb('changed', that.state.active);
-
-    }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
-
-    function removeSlide(item) {
-      item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0])
-      item.dom.modalOuter[0].style.cssText = '';
-    }
-  }
-
-
-
-
   _insertDelayedContent(item) {
     var that = this,
       o = this.o,
@@ -1060,12 +776,6 @@ class njBox {
       item.dom.modal[0].focus();
     }
   }
-
-
-
-
-
-
   _setClickHandlers() {//initial click handlers
     var o = this.o;
 
@@ -1277,6 +987,285 @@ class njBox {
   }
 
 
+  //gallery methods
+  _detectIndexForOpen(indexFromShow) {
+    var o = this.o,
+      that = this,
+      index = 0;
+
+    if (indexFromShow) {//first we check if index we have as argument in show method
+      index = indexFromShow - 1;
+    } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
+      index = o.start - 1;
+    }
+    //if we have clicked element, take index from it
+    if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
+      this.els.each(function (i, el) {
+        if (that.state.clickedEl === el) {
+          index = i;
+          return;
+        }
+      })
+    }
+
+    return index;
+  }
+  _insertImage(item) {
+    var that = this,
+      o = this.o,
+      img = document.createElement('img'),
+      $img = $(img),
+      ready,
+      loaded;
+
+    item.o.status = 'loading';
+    item.dom.img = $img;
+
+    item._handlerError = function () {
+      $img.off('error', item._handlerError).off('abort', item._handlerError);
+      delete item._handlerError;
+
+      that._preloader('hide', item);
+
+      item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
+
+      that._cb('img_error', item);//img_ready, img_load callbacks
+      // rendered();
+
+      item.o.status = 'error';
+      item.o.imageInserted = true;
+    }
+    $img.on('error', item._handlerError).on('abort', item._handlerError);
+
+    if (item.title) img.title = item.title;
+    img.src = item.content;
+
+    ready = img.width + img.height > 0;
+    loaded = img.complete && img.width + img.height > 0;
+
+    if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
+      checkShow(true);
+    } else {
+      this._preloader('show', item);
+
+      item._handlerImgReady = function () {
+        $img.off('njb_ready', item._handlerImgReady);
+        checkShow('ready');
+      }
+      $img.on('njb_ready', item._handlerImgReady)
+      findImgSize(img);
+
+      item._handlerLoad = function () {
+        $img.off('load', item._handlerLoad);
+        checkShow('load');
+      }
+      $img.on('load', item._handlerLoad)
+
+    }
+
+    function checkShow(ev) {
+      that._cb('item_img_' + ev, item);//img_ready, img_load callbacks
+
+      if (ev !== o.img && ev !== true) return;
+
+      item.o.status = 'loaded';
+      that._preloader('hide', item);
+
+      $img.attr('width', 'auto')//for IE <= 10
+
+      //insert content
+      item.dom.body[0].appendChild(img);
+      item.o.imageInserted = true;
+
+      //animation after image loading
+      //todo add custom image animation, don't use global popup animation
+      // if(ev === 'load') that._anim('show', true)
+    }
+    //helper function for image type
+    function findImgSize(img) {
+      var counter = 0,
+        interval,
+        njbSetInterval = function (delay) {
+          if (interval) {
+            clearInterval(interval);
+          }
+
+          interval = setInterval(function () {
+            if (img.width > 0) {
+              $img.triggerHandler('njb_ready');
+
+              clearInterval(interval);
+              return;
+            }
+
+            if (counter > 200) {
+              clearInterval(interval);
+            }
+
+            counter++;
+            if (counter === 5) {
+              njbSetInterval(10);
+            } else if (counter === 40) {
+              njbSetInterval(50);
+            } else if (counter === 100) {
+              njbSetInterval(500);
+            }
+          }, delay);
+        };
+
+      njbSetInterval(1);
+    }
+  }
+  _setItemsOrder(currentIndex) {
+    this.state.itemsOrder = this._getItemsOrder(currentIndex);
+  }
+  _getItemsOrder(currentIndex) {
+    var o = this.o,
+      prev = currentIndex - 1,
+      next = currentIndex + 1;
+
+    if (o.loop && this.items.length > 2) {
+      if (prev === -1) prev = this.items.length - 1;
+      if (next === this.items.length) next = 0;
+    }
+    if (!this.items[prev]) prev = null;
+    if (!this.items[next]) next = null;
+
+    return [prev, currentIndex, next];
+  }
+  _preload() {
+    var o = this.o,
+      that = this;
+
+    if (!o.preload || this.state.state !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
+
+    var temp = o.preload.split(' '),
+      prev = parseInt(temp[0]),
+      prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
+      next = parseInt(temp[1]),
+      nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
+
+    //load next
+    while (next--) {
+      preload.call(this, nextState);
+      nextState = this._getItemsOrder(nextState)[2];
+    }
+
+    //load previous
+    while (prev--) {
+      preload.call(this, prevState);
+      prevState = this._getItemsOrder(prevState)[0]
+    }
+
+    function preload(index) {
+      if(index === null) return;
+      var item = this.items[index],
+        content = item.content;
+
+      if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
+    }
+  }
+  _drawItemSiblings() {
+    var o = this.o,
+      that = this;
+
+    this._setItemsOrder(this.state.active);
+
+    if (typeof this.state.itemsOrder[0] === 'number') {
+      this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
+      this._drawItem(this.state.itemsOrder[0], true);
+    }
+    if (typeof this.state.itemsOrder[2] === 'number') {
+      this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
+      this._drawItem(this.state.itemsOrder[2]);
+    }
+    this.position();
+    this._preload()
+  }
+  _moveItem(item, value, unit) {
+    unit = unit || 'px';
+
+    //detect translate property
+    if (njBox.g.transform['3d']) {
+      item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)'
+    } else if (njBox.g.transform['css']) {
+      item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translateX(' + (value + unit) + ')'
+    } else {
+      item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
+    }
+  }
+  _changeItem(nextIndex, dir) {
+    if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
+
+    var o = this.o,
+      that = this;
+
+    if (!this.items[nextIndex]) {
+      if (o.loop && this.items.length > 2) {
+        if (dir === 'next' && nextIndex === this.items.length) {
+          nextIndex = 0;
+        } else if (dir === 'prev' && nextIndex === -1) {
+          nextIndex = this.items.length - 1;
+        } else {
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+
+    this.state.direction = dir;
+
+    this.state.itemChanging = true;//we can't change slide during current changing
+    this.state.itemsOrder_backup = this.state.itemsOrder.slice();//copy current state
+    this._cb('change', nextIndex);
+
+    this.state.active = nextIndex;
+    this._setItemsOrder(nextIndex);
+
+
+
+    switch (dir) {
+      case 'prev':
+        this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+
+        this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
+        this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
+        break;
+      case 'next':
+        this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+
+        this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
+        this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
+        break;
+    }
+
+    setTimeout(function () {
+      if (that.state.state !== 'shown') {
+        that.state.itemChanging = false;
+        return;//case when we hide modal when slide is changing
+      }
+      //remove slide that was active before changing
+      removeSlide(that.items[that.state.itemsOrder_backup[1]]);
+
+      //remove third slide
+      var thirdItem = (dir === 'prev') ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
+      if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
+
+      delete that.state.itemsOrder_backup;
+
+      that._drawItemSiblings();
+      that._setFocusInPopup(that.items[that.state.active]);
+      that.state.itemChanging = false;
+      that._cb('changed', that.state.active);
+
+    }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
+
+    function removeSlide(item) {
+      item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0])
+      item.dom.modalOuter[0].style.cssText = '';
+    }
+  }
   _preloader(type, item) {
     var o = this.o,
       that = this;
@@ -1302,6 +1291,20 @@ class njBox {
         break;
     }
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   _scrollbar(type) {
@@ -1419,8 +1422,6 @@ class njBox {
         break;
     }
   }
-
-
   _calculateAnimations() {
     var o = this.o,
       animShow,
@@ -1520,7 +1521,6 @@ class njBox {
 
     return Math.max.apply(Math, transitions);
   }
-
   _anim(type, nocallback) {
     var o = this.o,
       that = this,
@@ -1578,8 +1578,6 @@ class njBox {
       that.state.state = 'inited';
     }
   }
-
-
   _clear() {
     var o = this.o;
 

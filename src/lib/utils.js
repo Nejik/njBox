@@ -129,8 +129,7 @@ export let defaults = {
 
 	start:             false,//(number) slide number, from which we should show gallery
 	loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
-	// preload:           '3 3',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
-
+	preload:           '2 2',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
 	
 
 	content: undefined,//(string) content for modal
@@ -168,7 +167,7 @@ export let defaults = {
 
 	text: {
 		_missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
-		// preloader:    'Loading...',//title on preloader element
+		preloader:    'Loading...',//title on preloader element
 
 		imageError:   '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',

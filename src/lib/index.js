@@ -116,7 +116,6 @@ class njBox {
     this.state.inited = true;
     this._cb('inited');
   }
-
   show(index) {
     var o = this.o,
       that = this;
@@ -166,28 +165,6 @@ class njBox {
     this._anim('show');
 
     return this;
-  }
-  _detectIndexForOpen(indexFromShow) {
-    var o = this.o,
-      that = this,
-      index = 0;
-
-    if (indexFromShow) {//first we check if index we have as argument in show method
-      index = indexFromShow - 1;
-    } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
-      index = o.start - 1;
-    }
-    //if we have clicked element, take index from it
-    if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
-      this.els.each(function (i, el) {
-        if (that.state.clickedEl === el) {
-          index = i;
-          return;
-        }
-      })
-    }
-
-    return index;
   }
   hide() {
     if (this.state.state !== 'shown') {
@@ -282,6 +259,28 @@ class njBox {
 
     // this._removeClickHandlers();
     this._setClickHandlers();
+  }
+  _detectIndexForOpen(indexFromShow) {
+    var o = this.o,
+      that = this,
+      index = 0;
+
+    if (indexFromShow) {//first we check if index we have as argument in show method
+      index = indexFromShow - 1;
+    } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
+      index = o.start - 1;
+    }
+    //if we have clicked element, take index from it
+    if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
+      this.els.each(function (i, el) {
+        if (that.state.clickedEl === el) {
+          index = i;
+          return;
+        }
+      })
+    }
+
+    return index;
   }
   _getContainerSize() {
     var o = this.o;
@@ -821,9 +820,12 @@ class njBox {
 
 
   _setItemsOrder(currentIndex) {
+    this.state.itemsOrder = this._getItemsOrder(currentIndex);
+  }
+  _getItemsOrder(currentIndex) {
     var o = this.o,
-      prev = this.state.active - 1,
-      next = this.state.active + 1;
+      prev = currentIndex - 1,
+      next = currentIndex + 1;
 
     if (o.loop && this.items.length > 2) {
       if (prev === -1) prev = this.items.length - 1;
@@ -832,7 +834,38 @@ class njBox {
     if (!this.items[prev]) prev = null;
     if (!this.items[next]) next = null;
 
-    this.state.itemsOrder = [prev, currentIndex, next];
+    return [prev, currentIndex, next];
+  }
+  _preload() {
+    var o = this.o,
+      that = this;
+
+    if (!o.preload || this.state.state !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
+
+    var temp = o.preload.split(' '),
+      prev = parseInt(temp[0]),
+      prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
+      next = parseInt(temp[1]),
+      nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
+    
+    //load next
+    while (next--) {
+      preload.call(this, nextState);
+      nextState = this._getItemsOrder(nextState)[2];
+    }
+
+    //load previous
+    while (prev--) {
+      preload.call(this, prevState);
+      prevState = this._getItemsOrder(prevState)[0]
+    }
+
+    function preload(index) {
+      var item = this.items[index],
+        content = item.content;
+
+      if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
+    }
   }
   _drawItemSiblings() {
     var o = this.o,
@@ -849,6 +882,7 @@ class njBox {
       this._drawItem(this.state.itemsOrder[2]);
     }
     this.position();
+    this._preload()
   }
   _moveItem(item, value, unit) {
     unit = unit || 'px';
@@ -910,7 +944,6 @@ class njBox {
 
     setTimeout(function () {
       if (that.state.state !== 'shown') {
-        console.log(that.state.state);
         that.state.itemChanging = false;
         return;//case when we hide modal when slide is changing
       }
@@ -1267,6 +1300,7 @@ class njBox {
     }
   }
 
+
   _scrollbar(type) {
     var o = this.o;
     switch (type) {
@@ -1601,6 +1635,12 @@ class njBox {
       type === 'destroyed'
     ) {
       this.state.state = type;
+    }
+    //make some stuff on callbacks
+    switch (type) {
+      case 'shown':
+        if (this.state.gallery) this._preload();
+        break;
     }
 
     //trigger callbacks

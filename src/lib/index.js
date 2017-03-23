@@ -847,7 +847,7 @@ class njBox {
       prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
       next = parseInt(temp[1]),
       nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
-    
+
     //load next
     while (next--) {
       preload.call(this, nextState);
@@ -915,6 +915,7 @@ class njBox {
         return;
       }
     }
+    this.v.items[0].focus()
 
 
     this.state.direction = dir;
@@ -925,6 +926,8 @@ class njBox {
 
     this.state.active = nextIndex;
     this._setItemsOrder(nextIndex);
+
+    
 
     switch (dir) {
       case 'prev':
@@ -940,7 +943,6 @@ class njBox {
         this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
         break;
     }
-    this._setFocusInPopup(this.items[this.state.active]);
 
     setTimeout(function () {
       if (that.state.state !== 'shown') {
@@ -957,6 +959,7 @@ class njBox {
       delete that.state.itemsOrder_backup;
 
       that._drawItemSiblings();
+      that._setFocusInPopup(that.items[that.state.active]);
       that.state.itemChanging = false;
       that._cb('changed', that.state.active);
 

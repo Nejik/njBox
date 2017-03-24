@@ -146,10 +146,10 @@ var njBox = function () {
       //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
       if (!njBox.g) njBox.g = (0, _utils.getDefaultInfo)();
 
-      this.active = 0;
-
       //inner options, current state of app, this.state clears after every hide
-      this.state = {};
+      this.state = {
+        active: 0
+      };
 
       //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
       this._globals = {};
@@ -192,7 +192,7 @@ var njBox = function () {
         $.extend(true, this.o, this._globals.gatheredOptions);
 
         //gather dom elements from which we will create modal window/gallery
-        this.els = this._gatherElements(o.selector);
+        this.els = this._gatherElements(o.gallery);
       }
       this._postProcessOptions();
 
@@ -221,8 +221,6 @@ var njBox = function () {
   }, {
     key: 'show',
     value: function show(index) {
-      if (index) this.active = parseInt(index - 1); //index uses in gallery
-
       var o = this.o,
           that = this;
 
@@ -238,15 +236,7 @@ var njBox = function () {
       if (this._cb('show') === false) return; //callback show (we can cancel showing popup, if show callback will return false)
       this.returnValue = null;
 
-      // find clicked element index and start gallery from this slide
-      if (this.state.gallery) {
-        if (this.els && this.els.length) this.els.each(function (i, el) {
-          if (that.state.clickedEl === el) {
-            that.active = i;
-            return;
-          }
-        });
-      }
+      that.state.active = this._detectIndexForOpen(index);
 
       if (!this.v.container[0].njb_instances) {
         this.v.container[0].njb_instances = 1;
@@ -266,7 +256,11 @@ var njBox = function () {
       this.v.container[0].appendChild(this.v.wrap[0]);
 
       //draw modal on screen
-      this._drawItem(this.active);
+      this._drawItem(this.state.active);
+      if (that.state.gallery) {
+        this._setItemsOrder(this.state.active);
+        this._drawItemSiblings();
+      }
 
       this.position();
 
@@ -328,7 +322,15 @@ var njBox = function () {
           'height': this.state.dimensions.containerScrollHeight + 'px'
         });
       }
-      this._setMaxHeight(this.items[this.active]);
+
+      //we need autoheight for every slide in gallery
+      if (this.state.gallery) {
+        for (var index = 0; index < this.state.itemsOrder.length; index++) {
+          if (this.state.itemsOrder[index] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
+        }
+      } else {
+        this._setMaxHeight(this.items[this.state.active]);
+      }
 
       this._cb('position');
 
@@ -337,12 +339,70 @@ var njBox = function () {
   }, {
     key: 'prev',
     value: function prev() {
-      console.log('prev');
+      this._changeItem(this.state.active - 1, 'prev');
+
+      return this;
     }
   }, {
     key: 'next',
     value: function next() {
-      console.log('next');
+      this._changeItem(this.state.active + 1, 'next');
+
+      return this;
+    }
+  }, {
+    key: 'goTo',
+    value: function goTo(index) {
+      index = index - 1; //inside gallery we have index -1, because slides starts from 0
+
+      if (this.state.state !== 'shown' || typeof index !== 'number' || index === this.state.active || index < 0 || index > this.items.length - 1) {
+        this._error('njBox, wrong index in goTo method or gallery not in shown state.');
+        return this;
+      }
+
+      var dir = index > this.state.active ? 'next' : 'prev';
+
+      //the most desired cases when we should call prev/next slides :)
+      if (dir === 'next' && index === this.state.active + 1) {
+        this.next();
+      } else if (dir === 'prev' && index === this.state.active - 1) {
+        this.prev();
+      }
+      //if it is not simple prev/next, so we need to recreate slides
+      else {
+          //remove siblings
+          this.items[this.state.itemsOrder[0]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[0]].dom.modalOuter[0]);
+          this.items[this.state.itemsOrder[2]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[2]].dom.modalOuter[0]);
+          //clear position of siblings
+          this.items[this.state.itemsOrder[0]].dom.modalOuter[0].style.cssText = '';
+          this.items[this.state.itemsOrder[2]].dom.modalOuter[0].style.cssText = '';
+
+          switch (dir) {
+            case 'next':
+              // set new state
+              this.state.itemsOrder[0] = null;
+              this.state.itemsOrder[2] = index;
+
+              //draw new slides
+              this._drawItemSiblings();
+
+              this._changeItem(index, 'next');
+              break;
+            case 'prev':
+              // set new state
+              this.state.itemsOrder[0] = index;
+              this.state.itemsOrder[2] = null;
+
+              //draw new slides
+              this._drawItemSiblings();
+
+              //animation to new slide
+              this._changeItem(index, 'prev');
+              break;
+          }
+        }
+
+      return this;
     }
   }, {
     key: 'destroy',
@@ -352,13 +412,7 @@ var njBox = function () {
         return;
       }
 
-      if (this.els && this.els.length) {
-        this.els.off('click', this._handlers.elsClick);
-
-        if (this.o.clickels) {
-          $(this.o.clickels).off('click', this._handlers.elsClick);
-        }
-      }
+      this._removeClickHandlers();
 
       this.v.container.removeClass('njb-relative');
 
@@ -370,6 +424,20 @@ var njBox = function () {
       this.o = {};
 
       this._cb('destroyed');
+
+      return this;
+    }
+  }, {
+    key: 'update',
+    value: function update() {
+      //gather dom elements from which we will create modal window/gallery
+      this.els = this._gatherElements(this.o.gallery);
+      this.items = this._createItems(this._createRawItems());
+
+      // this._removeClickHandlers();
+      this._setClickHandlers();
+
+      return this;
     }
   }, {
     key: '_getContainerSize',
@@ -485,7 +553,7 @@ var njBox = function () {
     key: '_postProcessOptions',
     value: function _postProcessOptions() {
       var o = this.o;
-      if (o.selector || o.delegate) this.state.gallery = true;
+      if (o.gallery) this.state.gallery = true;
     }
   }, {
     key: '_gatherData',
@@ -568,16 +636,16 @@ var njBox = function () {
     value: function _createItems(els) {
       var items = [];
       for (var i = 0, l = els.length; i < l; i++) {
-        items.push(this._createItem(els[i]));
+        items.push(this._createItem(els[i], i));
       }
       return items;
     }
   }, {
     key: '_createItem',
-    value: function _createItem(item) {
+    value: function _createItem(item, index) {
       var normalizedItem = this._normalizeItem(item);
 
-      this._createDomForItem(normalizedItem);
+      this._createDomForItem(normalizedItem, index);
 
       return normalizedItem;
     }
@@ -623,18 +691,20 @@ var njBox = function () {
     }
   }, {
     key: '_createDomForItem',
-    value: function _createDomForItem(item) {
+    value: function _createDomForItem(item, index) {
       var o = this.o,
           dom = item.dom = {},
           modalFragment = document.createDocumentFragment();
 
       dom.modalOuter = $(o.templates.modalOuter);
       dom.modalOuter[0].njBox = this;
+      if (this.state.gallery) dom.modalOuter[0].setAttribute('data-njb-index', index);
 
       //main modal wrapper
       dom.modal = $(o.templates.modal);
       dom.modal[0].setAttribute('tabindex', '-1');
       dom.modal[0].njBox = this;
+
       if (!dom.modal.length) {
         this._error('njBox, error in o.templates.modal');
         return;
@@ -696,6 +766,11 @@ var njBox = function () {
 
         dom.modal[0].appendChild(modalFragment);
       }
+      if (item.type === 'image') {
+        item.dom.modal.addClass('njb--image');
+      } else {
+        item.dom.modal.addClass('njb--content');
+      }
 
       this._cb('item_domready', item);
     }
@@ -726,11 +801,6 @@ var njBox = function () {
           return;
           break;
       }
-      if (item.type === 'image') {
-        item.dom.modal.addClass('njb--image');
-      } else {
-        item.dom.modal.addClass('njb--content');
-      }
     }
   }, {
     key: '_getItemFromSelector',
@@ -740,6 +810,393 @@ var njBox = function () {
       if (!item.o.contentEl.length) {
         item.dom.body[0].innerHTML = item.content; //if we don't find element with this selector
       }
+    }
+  }, {
+    key: '_createDom',
+    value: function _createDom() {
+      var o = this.o;
+
+      //find container
+      this.v.container = $(o.container);
+      if (!this.v.container.length) {
+        this._error('njBox, can\'t find container element. (we use body instead)');
+        this.v.container = this.v.body; //in case if we have no container element, or wrong selector for container element
+      }
+      //check if container not relative position
+      if (this.v.container[0] !== this.v.body[0] && this.v.container.css('position') === 'static') {
+        this.v.container.addClass('njb-relative');
+      }
+
+      //create core elements
+      this.v.wrap = $(o.templates.wrap);
+      if (!this.v.wrap.length) {
+        this._error('njBox, smth wrong with o.templates.wrap.');
+        return;
+      }
+      if (o['class']) this.v.wrap.addClass(o['class']);
+      this.v.wrap[0].njBox = this;
+      if (o.zindex) this.v.wrap.css('zIndex', o.zindex);
+
+      this.v.items = this.v.wrap.find('.njb-items');
+
+      //if container custom element(not body), use forcely absolute position
+      if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
+      if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
+
+      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+        if (this.v.next[0]) this.v.wrap[0].appendChild(this.v.next[0]);
+        if (this.v.prev[0]) this.v.wrap[0].appendChild(this.v.prev[0]);
+        this.state.arrowsInserted = true;
+      }
+
+      // insert outside close button
+      if (o.close === 'outside') {
+        this.v.close = $(o.templates.close);
+        this.v.close[0].setAttribute('title', o.text.close);
+
+        this.v.wrap[0].appendChild(this.v.close[0]);
+      }
+
+      this.v.focusCatcher = $(o.templates.focusCatcher);
+      this.v.wrap[0].appendChild(this.v.focusCatcher[0]);
+    }
+  }, {
+    key: '_drawItem',
+    value: function _drawItem(index, prepend) {
+      var o = this.o,
+          item = this.items[index];
+
+      if (!item) {
+        this._error('njBox, we have no item with this index - ' + index, true);
+        return;
+      }
+
+      this._cb('item_prepare', item);
+
+      //insert content in items, where inserting is delayed to show event
+      this._insertDelayedContent(item);
+
+      if (prepend) {
+        this.v.items[0].insertBefore(item.dom.modalOuter[0], this.v.items[0].firstChild);
+      } else {
+        this.v.items[0].appendChild(item.dom.modalOuter[0]);
+      }
+
+      this._cb('item_inserted', item);
+    }
+  }, {
+    key: '_insertDelayedContent',
+    value: function _insertDelayedContent(item) {
+      var that = this,
+          o = this.o,
+          contentEl;
+
+      if (item.type === 'image' && o.imgload === 'show' && !item.o.imageInserted) {
+        this._insertImage(item);
+      } else if (item.type === 'selector' && !item.o.contentElInserted) {
+        contentEl = item.o.contentEl;
+
+        //try to find element for popup again on every show
+        if (!contentEl || !contentEl.length) {
+          this._getItemFromSelector(item);
+          contentEl = item.o.contentEl;
+        }
+        if (!contentEl || !contentEl.length) return;
+
+        var style = contentEl[0].style.cssText;
+        if (style) item.o.contentElStyle = style;
+
+        var dn = contentEl.css('display') === 'none';
+        if (dn) {
+          item.o.contentElDisplayNone = true;
+          contentEl[0].style.display = 'block';
+        }
+        item.dom.body[0].innerHTML = ''; //clear body for case when first time we can't find contentEl on page
+        item.dom.body[0].appendChild(contentEl[0]);
+        item.o.contentElInserted = true;
+      }
+    }
+  }, {
+    key: '_removeSelectorItemsElement',
+    value: function _removeSelectorItemsElement() {
+      var items = this.items,
+          item,
+          contentEl;
+
+      for (var i = 0, l = items.length; i < l; i++) {
+        if (items[i].type === 'selector') {
+          item = items[i];
+          if (!item.o.contentElInserted) continue;
+
+          contentEl = item.o.contentEl;
+
+          if (item.o.contentElDisplayNone) {
+            contentEl[0].style.display = 'none';
+            item.o.contentElDisplayNone = undefined;
+          }
+          if (item.o.contentElStyle) {
+            contentEl[0].style.cssText = item.o.contentElStyle;
+            item.o.contentElStyle = undefined;
+          }
+          //return selector element to the dom
+          this.v.body[0].appendChild(contentEl[0]);
+          item.o.contentElInserted = false;
+        }
+      }
+    }
+  }, {
+    key: '_setFocusInPopup',
+    value: function _setFocusInPopup(item, initialFocus) {
+      var o = this.o,
+          focusElement;
+
+      if (initialFocus) {
+        focusElement = item.dom.modal.find('[autofocus]');
+
+        if (!focusElement.length && o.autofocus) {
+          focusElement = item.dom.modal.find(o.autofocus);
+        }
+      }
+
+      if (!focusElement || !focusElement.length) {
+        focusElement = item.dom.modal.find(this.o._focusable);
+      }
+
+      //first try to focus elements inside modal
+      if (focusElement && focusElement.length) {
+        focusElement[0].focus();
+      } else if (this.state.gallery) {
+        this.v.next[0].focus();
+      } else if (o.close === "outside") {
+        //then try to focus close buttons
+        this.v.close[0].focus();
+      } else if (o.close === "inside" && item.dom.close) {
+        //if type:"template" is used we have no close button here
+        item.dom.close[0].focus();
+      } else {
+        //if no, focus popup itself
+        item.dom.modal[0].focus();
+      }
+    }
+  }, {
+    key: '_setClickHandlers',
+    value: function _setClickHandlers() {
+      //initial click handlers
+      var o = this.o;
+
+      if (!o.click) return;
+
+      if (this.els && this.els.length) {
+        this.els.off('click', this._handlers.elsClick);
+        if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
+
+        this._handlers.elsClick = this._clickHandler();
+        this.els.on('click', this._handlers.elsClick);
+        if (o.clickels) $(o.clickels).on('click', this._handlers.elsClick);
+      }
+    }
+  }, {
+    key: '_clickHandler',
+    value: function _clickHandler() {
+      //this method creates closure with modal instance
+      var o = this.o,
+          that = this;
+
+      return function (e) {
+        var el = this;
+
+        if (e.originalEvent) e = e.originalEvent; //work with original event
+
+        if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return; //handle only left button click without key modificators
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+        if (that.state.state !== 'inited') {
+          that._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+          return;
+        }
+        if ($(el).closest('.njb-close-system, .njb-arrow').length) return; //don't remember why it here O_o
+
+
+        that.state.clickedEvent = e;
+        that.state.clickedEl = el;
+
+        that.show();
+      };
+    }
+  }, {
+    key: '_removeClickHandlers',
+    value: function _removeClickHandlers() {
+      if (this.els && this.els.length) {
+        this.els.off('click', this._handlers.elsClick);
+
+        if (this.o.clickels) {
+          $(this.o.clickels).off('click', this._handlers.elsClick);
+        }
+      }
+    }
+  }, {
+    key: '_setEventsHandlers',
+    value: function _setEventsHandlers() {
+      //all other event handlers
+      var o = this.o,
+          that = this,
+          h = this._handlers;
+
+      h.container_resize = function () {
+        that.position();
+      };
+      h.container_scroll = function () {
+        that.position();
+      };
+      this.v.container.on('resize', h.container_resize).on('scroll', h.container_scroll);
+
+      h.wrap_out = function (e) {
+        var $el = $(e.target),
+            prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
+        if (prevent) return;
+
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+        if (o.out) {
+          if (that._cb('cancel') === false) return;
+          that.hide();
+        } else {
+          that.items[that.state.active].dom.modal.addClass('njb_pulse');
+          that._setFocusInPopup(that.items[that.state.active]);
+
+          setTimeout(function () {
+            that.items[that.state.active].dom.modal.removeClass('njb_pulse');
+          }, that._getAnimTime(that.items[that.state.active].dom.modal[0]));
+        }
+      };
+      h.wrap_resize = function () {
+        // that.position();
+      };
+      h.wrap_scroll = function (e) {
+        // that.position();
+      };
+      h.wrap_keydown = function (e) {
+        that._cb('keydown', e);
+
+        switch (e.which) {
+          case 27:
+            //esc
+            if (o.esc) {
+              if (that._cb('cancel') === false) return;
+              that.hide();
+            }
+
+            e.preventDefault ? e.preventDefault() : e.returnValue = false;
+            break;
+          case 37:
+            //left arrow
+            that.prev();
+            e.preventDefault();
+            break;
+          case 39:
+            //right arrow
+            that.next();
+            e.preventDefault();
+            break;
+        }
+      };
+      h.wrap_close = function (e) {
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+        if (that._cb('cancel') === false) return;
+        that.hide();
+      };
+      h.wrap_ok = function (e) {
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+        if (that._cb('ok') === false) return;
+        that.hide();
+      };
+      h.wrap_cancel = function (e) {
+        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+        if (that._cb('cancel') === false) return;
+        that.hide();
+      };
+      h.wrap_prev = function (e) {
+        that.prev();
+        e.preventDefault();
+      };
+      h.wrap_next = function (e) {
+        that.next();
+        e.preventDefault();
+      };
+
+      this.v.wrap.on('click', h.wrap_out).on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel).delegate('[data-njb-prev]', 'click', h.wrap_prev).delegate('[data-njb-next]', 'click', h.wrap_next);
+
+      h.window_resize = function (e) {
+        that.position();
+      };
+      h.window_scroll = function (e) {
+        that.position();
+      };
+      h.window_orientation = function (e) {
+        that.position();
+      };
+
+      this.v.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
+
+      h.focusCatch = function (e) {
+        that._setFocusInPopup(that.items[that.state.active]);
+      };
+      this.v.focusCatcher.on('focus', h.focusCatch);
+
+      this._cb('events_setted');
+    }
+  }, {
+    key: '_removeEventsHandlers',
+    value: function _removeEventsHandlers() {
+      var h = this._handlers;
+
+      this.v.container.off('resize', h.container_resize).off('scroll', h.container_scroll);
+
+      this.v.wrap.off('click', h.wrap_out).off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel).undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
+
+      this.v.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
+
+      //remove link to all previous handlers
+      var elsClick = h.elsClick;
+      this._handlers = {
+        elsClick: elsClick
+      };
+
+      this.v.focusCatcher.off('focus', h.focusCatch);
+
+      this._cb('events_removed');
+    }
+
+    //gallery methods
+
+  }, {
+    key: '_detectIndexForOpen',
+    value: function _detectIndexForOpen(indexFromShow) {
+      var o = this.o,
+          that = this,
+          index = 0;
+
+      if (indexFromShow) {
+        //first we check if index we have as argument in show method
+        index = indexFromShow - 1;
+      } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {
+        //then we check o.start option
+        index = o.start - 1;
+      }
+      //if we have clicked element, take index from it
+      if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
+        this.els.each(function (i, el) {
+          if (that.state.clickedEl === el) {
+            index = i;
+            return;
+          }
+        });
+      }
+
+      return index;
     }
   }, {
     key: '_insertImage',
@@ -849,358 +1306,162 @@ var njBox = function () {
       }
     }
   }, {
-    key: '_createDom',
-    value: function _createDom() {
-      var o = this.o;
-
-      //find container
-      this.v.container = $(o.container);
-      if (!this.v.container.length) {
-        this._error('njBox, can\'t find container element. (we use body instead)');
-        this.v.container = this.v.body; //in case if we have no container element, or wrong selector for container element
-      }
-      //check if container not relative position
-      if (this.v.container[0] !== this.v.body[0] && this.v.container.css('position') === 'static') {
-        this.v.container.addClass('njb-relative');
-      }
-
-      //create core elements
-      this.v.wrap = $(o.templates.wrap);
-      if (!this.v.wrap.length) {
-        this._error('njBox, smth wrong with o.templates.wrap.');
-        return;
-      }
-      if (o['class']) this.v.wrap.addClass(o['class']);
-      this.v.wrap[0].njBox = this;
-      if (o.zindex) this.v.wrap.css('zIndex', o.zindex);
-
-      this.v.items = this.v.wrap.find('.njb-items');
-
-      //if container custom element(not body), use forcely absolute position
-      if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
-      if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
-
-      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        this.v.wrap[0].appendChild(this.v.prev[0]);
-        this.v.wrap[0].appendChild(this.v.next[0]);
-        this.state.arrowsInserted = true;
-      }
-
-      // insert outside close button
-      if (o.close === 'outside') {
-        this.v.close = $(o.templates.close);
-        this.v.close[0].setAttribute('title', o.text.close);
-
-        this.v.wrap[0].appendChild(this.v.close[0]);
-      }
-
-      this.v.focusCatcher = $(o.templates.focusCatcher);
-      this.v.wrap[0].appendChild(this.v.focusCatcher[0]);
+    key: '_setItemsOrder',
+    value: function _setItemsOrder(currentIndex) {
+      this.state.itemsOrder = this._getItemsOrder(currentIndex);
     }
   }, {
-    key: '_drawItem',
-    value: function _drawItem(index) {
+    key: '_getItemsOrder',
+    value: function _getItemsOrder(currentIndex) {
       var o = this.o,
-          item = this.items[index];
+          prev = currentIndex - 1,
+          next = currentIndex + 1;
 
-      if (!item) {
-        this._error('njBox, we have no item with this index - ' + index, true);
-        return;
+      if (o.loop && this.items.length > 2) {
+        if (prev === -1) prev = this.items.length - 1;
+        if (next === this.items.length) next = 0;
       }
+      if (!this.items[prev]) prev = null;
+      if (!this.items[next]) next = null;
 
-      this._cb('item_prepare', item);
-
-      //insert content in slides, where inserting is delayed to show event
-      this._insertDelayedContent();
-
-      this.v.items[0].appendChild(item.dom.modalOuter[0]);
-
-      this._cb('item_inserted', item);
+      return [prev, currentIndex, next];
     }
   }, {
-    key: '_insertDelayedContent',
-    value: function _insertDelayedContent() {
-      var that = this,
-          o = this.o,
-          items = this.items,
-          item,
-          contentEl;
-
-      for (var i = 0, l = items.length; i < l; i++) {
-        item = items[i];
-
-        if (item.type === 'image' && o.imgload === 'show') {
-          if (item.o.imageInserted) {
-            continue;
-          }
-          this._insertImage(item);
-        } else if (item.type === 'selector') {
-          if (item.o.contentElInserted) {
-            continue;
-          }
-
-          contentEl = item.o.contentEl;
-
-          //try to find element for popup again on every show
-          if (!contentEl || !contentEl.length) {
-            this._getItemFromSelector(item);
-            contentEl = item.o.contentEl;
-          }
-          if (!contentEl || !contentEl.length) continue;
-
-          var style = contentEl[0].style.cssText;
-          if (style) item.o.contentElStyle = style;
-
-          var dn = contentEl.css('display') === 'none';
-          if (dn) {
-            item.o.contentElDisplayNone = true;
-            contentEl[0].style.display = 'block';
-          }
-          item.dom.body[0].innerHTML = ''; //clear body for case when first time we can't find contentEl on page
-          item.dom.body[0].appendChild(contentEl[0]);
-          item.o.contentElInserted = true;
-        }
-      }
-    }
-  }, {
-    key: '_removeSelectorItemsElement',
-    value: function _removeSelectorItemsElement() {
-      var items = this.items,
-          item,
-          contentEl;
-
-      for (var i = 0, l = items.length; i < l; i++) {
-        if (items[i].type === 'selector') {
-          item = items[i];
-          if (!item.o.contentElInserted) continue;
-
-          contentEl = item.o.contentEl;
-
-          if (item.o.contentElDisplayNone) {
-            contentEl[0].style.display = 'none';
-            item.o.contentElDisplayNone = undefined;
-          }
-          if (item.o.contentElStyle) {
-            contentEl[0].style.cssText = item.o.contentElStyle;
-            item.o.contentElStyle = undefined;
-          }
-          //return selector element to the dom
-          this.v.body[0].appendChild(contentEl[0]);
-          item.o.contentElInserted = false;
-        }
-      }
-    }
-  }, {
-    key: '_setFocusInPopup',
-    value: function _setFocusInPopup(item, initialFocus) {
-      var o = this.o,
-          focusElement;
-
-      if (initialFocus) {
-        focusElement = item.dom.modal.find('[autofocus]');
-
-        if (!focusElement.length && o.autofocus) {
-          focusElement = item.dom.modal.find(o.autofocus);
-        }
-      }
-
-      if (!focusElement || !focusElement.length) {
-        focusElement = item.dom.modal.find(this.o._focusable);
-      }
-
-      //first try to focus elements inside modal
-      if (focusElement && focusElement.length) {
-        focusElement[0].focus();
-      } else if (o.close === "outside") {
-        //then try to focus close buttons
-        this.v.close[0].focus();
-      } else if (o.close === "inside" && item.dom.close) {
-        //if type:"template" is used we have no close button here
-        item.dom.close[0].focus();
-      } else {
-        //if no, focus popup itself
-        item.dom.modal[0].focus();
-      }
-    }
-  }, {
-    key: '_setClickHandlers',
-    value: function _setClickHandlers() {
-      //initial click handlers
-      var o = this.o;
-
-      if (!o.click) return;
-
-      if (o.delegate) {} else if (this.els && this.els.length) {
-        this._handlers.elsClick = this._clickHandler();
-        this.els.off('click', this._handlers.elsClick).on('click', this._handlers.elsClick);
-
-        if (o.clickels) {
-          $(o.clickels).off('click', this._handlers.elsClick).on('click', this._handlers.elsClick);
-        }
-      }
-    }
-  }, {
-    key: '_clickHandler',
-    value: function _clickHandler() {
-      //this method creates closure with modal instance
+    key: '_preload',
+    value: function _preload() {
       var o = this.o,
           that = this;
 
-      return function (e) {
-        var el = this;
+      if (!o.preload || this.state.state !== 'shown') return; //we should start preloading only after show animation is finished, because loading images makes animation glitchy
 
-        if (e.originalEvent) e = e.originalEvent; //work with original event
+      var temp = o.preload.split(' '),
+          prev = parseInt(temp[0]),
+          prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
+          next = parseInt(temp[1]),
+          nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
 
-        if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return; //handle only left button click without key modificators
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+      //load next
+      while (next--) {
+        preload.call(this, nextState);
+        nextState = this._getItemsOrder(nextState)[2];
+      }
 
-        if (that.state.state !== 'inited') {
-          that._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+      //load previous
+      while (prev--) {
+        preload.call(this, prevState);
+        prevState = this._getItemsOrder(prevState)[0];
+      }
+
+      function preload(index) {
+        if (index === null) return;
+        var item = this.items[index],
+            content = item.content;
+
+        if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
+      }
+    }
+  }, {
+    key: '_drawItemSiblings',
+    value: function _drawItemSiblings() {
+      var o = this.o,
+          that = this;
+
+      if (typeof this.state.itemsOrder[0] === 'number') {
+        this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
+        this._drawItem(this.state.itemsOrder[0], true);
+      }
+      if (typeof this.state.itemsOrder[2] === 'number') {
+        this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
+        this._drawItem(this.state.itemsOrder[2]);
+      }
+      this.position();
+      this._preload();
+    }
+  }, {
+    key: '_moveItem',
+    value: function _moveItem(item, value, unit) {
+      unit = unit || 'px';
+
+      //detect translate property
+      if (njBox.g.transform['3d']) {
+        item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)';
+      } else if (njBox.g.transform['css']) {
+        item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translateX(' + (value + unit) + ')';
+      } else {
+        item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit);
+      }
+    }
+  }, {
+    key: '_changeItem',
+    value: function _changeItem(nextIndex, dir) {
+      if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
+
+      var o = this.o,
+          that = this;
+
+      if (!this.items[nextIndex]) {
+        if (o.loop && this.items.length > 2) {
+          if (dir === 'next' && nextIndex === this.items.length) {
+            nextIndex = 0;
+          } else if (dir === 'prev' && nextIndex === -1) {
+            nextIndex = this.items.length - 1;
+          } else {
+            return;
+          }
+        } else {
           return;
         }
-        if ($(el).closest('.njb-close-system, .njb-arrow').length) return; //don't remember why it here O_o
+      }
 
+      this.state.direction = dir;
 
-        that.state.clickedEvent = e;
-        that.state.clickedEl = el;
+      this.state.itemChanging = true; //we can't change slide during current changing
+      this.state.itemsOrder_backup = this.state.itemsOrder.slice(); //copy current state
+      this._cb('change', nextIndex);
 
-        that.show();
-      };
-    }
-  }, {
-    key: '_setEventsHandlers',
-    value: function _setEventsHandlers() {
-      //all other event handlers
-      var o = this.o,
-          that = this,
-          h = this._handlers;
+      this.state.active = nextIndex;
+      this._setItemsOrder(nextIndex);
 
-      h.container_resize = function () {
-        that.position();
-      };
-      h.container_scroll = function () {
-        that.position();
-      };
-      this.v.container.on('resize', h.container_resize).on('scroll', h.container_scroll);
+      switch (dir) {
+        case 'prev':
+          this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle'; //hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
 
-      h.wrap_out = function (e) {
-        var $el = $(e.target),
-            prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
-        if (prevent) return;
+          this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
+          this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
+          break;
+        case 'next':
+          this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle'; //hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
 
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+          this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
+          this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
+          break;
+      }
 
-        if (o.out) {
-          if (that._cb('cancel') === false) return;
-          that.hide();
-        } else {
-          that.items[that.active].dom.modal.addClass('njb_pulse');
-          that._setFocusInPopup(this.items[this.active]);
-
-          setTimeout(function () {
-            that.items[that.active].dom.modal.removeClass('njb_pulse');
-          }, that._getAnimTime(that.items[that.active].dom.modal[0]));
+      setTimeout(function () {
+        if (that.state.state !== 'shown') {
+          that.state.itemChanging = false;
+          return; //case when we hide modal when slide is changing
         }
-      };
-      h.wrap_resize = function () {
-        // that.position();
-      };
-      h.wrap_scroll = function (e) {
-        // that.position();
-      };
-      h.wrap_keydown = function (e) {
-        that._cb('keydown', e);
+        //remove slide that was active before changing
+        removeSlide(that.items[that.state.itemsOrder_backup[1]]);
 
-        switch (e.which) {
-          case 27:
-            //esc
-            if (o.esc) {
-              if (that._cb('cancel') === false) return;
-              that.hide();
-            }
+        //remove third slide
+        var thirdItem = dir === 'prev' ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
+        if (that.items[thirdItem]) removeSlide(that.items[thirdItem]); //we should check if such slide exist, because it can be null, when o.loop is false
 
-            e.preventDefault ? e.preventDefault() : e.returnValue = false;
-            break;
-          case 37:
-            //left arrow
-            that.prev();
-            e.preventDefault();
-            break;
-          case 39:
-            //right arrow
-            that.next();
-            e.preventDefault();
-            break;
-        }
-      };
-      h.wrap_close = function (e) {
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+        delete that.state.itemsOrder_backup;
 
-        if (that._cb('cancel') === false) return;
-        that.hide();
-      };
-      h.wrap_ok = function (e) {
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+        that._setItemsOrder(that.state.active);
+        that._drawItemSiblings();
+        that._setFocusInPopup(that.items[that.state.active]);
+        that.state.itemChanging = false;
+        that._cb('changed', that.state.active);
+      }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
 
-        if (that._cb('ok') === false) return;
-        that.hide();
-      };
-      h.wrap_cancel = function (e) {
-        e.preventDefault ? e.preventDefault() : e.returnValue = false;
-
-        if (that._cb('cancel') === false) return;
-        that.hide();
-      };
-      h.wrap_prev = function (e) {
-        that.prev();
-        e.preventDefault();
-      };
-      h.wrap_next = function (e) {
-        that.next();
-        e.preventDefault();
-      };
-
-      this.v.wrap.on('click', h.wrap_out).on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel).delegate('[data-njb-prev]', 'click', h.wrap_prev).delegate('[data-njb-next]', 'click', h.wrap_next);
-
-      h.window_resize = function (e) {
-        that.position();
-      };
-      h.window_scroll = function (e) {
-        that.position();
-      };
-      h.window_orientation = function (e) {
-        that.position();
-      };
-
-      this.v.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
-
-      h.focusCatch = function (e) {
-        that._setFocusInPopup(that.items[that.active]);
-      };
-      this.v.focusCatcher.on('focus', h.focusCatch);
-
-      this._cb('events_setted');
-    }
-  }, {
-    key: '_removeEventsHandlers',
-    value: function _removeEventsHandlers() {
-      var h = this._handlers;
-
-      this.v.container.off('resize', h.container_resize).off('scroll', h.container_scroll);
-
-      this.v.wrap.off('click', h.wrap_out).off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel).undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
-
-      this.v.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
-
-      //remove link to all previous handlers
-      var elsClick = h.elsClick;
-      this._handlers = {
-        elsClick: elsClick
-      };
-
-      this.v.focusCatcher.off('focus', h.focusCatch);
-
-      this._cb('events_removed');
+      function removeSlide(item) {
+        item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0]);
+        item.dom.modalOuter[0].style.cssText = '';
+      }
     }
   }, {
     key: '_preloader',
@@ -1466,8 +1727,8 @@ var njBox = function () {
     value: function _anim(type, nocallback) {
       var o = this.o,
           that = this,
-          modalOuter = this.items[this.active].dom.modalOuter,
-          modal = this.items[this.active].dom.modal,
+          modalOuter = this.items[this.state.active].dom.modalOuter,
+          modal = this.items[this.state.active].dom.modal,
           animShow = this._globals.animShow,
           animHide = this._globals.animHide,
           animShowDur = this._globals.animShowDur,
@@ -1507,7 +1768,7 @@ var njBox = function () {
         modal.removeClass(animShow);
 
         if (!nocallback) that._cb('shown');
-        that._setFocusInPopup(that.items[that.active], true);
+        that._setFocusInPopup(that.items[that.state.active], true);
       }
       function hiddenCallback() {
         if (o.animclass) modal.removeClass(o.animclass);
@@ -1535,9 +1796,12 @@ var njBox = function () {
 
       this._removeSelectorItemsElement();
 
-      this.active = 0;
-
       if (this.v.items && this.v.items.length) empty(this.v.items[0]); //we can't use innerHTML="" here, for IE(even 11) we need remove method
+
+      //clear inline position
+      for (var i = 0, l = this.items.length; i < l; i++) {
+        this.items[i].dom.modalOuter[0].style.cssText = '';
+      }
 
       function empty(el) {
         while (el.firstChild) {
@@ -1549,6 +1813,7 @@ var njBox = function () {
       this.state = {
         inited: true,
         state: 'inited',
+        active: 0,
         gallery: origGalleryState
       };
 
@@ -1570,8 +1835,14 @@ var njBox = function () {
       var o = this.o,
           callbackResult;
 
-      if (type === 'inited' || type === 'show' || type === 'shown' || type === 'hide' || type === 'hidden' || type === 'change' || type === 'changed' || type === 'destroy' || type === 'destroyed') {
+      if (type === 'inited' || type === 'show' || type === 'shown' || type === 'hide' || type === 'hidden' || type === 'destroy' || type === 'destroyed') {
         this.state.state = type;
+      }
+      //make some stuff on callbacks
+      switch (type) {
+        case 'shown':
+          if (this.state.gallery) this._preload();
+          break;
       }
 
       //trigger callbacks
@@ -1592,7 +1863,7 @@ var njBox = function () {
       var clearArgs = Array.prototype.slice.call(arguments, 1);
 
       if (type === 'ok' || type === 'cancel') {
-        var modal = this.items[this.active].dom.modal,
+        var modal = this.items[this.state.active].dom.modal,
             prompt_input = modal.find('[data-njb-return]'),
             prompt_value = void 0;
         if (prompt_input.length) prompt_value = prompt_input[0].value || null;
@@ -2245,18 +2516,16 @@ var defaults = exports.defaults = {
 	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
 
 
-	selector: '', //(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
-	delegate: '', //(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate. If delegate used instead of selector, gallery items will be gathered dynamically before show
+	gallery: '', //(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
 
 	arrows: true, //(boolean) add navigation arrows for galleries or not
 
 	title: false, //(string || boolean false) title for first slide if we call it via js
 	title_attr: 'title', //(string || boolean false) attribute from which we gather title for slide (used in images)
 
-	// start:             false,//(number) slide number, from which we should start
-	// loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 4 slides, option will be set to false automatically.
-	// imgclick:          true,//(boolean) should we change slide if user clicks on image?
-	// preload:           '3 3',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
+	start: false, //(number) slide number, from which we should show gallery
+	loop: true, //(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
+	preload: '2 2', //(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
 
 
 	content: undefined, //(string) content for modal
@@ -2294,7 +2563,7 @@ var defaults = exports.defaults = {
 
 	text: {
 		_missedContent: 'njBox plugin: meow, put some content here...', //text for case, when slide have no content
-		// preloader:    'Loading...',//title on preloader element
+		preloader: 'Loading...', //title on preloader element
 
 		imageError: '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',

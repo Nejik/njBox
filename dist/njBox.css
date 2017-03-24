@@ -170,8 +170,8 @@
   border: none;
   background: transparent;
 	position: absolute;z-index: 1;top: 50%;
-	width: 70px;
-	height: 70px;
+	width: 40px;
+	height: 40px;
   padding: 0;
 	margin-top: -35px;
 	cursor: pointer;
@@ -197,12 +197,12 @@
 	*background-color:#fff
 }
 .njb-arrow--prev {
-  left: 0;
+  left: 10px;
 }
 .njb-arrow--prev:before {
   content: '◄';
-  width: 70px;
-  line-height: 70px;
+  width: 40px;
+  line-height: 40px;
   text-align: center;
   position: absolute;
   left: 0;
@@ -211,12 +211,12 @@
   transition: 100ms;
 }
 .njb-arrow--next {
-  right: 0;
+  right: 10px;
 }
 .njb-arrow--next:before {
   content: '►';
-  width: 70px;
-  line-height: 70px;
+  width: 40px;
+  line-height: 40px;
   text-align: center;
   position: absolute;
   left: 0;

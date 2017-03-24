@@ -159,8 +159,8 @@ export let defaults = {
 
 		//todo, in gallery
 		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
-		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
-		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
+		ui:          '<div class="njb-ui"><div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div></div>',
+		count:       '<div class="njb-ui__count"><span data-njb-current></span> / <span data-njb-total></span></div>',
 		prev:        '<button type="button" class="njb-arrow njb-arrow--prev" data-njb-prev></button>',
 		next:        '<button type="button" class="njb-arrow njb-arrow--next" data-njb-next></button>'
 	},

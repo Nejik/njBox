@@ -730,6 +730,7 @@ class njBox {
 
     //create ui layer
     this.dom.ui = $(o.templates.ui)
+    if(!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
     this.dom.wrap[0].appendChild(this.dom.ui[0])
 
     this.dom.ui_count = $(o.templates.count)
@@ -855,9 +856,11 @@ class njBox {
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
-    } else if (this.state.gallery) {
+    } else 
+    /*if (this.state.gallery) {
       this.dom.next[0].focus()
-    } else if (o.close === "outside") {//then try to focus close buttons
+    } else*/
+     if (o.close === "outside") {//then try to focus close buttons
       this.dom.close[0].focus()
     } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
       item.dom.close[0].focus();
@@ -1391,16 +1394,37 @@ class njBox {
     //set title
     if (item.title) {
       this.dom.ui.removeClass('njb-ui--no-title');
-      this.dom.wrap.find('[data-njb-title]').html(item.title || '')
     } else {
       this.dom.ui.addClass('njb-ui--no-title');
     }
+    this.dom.wrap.find('[data-njb-title]').html(item.title || '')
+
 
     //set item counts
     this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
     this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
     
+    //arrow classes
+    if(index === 0) {
+      this.dom.ui.addClass('njb-ui--first');
+    } else {
+      this.dom.ui.removeClass('njb-ui--first');
+    }
 
+    if(index === this.items.length - 1) {
+      this.dom.ui.addClass('njb-ui--last');
+    } else {
+      this.dom.ui.removeClass('njb-ui--last');
+    }
+
+    if (item.type === 'image') {
+      this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
+    } else {
+      this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
+    }
+    
+
+    
   }
 
 

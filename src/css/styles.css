@@ -49,7 +49,10 @@
   position: fixed;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
   overflow: hidden;
 
-  &--autoheight {
+  &--autoheight-image {
+    
+  }
+  /*&--autoheight {
 
     & .njb-outer {
       overflow-y: hidden;
@@ -63,7 +66,7 @@
   }
   &--autoheight-image {
 
-  }
+  }*/
 }
 .njb-items {
   outline: none;
@@ -150,8 +153,10 @@
 
 	  transition: transform 200ms, opacity 200ms, margin-right 200ms;
 
-	  /*opacity: 0;
-	  transform: translateY(100%);*/
+   @nest .njb-ui--no-title & {
+    opacity: 0;
+	  transform: translateY(100%);
+   }
 
   }
 
@@ -192,6 +197,10 @@
       
       	transition: 100ms;
       }
+
+      @nest .njb-ui--no-loop.njb-ui--first & {
+        display: none;
+      }
     }
     &--next {
       right: 20px;
@@ -204,6 +213,10 @@
       	position: absolute;left: 0;top: 0;
       
       	transition: 100ms;
+      }
+
+      @nest .njb-ui--no-loop.njb-ui--last & {
+        display: none;
       }
     }
 
@@ -445,7 +458,7 @@
 
 
 /*theme*/
-.njb-close-system {
+.njb-ui__close {
   animation: closeSystemOut 250ms;
   animation-fill-mode: forwards;
 
@@ -466,7 +479,7 @@
   }
 }
 
-.njb-arrow--prev {
+.njb-ui__arrow--prev {
   animation: prevOut 250ms;
   animation-fill-mode: forwards;
 
@@ -482,7 +495,7 @@
   }
 }
 
-.njb-arrow--next {
+.njb-ui__arrow--next {
   animation: nextOut 250ms;
   animation-fill-mode: forwards;
 

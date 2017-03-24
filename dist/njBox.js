@@ -159,7 +159,7 @@ var njBox = function () {
       var o = this.o = $.extend({}, njBox.defaults, opts);
       if (o.jquery) $ = o.jquery;
 
-      this.v = {
+      this.dom = {
         document: $(document),
         window: $(window),
         html: $(document.documentElement),
@@ -197,10 +197,10 @@ var njBox = function () {
       this._postProcessOptions();
 
       if (this.state.gallery) {
-        this.v.prev = $(o.templates.prev);
-        this.v.prev[0].setAttribute('title', o.text.prev);
-        this.v.next = $(o.templates.next);
-        this.v.next[0].setAttribute('title', o.text.next);
+        this.dom.prev = $(o.templates.prev);
+        this.dom.prev[0].setAttribute('title', o.text.prev);
+        this.dom.next = $(o.templates.next);
+        this.dom.next[0].setAttribute('title', o.text.next);
       }
 
       //create items
@@ -238,12 +238,12 @@ var njBox = function () {
 
       that.state.active = this._detectIndexForOpen(index);
 
-      if (!this.v.container[0].njb_instances) {
-        this.v.container[0].njb_instances = 1;
+      if (!this.dom.container[0].njb_instances) {
+        this.dom.container[0].njb_instances = 1;
       } else {
-        this.v.container[0].njb_instances++;
+        this.dom.container[0].njb_instances++;
       }
-      this.v.container.addClass('njb-open');
+      this.dom.container.addClass('njb-open');
 
       this._scrollbar('hide');
 
@@ -253,7 +253,7 @@ var njBox = function () {
       this._setEventsHandlers();
 
       //insert wrap
-      this.v.container[0].appendChild(this.v.wrap[0]);
+      this.dom.container[0].appendChild(this.dom.wrap[0]);
 
       //draw modal on screen
       this._drawItem(this.state.active);
@@ -265,9 +265,9 @@ var njBox = function () {
       this.position();
 
       //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
-      this.v.wrap[0].style.display = 'none';
-      this.v.wrap[0].clientHeight;
-      this.v.wrap[0].style.display = 'block';
+      this.dom.wrap[0].style.display = 'none';
+      this.dom.wrap[0].clientHeight;
+      this.dom.wrap[0].style.display = 'block';
 
       this._anim('show');
 
@@ -311,13 +311,13 @@ var njBox = function () {
             scrollLeft = this.state.dimensions.containerScrollLeft;
 
         if (scrollTop <= this.state.dimensions.containerMaxScrollTop) {
-          this.v.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' });
+          this.dom.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' });
         }
 
         //backdrop positioning
-        this.v.backdrop.css({ 'width': 'auto', 'height': 'auto' });
-        this.v.backdrop[0].clientHeight;
-        this.v.backdrop.css({
+        this.dom.backdrop.css({ 'width': 'auto', 'height': 'auto' });
+        this.dom.backdrop[0].clientHeight;
+        this.dom.backdrop.css({
           'width': this.state.dimensions.containerScrollWidth + 'px',
           'height': this.state.dimensions.containerScrollHeight + 'px'
         });
@@ -414,7 +414,7 @@ var njBox = function () {
 
       this._removeClickHandlers();
 
-      this.v.container.removeClass('njb-relative');
+      this.dom.container.removeClass('njb-relative');
 
       this._globals = undefined;
       this._handlers = undefined;
@@ -446,7 +446,7 @@ var njBox = function () {
 
       var d = this.state.dimensions = {};
 
-      if (this.v.container[0] === this.v.body[0]) {
+      if (this.dom.container[0] === this.dom.body[0]) {
         d.containerWidth = document.documentElement.clientWidth;
         d.containerHeight = document.documentElement.clientHeight;
         d.containerScrollWidth = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth, document.body.offsetWidth, document.documentElement.offsetWidth, document.body.clientWidth, document.documentElement.clientWidth);
@@ -454,12 +454,12 @@ var njBox = function () {
         d.containerScrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
         d.containerScrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft;
       } else {
-        d.containerWidth = this.v.container[0].clientWidth;
-        d.containerHeight = this.v.container[0].clientHeight;
-        d.containerScrollWidth = this.v.container[0].scrollWidth;
-        d.containerScrollHeight = this.v.container[0].scrollHeight;
-        d.containerScrollTop = this.v.container[0].scrollTop;
-        d.containerScrollLeft = this.v.container[0].scrollLeft;
+        d.containerWidth = this.dom.container[0].clientWidth;
+        d.containerHeight = this.dom.container[0].clientHeight;
+        d.containerScrollWidth = this.dom.container[0].scrollWidth;
+        d.containerScrollHeight = this.dom.container[0].scrollHeight;
+        d.containerScrollTop = this.dom.container[0].scrollTop;
+        d.containerScrollLeft = this.dom.container[0].scrollLeft;
       }
 
       d.containerMaxScrollTop = d.containerScrollHeight - d.containerHeight;
@@ -467,7 +467,7 @@ var njBox = function () {
       // d.winWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
       d.winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-      d.autoheight = this.v.container[0] === this.v.body[0] ? d.winHeight : d.containerHeight;
+      d.autoheight = this.dom.container[0] === this.dom.body[0] ? d.winHeight : d.containerHeight;
       // if(this._o.scrollbarHidden) {
       //  this._o.winWidth -= njBox.g.scrollbarSize;
       // }
@@ -480,8 +480,8 @@ var njBox = function () {
       if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
       if (!this.state.autoheightAdded) {
-        this.v.wrap.addClass('njb-autoheight');
-        o.autoheight === true ? this.v.wrap.addClass('njb-autoheight--true') : this.v.wrap.addClass('njb-autoheight--image');
+        this.dom.wrap.addClass('njb-autoheight');
+        o.autoheight === true ? this.dom.wrap.addClass('njb-autoheight--true') : this.dom.wrap.addClass('njb-autoheight--image');
         this.state.autoheightAdded = true;
       }
 
@@ -817,48 +817,48 @@ var njBox = function () {
       var o = this.o;
 
       //find container
-      this.v.container = $(o.container);
-      if (!this.v.container.length) {
+      this.dom.container = $(o.container);
+      if (!this.dom.container.length) {
         this._error('njBox, can\'t find container element. (we use body instead)');
-        this.v.container = this.v.body; //in case if we have no container element, or wrong selector for container element
+        this.dom.container = this.dom.body; //in case if we have no container element, or wrong selector for container element
       }
       //check if container not relative position
-      if (this.v.container[0] !== this.v.body[0] && this.v.container.css('position') === 'static') {
-        this.v.container.addClass('njb-relative');
+      if (this.dom.container[0] !== this.dom.body[0] && this.dom.container.css('position') === 'static') {
+        this.dom.container.addClass('njb-relative');
       }
 
       //create core elements
-      this.v.wrap = $(o.templates.wrap);
-      if (!this.v.wrap.length) {
+      this.dom.wrap = $(o.templates.wrap);
+      if (!this.dom.wrap.length) {
         this._error('njBox, smth wrong with o.templates.wrap.');
         return;
       }
-      if (o['class']) this.v.wrap.addClass(o['class']);
-      this.v.wrap[0].njBox = this;
-      if (o.zindex) this.v.wrap.css('zIndex', o.zindex);
+      if (o['class']) this.dom.wrap.addClass(o['class']);
+      this.dom.wrap[0].njBox = this;
+      if (o.zindex) this.dom.wrap.css('zIndex', o.zindex);
 
-      this.v.items = this.v.wrap.find('.njb-items');
+      this.dom.items = this.dom.wrap.find('.njb-items');
 
       //if container custom element(not body), use forcely absolute position
-      if (this.v.container[0] !== this.v.body[0]) o.position = 'absolute';
-      if (o.position === 'absolute') this.v.wrap.addClass('njb-absolute');
+      if (this.dom.container[0] !== this.dom.body[0]) o.position = 'absolute';
+      if (o.position === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
       if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        if (this.v.next[0]) this.v.wrap[0].appendChild(this.v.next[0]);
-        if (this.v.prev[0]) this.v.wrap[0].appendChild(this.v.prev[0]);
+        if (this.dom.next[0]) this.dom.wrap[0].appendChild(this.dom.next[0]);
+        if (this.dom.prev[0]) this.dom.wrap[0].appendChild(this.dom.prev[0]);
         this.state.arrowsInserted = true;
       }
 
       // insert outside close button
       if (o.close === 'outside') {
-        this.v.close = $(o.templates.close);
-        this.v.close[0].setAttribute('title', o.text.close);
+        this.dom.close = $(o.templates.close);
+        this.dom.close[0].setAttribute('title', o.text.close);
 
-        this.v.wrap[0].appendChild(this.v.close[0]);
+        this.dom.wrap[0].appendChild(this.dom.close[0]);
       }
 
-      this.v.focusCatcher = $(o.templates.focusCatcher);
-      this.v.wrap[0].appendChild(this.v.focusCatcher[0]);
+      this.dom.focusCatcher = $(o.templates.focusCatcher);
+      this.dom.wrap[0].appendChild(this.dom.focusCatcher[0]);
     }
   }, {
     key: '_drawItem',
@@ -877,9 +877,9 @@ var njBox = function () {
       this._insertDelayedContent(item);
 
       if (prepend) {
-        this.v.items[0].insertBefore(item.dom.modalOuter[0], this.v.items[0].firstChild);
+        this.dom.items[0].insertBefore(item.dom.modalOuter[0], this.dom.items[0].firstChild);
       } else {
-        this.v.items[0].appendChild(item.dom.modalOuter[0]);
+        this.dom.items[0].appendChild(item.dom.modalOuter[0]);
       }
 
       this._cb('item_inserted', item);
@@ -939,7 +939,7 @@ var njBox = function () {
             item.o.contentElStyle = undefined;
           }
           //return selector element to the dom
-          this.v.body[0].appendChild(contentEl[0]);
+          this.dom.body[0].appendChild(contentEl[0]);
           item.o.contentElInserted = false;
         }
       }
@@ -966,10 +966,10 @@ var njBox = function () {
       if (focusElement && focusElement.length) {
         focusElement[0].focus();
       } else if (this.state.gallery) {
-        this.v.next[0].focus();
+        this.dom.next[0].focus();
       } else if (o.close === "outside") {
         //then try to focus close buttons
-        this.v.close[0].focus();
+        this.dom.close[0].focus();
       } else if (o.close === "inside" && item.dom.close) {
         //if type:"template" is used we have no close button here
         item.dom.close[0].focus();
@@ -1048,7 +1048,7 @@ var njBox = function () {
       h.container_scroll = function () {
         that.position();
       };
-      this.v.container.on('resize', h.container_resize).on('scroll', h.container_scroll);
+      this.dom.container.on('resize', h.container_resize).on('scroll', h.container_scroll);
 
       h.wrap_out = function (e) {
         var $el = $(e.target),
@@ -1127,7 +1127,7 @@ var njBox = function () {
         e.preventDefault();
       };
 
-      this.v.wrap.on('click', h.wrap_out).on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel).delegate('[data-njb-prev]', 'click', h.wrap_prev).delegate('[data-njb-next]', 'click', h.wrap_next);
+      this.dom.wrap.on('click', h.wrap_out).on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel).delegate('[data-njb-prev]', 'click', h.wrap_prev).delegate('[data-njb-next]', 'click', h.wrap_next);
 
       h.window_resize = function (e) {
         that.position();
@@ -1139,12 +1139,12 @@ var njBox = function () {
         that.position();
       };
 
-      this.v.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
+      this.dom.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
 
       h.focusCatch = function (e) {
         that._setFocusInPopup(that.items[that.state.active]);
       };
-      this.v.focusCatcher.on('focus', h.focusCatch);
+      this.dom.focusCatcher.on('focus', h.focusCatch);
 
       this._cb('events_setted');
     }
@@ -1153,11 +1153,11 @@ var njBox = function () {
     value: function _removeEventsHandlers() {
       var h = this._handlers;
 
-      this.v.container.off('resize', h.container_resize).off('scroll', h.container_scroll);
+      this.dom.container.off('resize', h.container_resize).off('scroll', h.container_scroll);
 
-      this.v.wrap.off('click', h.wrap_out).off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel).undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
+      this.dom.wrap.off('click', h.wrap_out).off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel).undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
 
-      this.v.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
+      this.dom.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
 
       //remove link to all previous handlers
       var elsClick = h.elsClick;
@@ -1165,7 +1165,7 @@ var njBox = function () {
         elsClick: elsClick
       };
 
-      this.v.focusCatcher.off('focus', h.focusCatch);
+      this.dom.focusCatcher.off('focus', h.focusCatch);
 
       this._cb('events_removed');
     }
@@ -1499,24 +1499,24 @@ var njBox = function () {
           if (o.scrollbar === 'hide') {
             if (this.state.scrollbarHidden) return;
 
-            if (this.v.container[0] === this.v.body[0]) {
+            if (this.dom.container[0] === this.dom.body[0]) {
               //we can insert modal window in any custom element, that's why we need this if
               var sb = (document.documentElement.scrollHeight || document.body.scrollHeight) > document.documentElement.clientHeight; //check for scrollbar existance (we can have no scrollbar on simple short pages)
 
               //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
-              if (!this.v.container[0].njb_scrollbar && !this.state.scrollbarHidden && (sb || this.v.html.css('overflowY') === 'scroll' || this.v.body.css('overflowY') === 'scroll')) {
+              if (!this.dom.container[0].njb_scrollbar && !this.state.scrollbarHidden && (sb || this.dom.html.css('overflowY') === 'scroll' || this.dom.body.css('overflowY') === 'scroll')) {
                 //existing of that variable means that other instance of popup hides scrollbar on this element already
-                this.v.html.addClass('njb-hideScrollbar');
-                this.v.html.css('paddingRight', parseInt(this.v.html.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
+                this.dom.html.addClass('njb-hideScrollbar');
+                this.dom.html.css('paddingRight', parseInt(this.dom.html.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
               }
             } else {
-              var sb = this.v.container[0].scrollHeight > this.v.container[0].clientHeight; //check for scrollbar existance on this element
+              var sb = this.dom.container[0].scrollHeight > this.dom.container[0].clientHeight; //check for scrollbar existance on this element
 
               //don't add padding to container if no scrollbar (simple short page) or popup already opened
-              // if (!this.state.scrollbarHidden && (sb || this.v.container.css('overflowY') === 'scroll')) {
+              // if (!this.state.scrollbarHidden && (sb || this.dom.container.css('overflowY') === 'scroll')) {
 
-              this.v.container.addClass('njb-hideScrollbar');
-              // this.v.container.css('paddingRight', parseInt(this.v.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
+              this.dom.container.addClass('njb-hideScrollbar');
+              // this.dom.container.css('paddingRight', parseInt(this.dom.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
 
               // }
             }
@@ -1525,7 +1525,7 @@ var njBox = function () {
             // if(this.state.scrollbarHidden) {
             //fixes case when we have 2 modals on one container, and after first close, first popup shows scrollbar
             //how many elements hides scrollbar on this element...
-            this.v.container[0].njb_scrollbar ? this.v.container[0].njb_scrollbar++ : this.v.container[0].njb_scrollbar = 1;
+            this.dom.container[0].njb_scrollbar ? this.dom.container[0].njb_scrollbar++ : this.dom.container[0].njb_scrollbar = 1;
             // }
           }
           break;
@@ -1533,36 +1533,36 @@ var njBox = function () {
         case 'show':
           if (!this.state.scrollbarHidden) return;
 
-          if (--this.v.container[0].njb_scrollbar) {
+          if (--this.dom.container[0].njb_scrollbar) {
             delete this.state.scrollbarHidden;
             return;
           } else {
             // ie 7 don't support delete on dom elements
-            this.v.container[0].njb_scrollbar = null;
+            this.dom.container[0].njb_scrollbar = null;
           }
 
-          if (this.v.container[0] === this.v.body[0]) {
-            this.v.html.removeClass('njb-hideScrollbar');
-            var computedPadding = parseInt(this.v.html.css('paddingRight')) - njBox.g.scrollbarSize;
+          if (this.dom.container[0] === this.dom.body[0]) {
+            this.dom.html.removeClass('njb-hideScrollbar');
+            var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
 
             if (computedPadding) {
               //if greater than 0
-              this.v.html.css('paddingRight', computedPadding + 'px');
+              this.dom.html.css('paddingRight', computedPadding + 'px');
             } else {
               //if padding is 0, remove it from style attribute
-              this.v.html[0].style.paddingRight = '';
+              this.dom.html[0].style.paddingRight = '';
             }
           } else {
 
-            this.v.container.removeClass('njb-hideScrollbar');
-            var computedPadding = parseInt(this.v.container.css('paddingRight')) - njBox.g.scrollbarSize;
+            this.dom.container.removeClass('njb-hideScrollbar');
+            var computedPadding = parseInt(this.dom.container.css('paddingRight')) - njBox.g.scrollbarSize;
 
             if (computedPadding) {
               //if greater than 0
-              this.v.container.css('paddingRight', computedPadding + 'px');
+              this.dom.container.css('paddingRight', computedPadding + 'px');
             } else {
               //if padding is 0, remove it from style attribute
-              this.v.container[0].style.paddingRight = '';
+              this.dom.container[0].style.paddingRight = '';
             }
           }
 
@@ -1579,22 +1579,22 @@ var njBox = function () {
 
       switch (type) {
         case 'show':
-          this.v.backdrop = $(o.templates.backdrop);
+          this.dom.backdrop = $(o.templates.backdrop);
 
           if (this.state.backdropVisible) return;
 
           if (o.backdrop === true) {
-            if (o.backdropassist) this.v.backdrop.css('transitionDuration', this._globals.animShowDur + 'ms');
+            if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animShowDur + 'ms');
 
             //insert backdrop div
-            if (o.position === 'absolute') this.v.backdrop.addClass('njb-absolute');
-            this.v.container[0].appendChild(this.v.backdrop[0]);
+            if (o.position === 'absolute') this.dom.backdrop.addClass('njb-absolute');
+            this.dom.container[0].appendChild(this.dom.backdrop[0]);
 
-            // this.v.backdrop[0].clientHeight;
+            // this.dom.backdrop[0].clientHeight;
 
             setTimeout(function () {
               //this prevent page from scrolling in chrome while background transition is working..., also needed as reflow
-              that.v.backdrop.addClass('njb-visible');
+              that.dom.backdrop.addClass('njb-visible');
             }, 0);
 
             this.state.backdropVisible = true;
@@ -1603,15 +1603,15 @@ var njBox = function () {
 
         case 'hide':
           if (!this.state.backdropVisible) return;
-          if (o.backdropassist) this.v.backdrop.css('transitionDuration', this._globals.animHideDur + 'ms');
+          if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animHideDur + 'ms');
 
-          this.v.backdrop.removeClass('njb-visible');
+          this.dom.backdrop.removeClass('njb-visible');
 
           setTimeout(function () {
-            that.v.backdrop[0].parentNode.removeChild(that.v.backdrop[0]);
-            if (o.backdropassist) that.v.backdrop[0].style.cssText = '';
+            that.dom.backdrop[0].parentNode.removeChild(that.dom.backdrop[0]);
+            if (o.backdropassist) that.dom.backdrop[0].style.cssText = '';
             delete that.state.backdropVisible;
-          }, that._getAnimTime(that.v.backdrop[0]));
+          }, that._getAnimTime(that.dom.backdrop[0]));
           break;
       }
     }
@@ -1736,7 +1736,7 @@ var njBox = function () {
 
       switch (type) {
         case 'show':
-          this.v.wrap.addClass('njb-visible');
+          this.dom.wrap.addClass('njb-visible');
 
           if (animShow) {
             if (o.animclass) modal.addClass(o.animclass);
@@ -1749,7 +1749,7 @@ var njBox = function () {
           }
           break;
         case 'hide':
-          this.v.wrap.removeClass('njb-visible');
+          this.dom.wrap.removeClass('njb-visible');
 
           if (animHide) {
 
@@ -1781,22 +1781,33 @@ var njBox = function () {
       }
     }
   }, {
+    key: '_focusPreviousModal',
+    value: function _focusPreviousModal() {
+      //because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
+      var openedBox = this.dom.body.find('.njb-wrap'),
+          openedInstance;
+
+      if (!openedBox.length) return;
+      openedInstance = openedBox[openedBox.length - 1].njBox;
+      openedInstance._setFocusInPopup(openedInstance.items[openedInstance.state.active]);
+    }
+  }, {
     key: '_clear',
     value: function _clear() {
       var o = this.o;
 
-      if (this.v.container) this.v.container[0].njb_instances--;
-      if (this.v.container[0].njb_instances === 0) this.v.container.removeClass('njb-open');
+      if (this.dom.container) this.dom.container[0].njb_instances--;
+      if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
 
-      if (o['class']) this.v.wrap.removeClass(o['class']);
+      if (o['class']) this.dom.wrap.removeClass(o['class']);
 
       this._scrollbar('show');
 
-      if (this.v.wrap && this.v.wrap.length) this.v.wrap[0].parentNode.removeChild(this.v.wrap[0]);
+      if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
 
       this._removeSelectorItemsElement();
 
-      if (this.v.items && this.v.items.length) empty(this.v.items[0]); //we can't use innerHTML="" here, for IE(even 11) we need remove method
+      if (this.dom.items && this.dom.items.length) empty(this.dom.items[0]); //we can't use innerHTML="" here, for IE(even 11) we need remove method
 
       //clear inline position
       for (var i = 0, l = this.items.length; i < l; i++) {
@@ -1842,6 +1853,9 @@ var njBox = function () {
       switch (type) {
         case 'shown':
           if (this.state.gallery) this._preload();
+          break;
+        case 'hidden':
+          this._focusPreviousModal();
           break;
       }
 

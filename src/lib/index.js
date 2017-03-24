@@ -1647,6 +1647,14 @@ class njBox {
       that.state.state = 'inited';
     }
   }
+  _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
+    var openedBox = this.dom.body.find('.njb-wrap'),
+        openedInstance;
+
+    if(!openedBox.length) return;
+    openedInstance = openedBox[openedBox.length - 1].njBox;
+    openedInstance._setFocusInPopup(openedInstance.items[openedInstance.state.active]);
+  }
   _clear() {
     var o = this.o;
 
@@ -1710,6 +1718,9 @@ class njBox {
     switch (type) {
       case 'shown':
         if (this.state.gallery) this._preload();
+        break;
+      case 'hidden':
+        this._focusPreviousModal();
         break;
     }
 

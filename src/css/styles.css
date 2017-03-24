@@ -135,7 +135,7 @@
   width: 40px;
   height: 40px;
   line-height: 40px;
-  position: absolute;right: 10px;top: 10px;
+  position: absolute;right: 20px;top: 20px;
   display: inline-block;
   cursor: pointer;
   padding: 0;
@@ -163,7 +163,7 @@
 	width: 40px;
 	height: 40px;
   padding: 0;
-	margin-top: -35px;
+	margin-top: -20px;
 	cursor: pointer;
 	color: #fff;
 	font-size: 26px;
@@ -176,7 +176,7 @@
 	*background-color:#fff;
 
   &--prev {
-    left: 10px;
+    left: 20px;
 
     &:before {
     	content:'◄';
@@ -189,7 +189,7 @@
     }
   }
   &--next {
-    right: 10px;
+    right: 20px;
 
     &:before {
     	content:'►';
@@ -417,6 +417,13 @@
   animation: closeSystemOut 250ms;
   animation-fill-mode: forwards;
 
+  opacity: 0.7;
+  transition: opacity 200ms;
+
+  &:hover {
+    opacity: 1;
+  }
+
   @nest .njb & {
     top: -20px;
     right: -20px;
@@ -431,6 +438,13 @@
   animation: prevOut 250ms;
   animation-fill-mode: forwards;
 
+  opacity: 0.7;
+  transition: opacity 200ms;
+
+  &:hover {
+    opacity: 1;
+  }
+
   @nest .njb-wrap--visible & {
     animation: prevIn 250ms;
   }
@@ -439,6 +453,13 @@
 .njb-arrow--next {
   animation: nextOut 250ms;
   animation-fill-mode: forwards;
+
+  opacity: 0.7;
+  transition: opacity 200ms;
+
+  &:hover {
+    opacity: 1;
+  }
 
   @nest .njb-wrap--visible & {
     animation: nextIn 250ms;

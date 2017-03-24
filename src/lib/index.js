@@ -241,13 +241,20 @@ class njBox {
   goTo(index) {
     index = index - 1;//inside gallery we have index -1, because slides starts from 0
 
-    if (this.state.state !== 'shown'
-      || typeof index !== 'number'
+    if(typeof index !== 'number') {
+      this._error('njBox, wrong index argument in goTo method.')
+      return;
+    }
+
+    if (this.state.state === 'inited' || this.state.state === 'show') {
+      this.state.active = index;
+      return;
+    } else if (this.state.state !== 'shown'
       || index === this.state.active
       || index < 0
       || index > this.items.length - 1
     ) {
-      this._error('njBox, wrong index in goTo method or gallery not in shown state.')
+      this._error('njBox, wrong index in goTo method.')
       return this;
     }
 
@@ -1061,7 +1068,7 @@ class njBox {
   _detectIndexForOpen(indexFromShow) {
     var o = this.o,
       that = this,
-      index = 0;
+      index = this.state.active || 0;
 
     if (indexFromShow) {//first we check if index we have as argument in show method
       index = indexFromShow - 1;
@@ -1644,7 +1651,6 @@ class njBox {
 
       that._clear();
       if (!nocallback) that._cb('hidden');
-      that.state.state = 'inited';
     }
   }
   _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
@@ -1720,6 +1726,7 @@ class njBox {
         if (this.state.gallery) this._preload();
         break;
       case 'hidden':
+        this.state.state = 'inited';
         this._focusPreviousModal();
         break;
     }

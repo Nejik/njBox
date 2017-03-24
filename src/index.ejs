@@ -54,29 +54,8 @@
   <script>
     
     window.gallery = new njBox('.gallery', {
-      onshow() {
-        this.goTo(3)
-      },
-      onchanged: function() {
-        console.log(arguments);
-      }
       
     })
-    gallery.show();
-    setTimeout(function() {
-      gallery.goTo(1)
-    }, 2000)
-    setTimeout(function() {
-      gallery.goTo(5)
-    }, 4000)
-    setTimeout(function() {
-      gallery.on('hidden', function() {
-        console.log('hidden');
-        console.log(this.state.state);
-        gallery.show();
-      })
-      gallery.hide();
-    }, 6000)
   </script>
 </body>
 

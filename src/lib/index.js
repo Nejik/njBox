@@ -580,6 +580,11 @@ class njBox {
 
       dom.modal[0].appendChild(modalFragment)
     }
+    if (item.type === 'image') {
+      item.dom.modal.addClass('njb--image');
+    } else {
+      item.dom.modal.addClass('njb--content');
+    }
 
     this._cb('item_domready', item);
   }
@@ -607,11 +612,6 @@ class njBox {
         item.o.status = 'loaded';
         return;
         break;
-    }
-    if (item.type === 'image') {
-      item.dom.modal.addClass('njb--image');
-    } else {
-      item.dom.modal.addClass('njb--content');
     }
   }
   _getItemFromSelector(item) {
@@ -856,7 +856,7 @@ class njBox {
         that.hide();
       } else {
         that.items[that.state.active].dom.modal.addClass('njb_pulse');
-        that._setFocusInPopup(this.items[this.state.active]);
+        that._setFocusInPopup(that.items[that.state.active]);
 
         setTimeout(function () {
           that.items[that.state.active].dom.modal.removeClass('njb_pulse');
@@ -1158,7 +1158,7 @@ class njBox {
     }
 
     function preload(index) {
-      if(index === null) return;
+      if (index === null) return;
       var item = this.items[index],
         content = item.content;
 

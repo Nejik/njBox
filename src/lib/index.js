@@ -153,7 +153,10 @@ class njBox {
 
     //draw modal on screen
     this._drawItem(this.state.active);
-    if (that.state.gallery) this._drawItemSiblings();
+    if (that.state.gallery) {
+      this._setItemsOrder(this.state.active);
+      this._drawItemSiblings();
+    }
 
     this.position();
 
@@ -227,9 +230,73 @@ class njBox {
   }
   prev() {
     this._changeItem(this.state.active - 1, 'prev');
+
+    return this;
   }
   next() {
     this._changeItem(this.state.active + 1, 'next');
+
+    return this;
+  }
+  goTo(index) {
+    index = index - 1;//inside gallery we have index -1, because slides starts from 0
+
+    if (this.state.state !== 'shown'
+      || typeof index !== 'number'
+      || index === this.state.active
+      || index < 0
+      || index > this.items.length - 1
+    ) {
+      this._error('njBox, wrong index in goTo method or gallery not in shown state.')
+      return this;
+    }
+
+    var dir = (index > this.state.active) ? 'next' : 'prev';
+
+    //the most desired cases when we should call prev/next slides :)
+    if (dir === 'next' && index === this.state.active + 1) {
+      this.next();
+    } else if (dir === 'prev' && index === this.state.active - 1) {
+      this.prev();
+    }
+    //if it is not simple prev/next, so we need to recreate slides
+    else {
+      //remove siblings
+      this.items[this.state.itemsOrder[0]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[0]].dom.modalOuter[0]);
+      this.items[this.state.itemsOrder[2]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[2]].dom.modalOuter[0]);
+      //clear position of siblings
+      this.items[this.state.itemsOrder[0]].dom.modalOuter[0].style.cssText = '';
+      this.items[this.state.itemsOrder[2]].dom.modalOuter[0].style.cssText = '';
+
+      switch (dir) {
+        case 'next':
+          // set new state
+          this.state.itemsOrder[0] = null;
+          this.state.itemsOrder[2] = index;
+
+          //draw new slides
+          this._drawItemSiblings();
+
+          this._changeItem(index, 'next')
+          break;
+        case 'prev':
+           // set new state
+          this.state.itemsOrder[0] = index;
+          this.state.itemsOrder[2] = null;
+
+          //draw new slides
+          this._drawItemSiblings();
+
+          //animation to new slide
+          this._changeItem(index, 'prev')
+          break;
+      }
+    }
+
+
+
+
+    return this;
   }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
@@ -251,6 +318,7 @@ class njBox {
 
     this._cb('destroyed');
 
+    return this;
   }
   update() {
     //gather dom elements from which we will create modal window/gallery
@@ -259,6 +327,8 @@ class njBox {
 
     // this._removeClickHandlers();
     this._setClickHandlers();
+
+    return this;
   }
 
 
@@ -1168,9 +1238,7 @@ class njBox {
   _drawItemSiblings() {
     var o = this.o,
       that = this;
-
-    this._setItemsOrder(this.state.active);
-
+    
     if (typeof this.state.itemsOrder[0] === 'number') {
       this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
       this._drawItem(this.state.itemsOrder[0], true);
@@ -1254,6 +1322,7 @@ class njBox {
 
       delete that.state.itemsOrder_backup;
 
+      that._setItemsOrder(that.state.active);
       that._drawItemSiblings();
       that._setFocusInPopup(that.items[that.state.active]);
       that.state.itemChanging = false;

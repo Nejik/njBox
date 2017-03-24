@@ -35,9 +35,9 @@
   
   -webkit-transition: opacity 200ms;
   
-  transition: opacity 200ms;
+  transition: opacity 200ms
 }
-.njb-backdrop.njb-visible {
+.njb-backdrop--visible {
   opacity: 0.8;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
   filter: alpha(opacity=80);
@@ -47,7 +47,19 @@
   width: 100%;
   height: 100%;
   position: fixed;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
-  overflow: hidden;
+  overflow: hidden
+}
+.njb-wrap--autoheight {
+}
+.njb-wrap--autoheight .njb-outer {
+  overflow-y: hidden;
+}
+.njb-wrap--autoheight-true {
+}
+.njb-wrap--autoheight-true .njb__body {
+  overflow-y: auto;
+}
+.njb-wrap--autoheight-image {
 }
 .njb-items {
   outline: none;
@@ -89,12 +101,6 @@
   display: inline-block;
   height: 100%;
   vertical-align: middle;
-}
-.njb-autoheight .njb-outer {
-	overflow-y: hidden;
-}
-.njb-autoheight--true .njb__body {
-	overflow-y: auto;
 }
 .njb {
   max-width: 100%;
@@ -468,7 +474,9 @@
   -webkit-animation-fill-mode: forwards;
           animation-fill-mode: forwards;
 }
-.njb-visible .njb-close-system {
+.njb-wrap--visible {
+}
+.njb-wrap--visible .njb-close-system {
   -webkit-animation: closeSystemIn 250ms;
           animation: closeSystemIn 250ms;
 }
@@ -557,5 +565,5 @@
   text-align: center
 }
 .njb--image img {
-  background-color: rgba(255, 255, 255, .1);
+  background-color: rgba(255, 255, 255, .3);
 }

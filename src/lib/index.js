@@ -379,8 +379,8 @@ class njBox {
     if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
     if (!this.state.autoheightAdded) {
-      this.dom.wrap.addClass('njb-autoheight');
-      (o.autoheight === true) ? this.dom.wrap.addClass('njb-autoheight--true') : this.dom.wrap.addClass('njb-autoheight--image')
+      this.dom.wrap.addClass('njb-wrap--autoheight');
+      (o.autoheight === true) ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image')
       this.state.autoheightAdded = true
     }
 
@@ -1470,7 +1470,7 @@ class njBox {
           // this.dom.backdrop[0].clientHeight;
 
           setTimeout(function () {//this prevent page from scrolling in chrome while background transition is working..., also needed as reflow
-            that.dom.backdrop.addClass('njb-visible');
+            that.dom.backdrop.addClass('njb-backdrop--visible');
           }, 0)
 
           this.state.backdropVisible = true;
@@ -1481,7 +1481,7 @@ class njBox {
         if (!this.state.backdropVisible) return;
         if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animHideDur + 'ms')
 
-        this.dom.backdrop.removeClass('njb-visible');
+        this.dom.backdrop.removeClass('njb-backdrop--visible');
 
         setTimeout(function () {
           that.dom.backdrop[0].parentNode.removeChild(that.dom.backdrop[0])
@@ -1603,7 +1603,7 @@ class njBox {
 
     switch (type) {
       case 'show':
-        this.dom.wrap.addClass('njb-visible');
+        this.dom.wrap.addClass('njb-wrap--visible');
 
         if (animShow) {
           if (o.animclass) modal.addClass(o.animclass);
@@ -1616,7 +1616,7 @@ class njBox {
         }
         break;
       case 'hide':
-        this.dom.wrap.removeClass('njb-visible')
+        this.dom.wrap.removeClass('njb-wrap--visible')
 
         if (animHide) {
 

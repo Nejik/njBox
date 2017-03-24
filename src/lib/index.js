@@ -386,7 +386,7 @@ class njBox {
     if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
     if (!this.state.autoheightAdded) {
-      this.dom.wrap.addClass('njb-wrap--autoheight');
+      // this.dom.wrap.addClass('njb-wrap--autoheight');
       (o.autoheight === true) ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image')
       this.state.autoheightAdded = true
     }

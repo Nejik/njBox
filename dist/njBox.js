@@ -355,8 +355,16 @@ var njBox = function () {
     value: function goTo(index) {
       index = index - 1; //inside gallery we have index -1, because slides starts from 0
 
-      if (this.state.state !== 'shown' || typeof index !== 'number' || index === this.state.active || index < 0 || index > this.items.length - 1) {
-        this._error('njBox, wrong index in goTo method or gallery not in shown state.');
+      if (typeof index !== 'number') {
+        this._error('njBox, wrong index argument in goTo method.');
+        return;
+      }
+
+      if (this.state.state === 'inited' || this.state.state === 'show') {
+        this.state.active = index;
+        return;
+      } else if (this.state.state !== 'shown' || index === this.state.active || index < 0 || index > this.items.length - 1) {
+        this._error('njBox, wrong index in goTo method.');
         return this;
       }
 
@@ -480,7 +488,7 @@ var njBox = function () {
       if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
       if (!this.state.autoheightAdded) {
-        this.dom.wrap.addClass('njb-wrap--autoheight');
+        // this.dom.wrap.addClass('njb-wrap--autoheight');
         o.autoheight === true ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image');
         this.state.autoheightAdded = true;
       }
@@ -843,9 +851,22 @@ var njBox = function () {
       if (this.dom.container[0] !== this.dom.body[0]) o.position = 'absolute';
       if (o.position === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
+      //create ui layer
+      this.dom.ui = $(o.templates.ui);
+      if (!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
+      this.dom.wrap[0].appendChild(this.dom.ui[0]);
+
+      this.dom.ui_count = $(o.templates.count);
+      this.dom.ui[0].appendChild(this.dom.ui_count[0]);
+
+      this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
+      this.dom.ui_current[0].setAttribute('title', o.text.current);
+      this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]');
+      this.dom.ui_total[0].setAttribute('title', o.text.total);
+
       if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        if (this.dom.next[0]) this.dom.wrap[0].appendChild(this.dom.next[0]);
-        if (this.dom.prev[0]) this.dom.wrap[0].appendChild(this.dom.prev[0]);
+        if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+        if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
         this.state.arrowsInserted = true;
       }
 
@@ -854,11 +875,11 @@ var njBox = function () {
         this.dom.close = $(o.templates.close);
         this.dom.close[0].setAttribute('title', o.text.close);
 
-        this.dom.wrap[0].appendChild(this.dom.close[0]);
+        this.dom.ui[0].appendChild(this.dom.close[0]);
       }
 
       this.dom.focusCatcher = $(o.templates.focusCatcher);
-      this.dom.wrap[0].appendChild(this.dom.focusCatcher[0]);
+      this.dom.ui[0].appendChild(this.dom.focusCatcher[0]);
     }
   }, {
     key: '_drawItem',
@@ -965,18 +986,20 @@ var njBox = function () {
       //first try to focus elements inside modal
       if (focusElement && focusElement.length) {
         focusElement[0].focus();
-      } else if (this.state.gallery) {
-        this.dom.next[0].focus();
-      } else if (o.close === "outside") {
-        //then try to focus close buttons
-        this.dom.close[0].focus();
-      } else if (o.close === "inside" && item.dom.close) {
-        //if type:"template" is used we have no close button here
-        item.dom.close[0].focus();
-      } else {
-        //if no, focus popup itself
-        item.dom.modal[0].focus();
-      }
+      } else
+        /*if (this.state.gallery) {
+          this.dom.next[0].focus()
+        } else*/
+        if (o.close === "outside") {
+          //then try to focus close buttons
+          this.dom.close[0].focus();
+        } else if (o.close === "inside" && item.dom.close) {
+          //if type:"template" is used we have no close button here
+          item.dom.close[0].focus();
+        } else {
+          //if no, focus popup itself
+          item.dom.modal[0].focus();
+        }
     }
   }, {
     key: '_setClickHandlers',
@@ -1177,7 +1200,7 @@ var njBox = function () {
     value: function _detectIndexForOpen(indexFromShow) {
       var o = this.o,
           that = this,
-          index = 0;
+          index = this.state.active || 0;
 
       if (indexFromShow) {
         //first we check if index we have as argument in show method
@@ -1227,7 +1250,7 @@ var njBox = function () {
       };
       $img.on('error', item._handlerError).on('abort', item._handlerError);
 
-      if (item.title) img.title = item.title;
+      // if (item.title) img.title = item.title;
       img.src = item.content;
 
       ready = img.width + img.height > 0;
@@ -1417,9 +1440,10 @@ var njBox = function () {
 
       this.state.itemChanging = true; //we can't change slide during current changing
       this.state.itemsOrder_backup = this.state.itemsOrder.slice(); //copy current state
-      this._cb('change', nextIndex);
 
       this.state.active = nextIndex;
+      this._cb('change', nextIndex);
+
       this._setItemsOrder(nextIndex);
 
       switch (dir) {
@@ -1488,6 +1512,47 @@ var njBox = function () {
           delete item.o.preloader;
 
           break;
+      }
+    }
+  }, {
+    key: '_uiUpdate',
+    value: function _uiUpdate(index) {
+      index = index || this.state.active;
+
+      var o = this.o,
+          item = this.items[index];
+
+      if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
+
+      //set title
+      if (item.title) {
+        this.dom.ui.removeClass('njb-ui--no-title');
+      } else {
+        this.dom.ui.addClass('njb-ui--no-title');
+      }
+      this.dom.wrap.find('[data-njb-title]').html(item.title || '');
+
+      //set item counts
+      this.dom.wrap.find('[data-njb-current]').html(index + 1 || ''); //+1 because indexes are zero-based
+      this.dom.wrap.find('[data-njb-total]').html(this.items.length || '');
+
+      //arrow classes
+      if (index === 0) {
+        this.dom.ui.addClass('njb-ui--first');
+      } else {
+        this.dom.ui.removeClass('njb-ui--first');
+      }
+
+      if (index === this.items.length - 1) {
+        this.dom.ui.addClass('njb-ui--last');
+      } else {
+        this.dom.ui.removeClass('njb-ui--last');
+      }
+
+      if (item.type === 'image') {
+        this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
+      } else {
+        this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
       }
     }
   }, {
@@ -1777,7 +1842,6 @@ var njBox = function () {
 
         that._clear();
         if (!nocallback) that._cb('hidden');
-        that.state.state = 'inited';
       }
     }
   }, {
@@ -1851,11 +1915,18 @@ var njBox = function () {
       }
       //make some stuff on callbacks
       switch (type) {
+        case 'show':
+          this._uiUpdate();
+          break;
         case 'shown':
           if (this.state.gallery) this._preload();
           break;
         case 'hidden':
+          this.state.state = 'inited';
           this._focusPreviousModal();
+          break;
+        case 'change':
+          this._uiUpdate();
           break;
       }
 
@@ -2389,6 +2460,11 @@ j.fn.closest = function (selector) {
 
     return j(closestArr);
 };
+j.fn.html = function (html) {
+    return this.each(function () {
+        this.innerHTML = html;
+    });
+};
 
 exports.default = j;
 module.exports = exports['default'];
@@ -2564,15 +2640,15 @@ var defaults = exports.defaults = {
 		body: '<div class="njb__body" data-njb-body></div>',
 		header: '<header class="njb__header" data-njb-header></header>',
 		footer: '<footer class="njb__footer" data-njb-footer></footer>',
-		close: '<button type="button" class="njb-close-system" data-njb-close>×</button>',
+		close: '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
 		//todo, in gallery
 		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
-		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
-		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
-		prev: '<button type="button" class="njb-arrow njb-arrow--prev" data-njb-prev></button>',
-		next: '<button type="button" class="njb-arrow njb-arrow--next" data-njb-next></button>'
+		ui: '<div class="njb-ui"><div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div></div>',
+		count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
+		prev: '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
+		next: '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
 	},
 
 	text: {
@@ -2582,8 +2658,8 @@ var defaults = exports.defaults = {
 		imageError: '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',
 
-		// current:      'Current slide',
-		// total:        'Total slides',
+		current: 'Current slide',
+		total: 'Total slides',
 		close: 'Close (Esc)', //title on close button
 		prev: 'Previous (Left arrow key)', //prev slide button title
 		next: 'Next (Right arrow key)', //next slide button title

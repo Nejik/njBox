@@ -49,24 +49,19 @@
   position: fixed;top: 0;right: 0;bottom: 0;left: 0;/*top/right/top/left for chrome*/
   overflow: hidden;
 
-  &--autoheight-image {
-    
-  }
-  /*&--autoheight {
-
+  &--autoheight-true {
     & .njb-outer {
       overflow-y: hidden;
     }
-  }
-  &--autoheight-true {
-
     & .njb__body {
     	overflow-y: auto;
     }
   }
-  &--autoheight-image {
-
-  }*/
+  &--autoheight-image.njb-wrap--image {
+    & .njb-outer {
+      overflow-y: hidden;
+    }
+  }
 }
 .njb-items {
   outline: none;

@@ -241,7 +241,7 @@ class njBox {
   goTo(index) {
     index = index - 1;//inside gallery we have index -1, because slides starts from 0
 
-    if(typeof index !== 'number') {
+    if (typeof index !== 'number') {
       this._error('njBox, wrong index argument in goTo method.')
       return;
     }
@@ -287,7 +287,7 @@ class njBox {
           this._changeItem(index, 'next')
           break;
         case 'prev':
-           // set new state
+          // set new state
           this.state.itemsOrder[0] = index;
           this.state.itemsOrder[2] = null;
 
@@ -728,9 +728,21 @@ class njBox {
     if (this.dom.container[0] !== this.dom.body[0]) o.position = 'absolute';
     if (o.position === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
+    //create ui layer
+    this.dom.ui = $(o.templates.ui)
+    this.dom.wrap[0].appendChild(this.dom.ui[0])
+
+    this.dom.ui_count = $(o.templates.count)
+    this.dom.ui[0].appendChild(this.dom.ui_count[0])
+
+    this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
+    this.dom.ui_current[0].setAttribute('title', o.text.current)
+    this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
+    this.dom.ui_total[0].setAttribute('title', o.text.total)
+
     if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-      if (this.dom.next[0]) this.dom.wrap[0].appendChild(this.dom.next[0]);
-      if (this.dom.prev[0]) this.dom.wrap[0].appendChild(this.dom.prev[0]);
+      if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+      if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
       this.state.arrowsInserted = true;
     }
 
@@ -739,11 +751,11 @@ class njBox {
       this.dom.close = $(o.templates.close);
       this.dom.close[0].setAttribute('title', o.text.close);
 
-      this.dom.wrap[0].appendChild(this.dom.close[0]);
+      this.dom.ui[0].appendChild(this.dom.close[0]);
     }
 
     this.dom.focusCatcher = $(o.templates.focusCatcher);
-    this.dom.wrap[0].appendChild(this.dom.focusCatcher[0]);
+    this.dom.ui[0].appendChild(this.dom.focusCatcher[0]);
   }
   _drawItem(index, prepend) {
     var o = this.o,
@@ -1114,7 +1126,7 @@ class njBox {
     }
     $img.on('error', item._handlerError).on('abort', item._handlerError);
 
-    if (item.title) img.title = item.title;
+    // if (item.title) img.title = item.title;
     img.src = item.content;
 
     ready = img.width + img.height > 0;
@@ -1245,7 +1257,7 @@ class njBox {
   _drawItemSiblings() {
     var o = this.o,
       that = this;
-    
+
     if (typeof this.state.itemsOrder[0] === 'number') {
       this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
       this._drawItem(this.state.itemsOrder[0], true);
@@ -1293,9 +1305,10 @@ class njBox {
 
     this.state.itemChanging = true;//we can't change slide during current changing
     this.state.itemsOrder_backup = this.state.itemsOrder.slice();//copy current state
-    this._cb('change', nextIndex);
 
     this.state.active = nextIndex;
+    this._cb('change', nextIndex);
+
     this._setItemsOrder(nextIndex);
 
 
@@ -1366,6 +1379,28 @@ class njBox {
 
         break;
     }
+  }
+  _uiUpdate(index) {
+    index = index || this.state.active;
+
+    var o = this.o,
+        item = this.items[index];
+    
+    if(!item) this._error('njBox, can\'t update ui info from item index - '+index);
+
+    //set title
+    if (item.title) {
+      this.dom.ui.removeClass('njb-ui--no-title');
+      this.dom.wrap.find('[data-njb-title]').html(item.title || '')
+    } else {
+      this.dom.ui.addClass('njb-ui--no-title');
+    }
+
+    //set item counts
+    this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
+    this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
+    
+
   }
 
 
@@ -1655,9 +1690,9 @@ class njBox {
   }
   _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
     var openedBox = this.dom.body.find('.njb-wrap'),
-        openedInstance;
+      openedInstance;
 
-    if(!openedBox.length) return;
+    if (!openedBox.length) return;
     openedInstance = openedBox[openedBox.length - 1].njBox;
     openedInstance._setFocusInPopup(openedInstance.items[openedInstance.state.active]);
   }
@@ -1722,12 +1757,18 @@ class njBox {
     }
     //make some stuff on callbacks
     switch (type) {
+      case 'show':
+      this._uiUpdate();
+        break;
       case 'shown':
         if (this.state.gallery) this._preload();
         break;
       case 'hidden':
         this.state.state = 'inited';
         this._focusPreviousModal();
+        break;
+      case 'change':
+        this._uiUpdate()
         break;
     }
 

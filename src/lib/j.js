@@ -342,7 +342,11 @@ j.fn.closest = function (selector) {
 
     return j(closestArr);
 }
-
+j.fn.html = function (html) {
+    return this.each(function () {
+        this.innerHTML = html;
+    });
+}
 
 
 

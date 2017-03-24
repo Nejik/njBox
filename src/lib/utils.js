@@ -154,15 +154,15 @@ export let defaults = {
 		body: '<div class="njb__body" data-njb-body></div>',
 		header: '<header class="njb__header" data-njb-header></header>',
 		footer: '<footer class="njb__footer" data-njb-footer></footer>',
-		close: '<button type="button" class="njb-close-system" data-njb-close>×</button>',
+		close: '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
 		//todo, in gallery
 		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui:          '<div class="njb-ui"><div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div></div>',
-		count:       '<div class="njb-ui__count"><span data-njb-current></span> / <span data-njb-total></span></div>',
-		prev:        '<button type="button" class="njb-arrow njb-arrow--prev" data-njb-prev></button>',
-		next:        '<button type="button" class="njb-arrow njb-arrow--next" data-njb-next></button>'
+		count:       '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
+		prev:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
+		next:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
 	},
 
 	text: {
@@ -172,8 +172,8 @@ export let defaults = {
 		imageError:   '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',
 
-		// current:      'Current slide',
-		// total:        'Total slides',
+		current:      'Current slide',
+		total:        'Total slides',
 		close: 'Close (Esc)',//title on close button
 		prev:         'Previous (Left arrow key)',//prev slide button title
 		next:         'Next (Right arrow key)',//next slide button title

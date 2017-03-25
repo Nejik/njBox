@@ -856,18 +856,23 @@ var njBox = function () {
       if (!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
       this.dom.wrap[0].appendChild(this.dom.ui[0]);
 
-      this.dom.ui_count = $(o.templates.count);
-      this.dom.ui[0].appendChild(this.dom.ui_count[0]);
+      this.dom.title = $(o.templates.title);
+      this.dom.ui[0].appendChild(this.dom.title[0]);
 
-      this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
-      this.dom.ui_current[0].setAttribute('title', o.text.current);
-      this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]');
-      this.dom.ui_total[0].setAttribute('title', o.text.total);
+      if (this.state.gallery) {
+        this.dom.ui_count = $(o.templates.count);
+        this.dom.ui[0].appendChild(this.dom.ui_count[0]);
 
-      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-        if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
-        this.state.arrowsInserted = true;
+        this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
+        this.dom.ui_current[0].setAttribute('title', o.text.current);
+        this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]');
+        this.dom.ui_total[0].setAttribute('title', o.text.total);
+
+        if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+          if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+          if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+          this.state.arrowsInserted = true;
+        }
       }
 
       // insert outside close button
@@ -2645,7 +2650,8 @@ var defaults = exports.defaults = {
 
 		//todo, in gallery
 		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
-		ui: '<div class="njb-ui"><div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div></div>',
+		ui: '<div class="njb-ui"></div>',
+		title: '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
 		count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
 		prev: '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
 		next: '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'

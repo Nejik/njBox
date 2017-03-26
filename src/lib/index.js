@@ -730,26 +730,21 @@ class njBox {
 
     //create ui layer
     this.dom.ui = $(o.templates.ui)
-    if (!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
+    if(!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
     this.dom.wrap[0].appendChild(this.dom.ui[0])
 
-    this.dom.title = $(o.templates.title)
-    this.dom.ui[0].appendChild(this.dom.title[0])
+    this.dom.ui_count = $(o.templates.count)
+    this.dom.ui[0].appendChild(this.dom.ui_count[0])
 
-    if (this.state.gallery) {
-      this.dom.ui_count = $(o.templates.count)
-      this.dom.ui[0].appendChild(this.dom.ui_count[0])
+    this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
+    this.dom.ui_current[0].setAttribute('title', o.text.current)
+    this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
+    this.dom.ui_total[0].setAttribute('title', o.text.total)
 
-      this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
-      this.dom.ui_current[0].setAttribute('title', o.text.current)
-      this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
-      this.dom.ui_total[0].setAttribute('title', o.text.total)
-
-      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-        if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
-        this.state.arrowsInserted = true;
-      }
+    if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+      if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+      if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+      this.state.arrowsInserted = true;
     }
 
     // insert outside close button
@@ -861,17 +856,17 @@ class njBox {
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
-    } else
-      /*if (this.state.gallery) {
-        this.dom.next[0].focus()
-      } else*/
-      if (o.close === "outside") {//then try to focus close buttons
-        this.dom.close[0].focus()
-      } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
-        item.dom.close[0].focus();
-      } else {//if no, focus popup itself
-        item.dom.modal[0].focus();
-      }
+    } else 
+    /*if (this.state.gallery) {
+      this.dom.next[0].focus()
+    } else*/
+     if (o.close === "outside") {//then try to focus close buttons
+      this.dom.close[0].focus()
+    } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
+      item.dom.close[0].focus();
+    } else {//if no, focus popup itself
+      item.dom.modal[0].focus();
+    }
   }
   _setClickHandlers() {//initial click handlers
     var o = this.o;
@@ -1392,9 +1387,9 @@ class njBox {
     index = index || this.state.active;
 
     var o = this.o,
-      item = this.items[index];
-
-    if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
+        item = this.items[index];
+    
+    if(!item) this._error('njBox, can\'t update ui info from item index - '+index);
 
     //set title
     if (item.title) {
@@ -1408,15 +1403,15 @@ class njBox {
     //set item counts
     this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
     this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
-
+    
     //arrow classes
-    if (index === 0) {
+    if(index === 0) {
       this.dom.ui.addClass('njb-ui--first');
     } else {
       this.dom.ui.removeClass('njb-ui--first');
     }
 
-    if (index === this.items.length - 1) {
+    if(index === this.items.length - 1) {
       this.dom.ui.addClass('njb-ui--last');
     } else {
       this.dom.ui.removeClass('njb-ui--last');
@@ -1427,9 +1422,9 @@ class njBox {
     } else {
       this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
     }
+    
 
-
-
+    
   }
 
 
@@ -1787,7 +1782,7 @@ class njBox {
     //make some stuff on callbacks
     switch (type) {
       case 'show':
-        this._uiUpdate();
+      this._uiUpdate();
         break;
       case 'shown':
         if (this.state.gallery) this._preload();

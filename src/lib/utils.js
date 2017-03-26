@@ -129,7 +129,7 @@ export let defaults = {
 
 	start:             false,//(number) slide number, from which we should show gallery
 	loop:              true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
-	preload:           '1 1',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
+	preload:           '2 2',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
 	
 
 	content: undefined,//(string) content for modal
@@ -159,8 +159,7 @@ export let defaults = {
 
 		//todo, in gallery
 		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
-		ui:          '<div class="njb-ui"></div>',
-		title:       '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
+		ui:          '<div class="njb-ui"><div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div></div>',
 		count:       '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
 		prev:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
 		next:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'

@@ -100,9 +100,9 @@ Options list:
 | container | body | body \|\|  selector \|\| dom\jQuery element | appends modal to specific element
 | position | fixed | fixed \|\| absolute | how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically
 | click | true | boolean | should we set click handler on element? (if no)
-| clickels | '' | selector \|\| dom\jQuery element| additional elements that can trigger same modal window (very often on landing pages you need few links to open one modal window)
+| clickels | '' | selector \|\| dom\jQuery element| additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 | backdrop | boolean | true | should we show backdrop?
-| backdropassist | true | boolean | if true, animation durations of modal will automatically sets to backdrop to be in sync
+| backdropassist | true | boolean | if true, animation durations of modal will automatically sets to backdrop to be in sync (it can be calculatied automatically from css)
 | scrollbar | hide | show \|\| hide | should we hide scrollbar from page?
 | out | true | boolean | click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 | esc | true | boolean | close modal when esc button pressed?
@@ -110,23 +110,22 @@ Options list:
 | autoheight | image | boolean \|\| image | should we set maximum height of modal? if image is selected, only images will be autoheighted
 | autofocus | false | boolean false, selector \|\| dom\jQuery element | set focus to element, after modal is shown, also you may use autofocus attribute without this option
 | title | '' | string \|\| boolean false | title (usually for image)
-| title_attr | title | string \|\| boolean false | attribute from which we gather title for slide (used in galleries)
-| gallery | '' | selector | child items selector, for gallery elements.
+| title_attr | title | string \|\| boolean false | attribute from which we gather title for slide (used basically in galleries)
+| img | ready | load \|\| ready | we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
+| imgload | show | init \|\| show | should we load gallery images on init(even before dialog open, on init) or on open
+| gallery | '' | selector | child items selector, for gallery elements (galleries created with this option)
 | arrows | true | boolean | should we add navigation arrows
-| start | false | number | slide number, from which we should show gallery
+| start | false | number | slide number, from which we should show gallery (not zero based, first slide is number 1)
 | loop | true | boolean | show first image when call `next` on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically
-| preload | '1 1' | boolean false \|\| string | space separated string with 2 numbers, how much images we should preload before and after active slide
-
-| templates | object | object | **More detailed under this table!** object with html templates for all modal parts
-
-
-
-| anim | 'scale' | false \|\| string | name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`)
+| preload | '1 1' | boolean false \|\| string | space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
+| anim | 'scale' | false \|\| string | name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 | animclass | animated | string | additional class that will be added to modal window during animation (can be used for `animate.css` or other css animation libraries)
 | duration | auto | string \|\| number \|\| auto | duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
-| img | load | load \|\| ready | we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
-| text | object | object | **More detailed under this table!** object with locale strings
-| autobind | [data-toggle~="modal"] | selector | selector that will be used for autobind (can be used only with changing global default properties) Set it after njModal.js is inserted njModal.defaults.autobind = '.myAutoBindSelector'
+| jquery | undefined | 123 | !!! jQuery NOT required for plugin, plugin can work with it to support old browsers !!! link to jquery (for modules without global scope) P.S. Plugin will try to found jquery in global namespace even without this option.
+| templates | object | object | **More detailed under this table!** object with html templates for all modal parts. P.S. you cant change this from html api.
+| text | object | object | **More detailed under this table!** object with locale strings P.S. you cant change this from html api.
+| autobind | [data-toggle~="box"], [data-toggle~="modal"] | selector | selector that will be used for autobind (can be used only with changing global default properties) Usage: njBox.defaults.autobind = '.myAutoBindSelector'
+| _focusable | a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable] | selector | this elements we will try to focus in popup shown after option o.autofocus
 
 
 ## Tips

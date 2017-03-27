@@ -146,7 +146,6 @@ export let defaults = {
 		close: '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
-		//todo, in gallery
 		preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui:          '<div class="njb-ui"></div>',
 		title:       '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
@@ -157,21 +156,18 @@ export let defaults = {
 
 	text: {
 		_missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
-		preloader:    'Loading...',//title on preloader element
-
-		imageError:   '<a href="%url%">This image</a> can not be loaded.',
+		preloader:      'Loading...',//title on preloader element
+		imageError:     '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',
+		current:        'Current slide',
+		total:          'Total slides',
+		close:          'Close (Esc)',//title on close button
+		prev:           'Previous (Left arrow key)',//prev slide button title
+		next:           'Next (Right arrow key)',//next slide button title
 
-		current:      'Current slide',
-		total:        'Total slides',
-		close: 'Close (Esc)',//title on close button
-		prev:         'Previous (Left arrow key)',//prev slide button title
-		next:         'Next (Right arrow key)',//next slide button title
-
-		ok: 'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
-		cancel: 'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
-		placeholder: ''//placeholder for prompt input
-
+		ok:             'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
+		cancel:         'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
+		placeholder:    ''//placeholder for prompt input
 	},
 
 	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus

@@ -62,6 +62,7 @@ javascript
 ## Customization
 
 You can pass an object with custom options in js initialization or use data-njb-* if you want html api.
+Also you can pass all options as json in one attribute njb-options.
 
 P.S. You can't use callbacks with html api.
 
@@ -86,7 +87,7 @@ JS options example
   })
 ```
 
-Options list:
+### Options list:
 
 | Name  | Default | Type | Description |
 | :--- | :---: | :--- | :--- |
@@ -127,6 +128,54 @@ Options list:
 | autobind | [data-toggle~="box"], [data-toggle~="modal"] | selector | selector that will be used for autobind (can be used only with changing global default properties) Usage: njBox.defaults.autobind = '.myAutoBindSelector'
 | _focusable | a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable] | selector | this elements we will try to focus in popup shown after option o.autofocus
 
+### o.templates
+
+```js
+templates: {
+  wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
+  backdrop: '<div class="njb-backdrop"></div>',
+  modalOuter: '<div class="njb-outer" data-njb-outer></div>',
+  modal: '<aside class="njb" tabindex="-1"></aside>',
+  body: '<div class="njb__body" data-njb-body></div>',
+  header: '<header class="njb__header" data-njb-header></header>',
+  footer: '<footer class="njb__footer" data-njb-footer></footer>',
+  close: '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
+  focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
+  preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
+  ui:          '<div class="njb-ui"></div>',
+  title:       '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
+  count:       '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
+  prev:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
+  next:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
+}
+```
+
+### o.text
+
+```js
+text: {
+  _missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
+  preloader:      'Loading...',//title on preloader element
+
+  imageError:     '<a href="%url%">This image</a> can not be loaded.',
+
+  current:        'Current slide',
+  total:          'Total slides',
+  close:          'Close (Esc)',//title on close button
+  prev:           'Previous (Left arrow key)',//prev slide button title
+  next:           'Next (Right arrow key)',//next slide button title
+
+  ok:             'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
+  cancel:         'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
+  placeholder:    ''//placeholder for prompt input
+}
+```
+
+## API
+
+## Events
+
+## Delegate attributes
 
 ## Tips
 

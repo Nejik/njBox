@@ -171,7 +171,30 @@ text: {
 }
 ```
 
+### Changing default settings globally
+If you need to change default settings to all modals in your project, you can do it via changing njBox.defaults
+
+```js
+njBox.defaults.autobind = '.myAutoBindSelector';
+njBox.defaults.scrollbar = 'show';
+njBox.defaults.backdrop =  false;
+```
+
 ## API
+
+P.S. All public method are chainable (like jQuery methods)
+
+```js
+	var modal = new njModal('#myModalLink');
+	modal	.show(index)//index - for gallery, from what index we should show gallery
+				.position()//can be used, when you made your custom ui... or whatever
+				.hide()
+				.next()
+				.prev()
+				.goTo(index)
+        .update()//update just recreate all slides from current settings (can be used when you add images to gallery dynamically)
+				.destroy()
+```
 
 ## Events
 

@@ -20,7 +20,7 @@ Highly customizable pure javascript modal window.
 ## Usage
 
 You can initialize plugin in few ways:
-1) Bootstrap style (HTML api, without js at all), all settings you should set in data-njb-* attributes
+1) Bootstrap style autoinitialization (HTML api, without js at all), all settings you should set in data-njb-* attributes
 
 ```html
 <a href="#modalDiv" data-toggle="modal">Show popup</a>
@@ -47,16 +47,16 @@ HTML
 javascript
 
 ```js
-  var modal = new njBox('#myModal')
-  //or
-  var modal = new njBox({elem:'#myModal'})
-  // or with options
-  var modal = new njBox('#myModal', {option1:value1})
-  //gallery example
-  var gallery = new njBox({
-    elem: '.gallery',
-    gallery: 'a'
-  })
+var modal = new njBox('#myModal')
+//or
+var modal = new njBox({elem:'#myModal'})
+// or with options
+var modal = new njBox('#myModal', {option1:value1})
+//gallery example
+var gallery = new njBox({
+  elem: '.gallery',
+  gallery: 'a'
+})
 ```
 
 ## Customization
@@ -75,16 +75,16 @@ HTML API example
 JS options example
 
 ```js
-  var modal = new njBox({
-    elem:'#myModal',
-    backdrop: false,
-    close: 'inside',
-    scrollbar: 'show',
-    onshow: function() {},
-    onshown: function() {},
-    onhide: function() {},
-    onshidden: function() {}//more callbacks in advanced section
-  })
+var modal = new njBox({
+  elem:'#myModal',
+  backdrop: false,
+  close: 'inside',
+  scrollbar: 'show',
+  onshow: function() {},
+  onshown: function() {},
+  onhide: function() {},
+  onshidden: function() {}//more callbacks in advanced section
+})
 ```
 
 ### Options list:
@@ -199,8 +199,8 @@ modal
 .update()//update just recreate all slides withW current settings (can be used when you add images to gallery dynamically)
 .destroy()
 
-.on()//listen for events
-.off()//remove handlers
+.on(event, handler)//add event listener
+.off(event, handler)//remove event listener
 ```
 
 ## Events
@@ -231,13 +231,13 @@ We can use events in 2 ways:
 1. Using callbacks
 ```js
 var modal = new njBox({
-            elem:'#myModalLink',
-            onshow: function() {
-              console.log('Show my modal! :)')
-            },
-            onhidden: function() {
-              console.log('My modal is hidden :(')
-            }
+  elem:'#myModalLink',
+  onshow: function() {
+    console.log('Show my modal! :)')
+  },
+  onhidden: function() {
+    console.log('My modal is hidden :(')
+  }
 });
 ```
 2. Listen events on created modal instance. But this method can't listen 3 events before init: data_gathered, item_domready, inited. In most cases it's not scary, because likely you will need show/shown/hide/hidden events.
@@ -252,6 +252,29 @@ var modal = new njBox({elem:'#myModalLink'}).on('shown', function() {
 })
 ```
 ## Delegate attributes
+For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api, you can add to modal ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
+
+List of interactive attributes:
+| Title  | Description |
+| :--- | :---: |
+| data-njb-close | Closes modal 
+| data-njb-return | On hide, plugin will try to find element with this attribute and get value from it. Value will be stored in instance.returnValue variable, and as arguments in onok, oncancel callbacks.
+| data-njb-prev | Go to previous slide in gallery
+| data-njb-next | Go to next slide in gallery
+| data-njb-ok | Closes modal. onok callback will be triggered.
+| data-njb-cancel | Closes modal. oncancel callback will be triggered.
+
+List of template attributes:
+| Title  | Description |
+| :--- | :---: |
+| data-njb-header |  |
+| data-njb-footer |  |
+| data-njb-outer | |
+| data-njb-body |  |
+| data-njb-title |  |
+| data-njb-current |  |
+| data-njb-total |  |
+
 
 ## Tips
 

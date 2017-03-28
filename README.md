@@ -198,6 +198,9 @@ modal
 .goTo(index)
 .update()//update just recreate all slides withW current settings (can be used when you add images to gallery dynamically)
 .destroy()
+
+.on()//listen for events
+.off()//remove handlers
 ```
 
 ## Events
@@ -221,11 +224,33 @@ modal
 | cancel | oncancel | - | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs.
 | events_removed | onevents_removed | - | When event handlers detached. <br />Mostly for making addons.
 | clear | onclear | - |After hiding when we remove all unnecessary data. <br />Mostly for making addons.
+| cb | oncb | event, event_arguments | Global callback that calls for EVERY event (first argument) that you can use for making some global changes. <br /> P.S. Using this callback allow you to listen callback twice, first event will fire in oncb callback where you can do some magic with all events, and later when you initialize modal in code with usual oninited, onshow, etc callbacks.
 
 We can use events in 2 ways:
 
-1. listen events on created modal instance:
-
+1. Using callbacks
+```js
+var modal = new njBox({
+            elem:'#myModalLink',
+            onshow: function() {
+              console.log('Show my modal! :)')
+            },
+            onhidden: function() {
+              console.log('My modal is hidden :(')
+            }
+});
+```
+2. Listen events on created modal instance. But this method can't listen 3 events before init: data_gathered, item_domready, inited. In most cases it's not scary, because likely you will need show/shown/hide/hidden events.
+```js
+var modal = new njBox({elem:'#myModalLink'});
+modal.on('shown', function() {
+  console.log('My modal is shown!')
+})
+//or at once
+var modal = new njBox({elem:'#myModalLink'}).on('shown', function() {
+  console.log('My modal is shown!')
+})
+```
 ## Delegate attributes
 
 ## Tips

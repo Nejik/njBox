@@ -203,7 +203,7 @@ modal
 ## Events
 
 | Title  | Arguments | Description |
-| --- | --- | --- | --- |
+| :--- | :---: | :--- |
 | inited |  | When instance inited(all data gathered, dom created, events prepared, etc.)
 | show |  | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
 | shown |  | After show animation finished.

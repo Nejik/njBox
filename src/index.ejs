@@ -74,9 +74,12 @@
   <script>
     
     window.gallery = new njBox('.gallery', {
-      oncb() {
-        console.log(arguments);
-      }
+      // oncb() {
+      //   console.log(arguments);
+      // }
+    })
+    window.gallery.on('cb', function() {
+      console.log(arguments);
     })
     
   </script>

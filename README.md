@@ -202,29 +202,35 @@ modal
 
 ## Events
 
-| Title  | Arguments | Description |
-| :--- | :---: | :--- |
-| inited |  | When instance inited(all data gathered, dom created, events prepared, etc.)
-| show |  | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
-| shown |  | After show animation finished.
-| hide |  | When modal begin to hide. <br /> P.S. If you return false in onhide callback, hiding modal will be canceled.
-| hidden |  | After hide animation finished.
-| data_gathered | dataObject, domEl | On gathering data from dom element (data-njb-* atrributes, title, content, etc.) <br /> P.S. In ondata_gathered callback you can modify dataObject if you need some custom logic on gathering data.
-| item_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
-| events_setted |  | When event handlers attached. <br />Mostly for making addons.
-| item_prepare | itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
-| item_inserted | itemObject | After item inserted.
-| position |  | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
-| item_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
-| item_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
-| ok |  | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs.
-| cancel |  | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs.
-| events_removed |  | When event handlers detached. <br />Mostly for making addons.
-| clear |  | After hiding when we remove all unnecessary data. <br />Mostly for making addons.
+| Title  | Callback name | Arguments | Description |
+| :--- | :---: | :--- | :--- |
+| inited | oninited | - | When instance inited(all data gathered, dom created, events prepared, etc.)
+| show | onshow | - | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
+| shown | onshown | - | After show animation finished.
+| hide | onhide | - | When modal begin to hide. <br /> P.S. If you return false in onhide callback, hiding modal will be canceled.
+| hidden | onhidden | - | After hide animation finished.
+| data_gathered | ondata_gathered | dataObject, domEl | On gathering data from dom element (data-njb-* atrributes, title, content, etc.) <br /> P.S. In ondata_gathered callback you can modify dataObject if you need some custom logic on gathering data.
+| item_domready | onitem_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
+| events_setted | onevents_setted | - |When event handlers attached. <br />Mostly for making addons.
+| item_prepare | onitem_prepare |itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
+| item_inserted | onitem_inserted |itemObject | After item inserted.
+| position | onposition | - | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
+| item_img_ready | onitem_img_ready |itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| item_img_load | onitem_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| ok | onok | - | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs.
+| cancel | oncancel | - | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs.
+| events_removed | onevents_removed | - | When event handlers detached. <br />Mostly for making addons.
+| clear | onclear | - |After hiding when we remove all unnecessary data. <br />Mostly for making addons.
+
+We can use events in 2 ways:
+
+1. listen events on created modal instance:
 
 ## Delegate attributes
 
 ## Tips
+
+## Miscellaneous
 
 ## Examples
 

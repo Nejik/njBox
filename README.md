@@ -184,19 +184,43 @@ njBox.defaults.backdrop =  false;
 
 P.S. All public method are chainable (like jQuery methods)
 
+"new njBox" returns instance of modal. Later you can call public methods on this instance.
 ```js
-	var modal = new njModal('#myModalLink');
-	modal	.show(index)//index - for gallery, from what index we should show gallery
-				.position()//can be used, when you made your custom ui... or whatever
-				.hide()
-				.next()
-				.prev()
-				.goTo(index)
-        .update()//update just recreate all slides from current settings (can be used when you add images to gallery dynamically)
-				.destroy()
+//create instance
+var modal = new njBox('#myModalLink');
+//use api
+modal	
+.show(index)//index - for gallery, from what index we should show gallery
+.hide()
+.position()//can be used, when you made your custom ui... or whatever
+.next()
+.prev()
+.goTo(index)
+.update()//update just recreate all slides withW current settings (can be used when you add images to gallery dynamically)
+.destroy()
 ```
 
 ## Events
+
+| Title  | Arguments | Description |
+| --- | --- | --- | --- |
+| inited |  | When instance inited(all data gathered, dom created, events prepared, etc.)
+| show |  | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
+| shown |  | After show animation finished.
+| hide |  | When modal begin to hide. <br /> P.S. If you return false in onhide callback, hiding modal will be canceled.
+| hidden |  | After hide animation finished.
+| data_gathered | dataObject, domEl | On gathering data from dom element (data-njb-* atrributes, title, content, etc.) <br /> P.S. In ondata_gathered callback you can modify dataObject if you need some custom logic on gathering data.
+| item_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
+| events_setted |  | When event handlers attached. <br />Mostly for making addons.
+| item_prepare | itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
+| item_inserted | itemObject | After item inserted.
+| position |  | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
+| item_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| item_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| ok |  | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs.
+| cancel |  | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs.
+| events_removed |  | When event handlers detached. <br />Mostly for making addons.
+| clear |  | After hiding when we remove all unnecessary data. <br />Mostly for making addons.
 
 ## Delegate attributes
 

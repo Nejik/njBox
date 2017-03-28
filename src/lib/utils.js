@@ -138,7 +138,7 @@ export let defaults = {
 	templates: {
 		wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop: '<div class="njb-backdrop"></div>',
-		modalOuter: '<div class="njb-outer" data-njb-outer></div>',
+		modalOuter: '<div class="njb-outer"></div>',
 		modal: '<aside class="njb" tabindex="-1"></aside>',
 		body: '<div class="njb__body" data-njb-body></div>',
 		header: '<header class="njb__header" data-njb-header></header>',

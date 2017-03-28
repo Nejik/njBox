@@ -206,7 +206,7 @@ modal
 ## Events
 
 | Title  | Callback name | Arguments | Description |
-| :--- | :---: | :--- | :--- |
+| :--- | :--- | :---: | :--- |
 | inited | oninited | - | When instance inited(all data gathered, dom created, events prepared, etc.)
 | show | onshow | - | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
 | shown | onshown | - | After show animation finished.
@@ -255,30 +255,28 @@ var modal = new njBox({elem:'#myModalLink'}).on('shown', function() {
 For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api, you can add to modal ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
 
 List of interactive attributes:
+
 | Title  | Description |
-| :--- | :---: |
-| data-njb-close | Closes modal 
-| data-njb-return | On hide, plugin will try to find element with this attribute and get value from it. Value will be stored in instance.returnValue variable, and as arguments in onok, oncancel callbacks.
-| data-njb-prev | Go to previous slide in gallery
-| data-njb-next | Go to next slide in gallery
-| data-njb-ok | Closes modal. onok callback will be triggered.
-| data-njb-cancel | Closes modal. oncancel callback will be triggered.
+| :--- | :--- |
+| data&#x2011;njb&#x2011;close | Closes modal 
+| data&#x2011;njb&#x2011;return | On hide, plugin will try to find input with this attribute and get value from it. Value will be stored in instance.returnValue variable, until next show, and as arguments in onok, oncancel callbacks.
+| data&#x2011;njb&#x2011;prev | Go to previous slide in gallery
+| data&#x2011;njb&#x2011;next | Go to next slide in gallery
+| data&#x2011;njb&#x2011;ok | Closes modal. onok callback will be triggered.
+| data&#x2011;njb&#x2011;cancel | Closes modal. oncancel callback will be triggered.
 
 List of template attributes:
-| Title  | Description |
-| :--- | :---: |
-| data-njb-header |  |
-| data-njb-footer |  |
-| data-njb-outer | |
-| data-njb-body |  |
-| data-njb-title |  |
-| data-njb-current |  |
-| data-njb-total |  |
 
+| Title  | Description |
+| :--- | :--- |
+| data&#x2011;njb&#x2011;header | In this element plugin will insert header text.
+| data&#x2011;njb&#x2011;footer | In this element plugin will insert footer text.
+| data&#x2011;njb&#x2011;body | In this element plugin will insert content of item(slide).
+| data&#x2011;njb&#x2011;title | In this element title of current item(slide) will be inserted.
+| data&#x2011;njb&#x2011;current | In this element current active index will be inserted.
+| data&#x2011;njb&#x2011;total |  In this element total amount of slides will be inserted.
 
 ## Tips
-
-## Miscellaneous
 
 ## Examples
 

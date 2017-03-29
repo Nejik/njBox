@@ -249,11 +249,11 @@ var njBox = function () {
 
       this._backdrop('show');
 
-      //set event handlers
-      this._setEventsHandlers();
-
       //insert wrap
       this.dom.container[0].appendChild(this.dom.wrap[0]);
+
+      //set event handlers
+      this._setEventsHandlers();
 
       //draw modal on screen
       this._drawItem(this.state.active);
@@ -355,8 +355,16 @@ var njBox = function () {
     value: function goTo(index) {
       index = index - 1; //inside gallery we have index -1, because slides starts from 0
 
-      if (this.state.state !== 'shown' || typeof index !== 'number' || index === this.state.active || index < 0 || index > this.items.length - 1) {
-        this._error('njBox, wrong index in goTo method or gallery not in shown state.');
+      if (typeof index !== 'number') {
+        this._error('njBox, wrong index argument in goTo method.');
+        return;
+      }
+
+      if (this.state.state === 'inited' || this.state.state === 'show') {
+        this.state.active = index;
+        return;
+      } else if (this.state.state !== 'shown' || index === this.state.active || index < 0 || index > this.items.length - 1) {
+        this._error('njBox, wrong index in goTo method.');
         return this;
       }
 
@@ -480,7 +488,7 @@ var njBox = function () {
       if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
       if (!this.state.autoheightAdded) {
-        this.dom.wrap.addClass('njb-wrap--autoheight');
+        // this.dom.wrap.addClass('njb-wrap--autoheight');
         o.autoheight === true ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image');
         this.state.autoheightAdded = true;
       }
@@ -843,10 +851,28 @@ var njBox = function () {
       if (this.dom.container[0] !== this.dom.body[0]) o.position = 'absolute';
       if (o.position === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
-      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        if (this.dom.next[0]) this.dom.wrap[0].appendChild(this.dom.next[0]);
-        if (this.dom.prev[0]) this.dom.wrap[0].appendChild(this.dom.prev[0]);
-        this.state.arrowsInserted = true;
+      //create ui layer
+      this.dom.ui = $(o.templates.ui);
+      if (!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
+      this.dom.wrap[0].appendChild(this.dom.ui[0]);
+
+      this.dom.title = $(o.templates.title);
+      this.dom.ui[0].appendChild(this.dom.title[0]);
+
+      if (this.state.gallery) {
+        this.dom.ui_count = $(o.templates.count);
+        this.dom.ui[0].appendChild(this.dom.ui_count[0]);
+
+        this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
+        this.dom.ui_current[0].setAttribute('title', o.text.current);
+        this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]');
+        this.dom.ui_total[0].setAttribute('title', o.text.total);
+
+        if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+          if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+          if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+          this.state.arrowsInserted = true;
+        }
       }
 
       // insert outside close button
@@ -854,11 +880,11 @@ var njBox = function () {
         this.dom.close = $(o.templates.close);
         this.dom.close[0].setAttribute('title', o.text.close);
 
-        this.dom.wrap[0].appendChild(this.dom.close[0]);
+        this.dom.ui[0].appendChild(this.dom.close[0]);
       }
 
       this.dom.focusCatcher = $(o.templates.focusCatcher);
-      this.dom.wrap[0].appendChild(this.dom.focusCatcher[0]);
+      this.dom.ui[0].appendChild(this.dom.focusCatcher[0]);
     }
   }, {
     key: '_drawItem',
@@ -965,18 +991,20 @@ var njBox = function () {
       //first try to focus elements inside modal
       if (focusElement && focusElement.length) {
         focusElement[0].focus();
-      } else if (this.state.gallery) {
-        this.dom.next[0].focus();
-      } else if (o.close === "outside") {
-        //then try to focus close buttons
-        this.dom.close[0].focus();
-      } else if (o.close === "inside" && item.dom.close) {
-        //if type:"template" is used we have no close button here
-        item.dom.close[0].focus();
-      } else {
-        //if no, focus popup itself
-        item.dom.modal[0].focus();
-      }
+      } else
+        /*if (this.state.gallery) {
+          this.dom.next[0].focus()
+        } else*/
+        if (o.close === "outside") {
+          //then try to focus close buttons
+          this.dom.close[0].focus();
+        } else if (o.close === "inside" && item.dom.close) {
+          //if type:"template" is used we have no close button here
+          item.dom.close[0].focus();
+        } else {
+          //if no, focus popup itself
+          item.dom.modal[0].focus();
+        }
     }
   }, {
     key: '_setClickHandlers',
@@ -1177,7 +1205,7 @@ var njBox = function () {
     value: function _detectIndexForOpen(indexFromShow) {
       var o = this.o,
           that = this,
-          index = 0;
+          index = this.state.active || 0;
 
       if (indexFromShow) {
         //first we check if index we have as argument in show method
@@ -1227,7 +1255,7 @@ var njBox = function () {
       };
       $img.on('error', item._handlerError).on('abort', item._handlerError);
 
-      if (item.title) img.title = item.title;
+      // if (item.title) img.title = item.title;
       img.src = item.content;
 
       ready = img.width + img.height > 0;
@@ -1417,9 +1445,10 @@ var njBox = function () {
 
       this.state.itemChanging = true; //we can't change slide during current changing
       this.state.itemsOrder_backup = this.state.itemsOrder.slice(); //copy current state
-      this._cb('change', nextIndex);
 
       this.state.active = nextIndex;
+      this._cb('change', nextIndex);
+
       this._setItemsOrder(nextIndex);
 
       switch (dir) {
@@ -1488,6 +1517,47 @@ var njBox = function () {
           delete item.o.preloader;
 
           break;
+      }
+    }
+  }, {
+    key: '_uiUpdate',
+    value: function _uiUpdate(index) {
+      index = index || this.state.active;
+
+      var o = this.o,
+          item = this.items[index];
+
+      if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
+
+      //set title
+      if (item.title) {
+        this.dom.ui.removeClass('njb-ui--no-title');
+      } else {
+        this.dom.ui.addClass('njb-ui--no-title');
+      }
+      this.dom.wrap.find('[data-njb-title]').html(item.title || '');
+
+      //set item counts
+      this.dom.wrap.find('[data-njb-current]').html(index + 1 || ''); //+1 because indexes are zero-based
+      this.dom.wrap.find('[data-njb-total]').html(this.items.length || '');
+
+      //arrow classes
+      if (index === 0) {
+        this.dom.ui.addClass('njb-ui--first');
+      } else {
+        this.dom.ui.removeClass('njb-ui--first');
+      }
+
+      if (index === this.items.length - 1) {
+        this.dom.ui.addClass('njb-ui--last');
+      } else {
+        this.dom.ui.removeClass('njb-ui--last');
+      }
+
+      if (item.type === 'image') {
+        this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
+      } else {
+        this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
       }
     }
   }, {
@@ -1777,7 +1847,6 @@ var njBox = function () {
 
         that._clear();
         if (!nocallback) that._cb('hidden');
-        that.state.state = 'inited';
       }
     }
   }, {
@@ -1851,11 +1920,18 @@ var njBox = function () {
       }
       //make some stuff on callbacks
       switch (type) {
+        case 'show':
+          this._uiUpdate();
+          break;
         case 'shown':
           if (this.state.gallery) this._preload();
           break;
         case 'hidden':
+          this.state.state = 'inited';
           this._focusPreviousModal();
+          break;
+        case 'change':
+          this._uiUpdate();
           break;
       }
 
@@ -1968,7 +2044,7 @@ if (typeof window !== 'undefined') {
 njBox.alert = function (_content, okCb, cancelCb) {
   return new njBox({
     content: function content(rawitem) {
-      return '<div class="njb__body">\n                                    ' + (_content || this.o.text._missedContent) + '\n                                  </div>\n                                  <div class="njb__footer">\n                                    <button data-njb-ok>' + this.o.text.ok + '</button>\n                                  </div>';
+      return '<div class="njb__body">\n  ' + (_content || this.o.text._missedContent) + '\n</div>\n<div class="njb__footer">\n  <button data-njb-ok>' + this.o.text.ok + '</button>\n</div>';
     },
     type: 'template',
     out: false,
@@ -1979,7 +2055,7 @@ njBox.alert = function (_content, okCb, cancelCb) {
 njBox.confirm = function (_content2, okCb, cancelCb) {
   return new njBox({
     content: function content(rawitem) {
-      return '<div class="njb__body">\n                                    ' + (_content2 || this.o.text._missedContent) + '\n                                  </div>\n                                  <div class="njb__footer">\n                                    <button data-njb-ok>' + this.o.text.ok + '</button>\n                                    <button data-njb-cancel>' + this.o.text.cancel + '</button>\n                                  </div>';
+      return '<div class="njb__body">\n  ' + (_content2 || this.o.text._missedContent) + '\n</div>\n<div class="njb__footer">\n  <button data-njb-ok>' + this.o.text.ok + '</button>\n  <button data-njb-cancel>' + this.o.text.cancel + '</button>\n</div>';
     },
     type: 'template',
     out: false,
@@ -1996,7 +2072,7 @@ njBox.prompt = function (_content3, placeholder, okCb, cancelCb) {
 
   return new njBox({
     content: function content(rawitem) {
-      return '<div class="njb__body">\n                                    ' + (_content3 || this.o.text._missedContent) + '\n                                    <div>\n                                      <input data-njb-return type="text" placeholder="' + (placeholder || '') + '" />\n                                    </div>\n                                  </div>\n                                  <div class="njb__footer">\n                                    <button data-njb-ok>' + this.o.text.ok + '</button>\n                                    <button data-njb-cancel>' + this.o.text.cancel + '</button>\n                                  </div>';
+      return '<div class="njb__body">\n  ' + (_content3 || this.o.text._missedContent) + '\n  <div>\n    <input data-njb-return type="text" placeholder="' + (placeholder || '') + '" />\n  </div>\n</div>\n<div class="njb__footer">\n  <button data-njb-ok>' + this.o.text.ok + '</button>\n  <button data-njb-cancel>' + this.o.text.cancel + '</button>\n</div>';
     },
     type: 'template',
     out: false,
@@ -2389,6 +2465,11 @@ j.fn.closest = function (selector) {
 
     return j(closestArr);
 };
+j.fn.html = function (html) {
+    return this.each(function () {
+        this.innerHTML = html;
+    });
+};
 
 exports.default = j;
 module.exports = exports['default'];
@@ -2509,81 +2590,68 @@ function getDefaultInfo() {
 }
 
 var defaults = exports.defaults = {
-	elem: '', //(selector || dom\jQuery element) dom element for triggering modal (it should be single elements, if plugin will found here few elements, instance of gallery will be created)
+	elem: '', //(selector || dom\jQuery element) dom element for triggering modal
+	content: undefined, //(string) content for modal
+	type: '', //(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template simila to html, but template inserted without .njb__body tag, directly to .njb
+	header: undefined, //(html) html that will be added as modal header (for first slide)
+	footer: undefined, //(html) html that will be added as modal footer (for first slide)
+	// we need quotes here because of ie8..
+	'class': false, //(string) classnames(separated with space) that will be added to modal wrapper, you can use it for styling (theming)
+	zindex: false, //(boolean false || number) zindex that will be set on modal, probably not a good idea to use this option, set it in css and use o.class instead
+
 	container: 'body', //(selector) appends modal to specific element
 	position: 'fixed', //(fixed || absolute), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically
 	click: true, //(boolean) should we set click handler on element(o.elem)?
-	clickels: '', //(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few links to open one modal window)
+	clickels: '', //(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 
-	backdrop: true, //(boolean) should we show backdrop? true - show backdrop for every popup
-	backdropassist: true, //(boolean) if true, animation durations of modal will automatically sets to backdrop to be in sync
+	backdrop: true, //(boolean) should we show backdrop?
+	backdropassist: true, //(boolean) if true, animation durations of modal will automatically sets to backdrop to be in sync (it can be calculatied automatically from css)
 	scrollbar: 'hide', //(show || hide) should we hide scrollbar from page?
 	out: true, //(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc: true, //(boolean) close modal when esc button pressed?
 	close: 'outside', //(inside || outside || boolean false) add close button inside or outside popup or don't add at all
 	autoheight: 'image', //(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
+	autofocus: false, //(boolean false, selector) set focus to element, after modal is shown, also you may use autofocus attribute without this option
+	title: false, //(string || boolean false) title (usually for image)
+	title_attr: 'title', //(string || boolean false) attribute from which we gather title for slide (used basically in images)
 
-	autofocus: '', //(boolean false, selector) set focus to element, after modal is shown, if false, no autofocus elements inside, otherwise focus selected element
-
-	//gallery
 	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
-
-
-	gallery: '', //(selector) child items selector, for gallery elements. Can be used o.selector OR o.delegate
-
-	arrows: true, //(boolean) add navigation arrows for galleries or not
-
-	title: false, //(string || boolean false) title for first slide if we call it via js
-	title_attr: 'title', //(string || boolean false) attribute from which we gather title for slide (used in images)
-
-	start: false, //(number) slide number, from which we should show gallery
+	gallery: '', //(selector) child items selector, for gallery elements.
+	arrows: true, //(boolean) should we add navigation arrows
+	start: false, //(number) slide number, from which we should show gallery (not zero based, first slide is number 1)
 	loop: true, //(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
-	preload: '2 2', //(boolean false || string) space separated string with 2 numbers, how much images we should preload before  and after active slide
-
-
-	content: undefined, //(string) content for modal
-	_missedContent: 'njBox plugin: meow, put some content here...', //this string uses, when slide have no content
-	type: '', //(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template simila to html, but template inserted without .njb__body tag, directly to .njb
-	header: undefined, //(html) html that will be added as modal header (for first slide)
-	footer: undefined, //(html) html that will be added as modal footer (for first slide)
-
-	// we need quotes here because of ie8..
-	'class': false, //(string) classnames(separated with space) that will be added to modal wrapper, you can use it for styling
-	zindex: false, //(boolean false || number) zindex that will be set on modal, probably not a good idea to use this option, set it in css and use o.class instead
-
-	anim: 'scale', //(false || string) name of animation, or string with space separated 2 names of show/hide animation
+	preload: '1 1', //(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
+	anim: 'scale', //(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 	animclass: 'animated', //(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration: 'auto', //(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
 
 	templates: {
 		wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop: '<div class="njb-backdrop"></div>',
-		modalOuter: '<div class="njb-outer" data-njb-outer></div>',
+		modalOuter: '<div class="njb-outer"></div>',
 		modal: '<aside class="njb" tabindex="-1"></aside>',
 		body: '<div class="njb__body" data-njb-body></div>',
 		header: '<header class="njb__header" data-njb-header></header>',
 		footer: '<footer class="njb__footer" data-njb-footer></footer>',
-		close: '<button type="button" class="njb-close-system" data-njb-close>×</button>',
+		close: '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
 		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
 
-		//todo, in gallery
 		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
-		// ui:          '<div class="njb-ui"><div class="njb-ui-title-outer"><div class="njb-ui-title-inner" data-njb-title></div></div></div>',
-		// count:       '<div class="njb-ui-count"><span data-njb-current></span> / <span data-njb-total></span></div>',
-		prev: '<button type="button" class="njb-arrow njb-arrow--prev" data-njb-prev></button>',
-		next: '<button type="button" class="njb-arrow njb-arrow--next" data-njb-next></button>'
+		ui: '<div class="njb-ui"></div>',
+		title: '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
+		count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
+		prev: '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
+		next: '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
 	},
 
 	text: {
 		_missedContent: 'njBox plugin: meow, put some content here...', //text for case, when slide have no content
 		preloader: 'Loading...', //title on preloader element
-
 		imageError: '<a href="%url%">This image</a> can not be loaded.',
 		// ajaxError:    'Smth goes wrong, ajax failed or ajax timeout (:',
-
-		// current:      'Current slide',
-		// total:        'Total slides',
+		current: 'Current slide',
+		total: 'Total slides',
 		close: 'Close (Esc)', //title on close button
 		prev: 'Previous (Left arrow key)', //prev slide button title
 		next: 'Next (Right arrow key)', //next slide button title
@@ -2591,11 +2659,10 @@ var defaults = exports.defaults = {
 		ok: 'Ok', //text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		cancel: 'Cancel', //text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		placeholder: '' //placeholder for prompt input
-
 	},
 
-	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]', //(selector) this elements we will try to focus in popup shown after custom o.focus
-	jquery: undefined, //link to jquery (for modules)
+	_focusable: 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]', //(selector) this elements we will try to focus in popup shown after option o.autofocus
+	jquery: undefined, //link to jquery (for modules without global scopr)
 	autobind: '[data-toggle~="box"], [data-toggle~="modal"]' //(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 };
 

@@ -252,7 +252,7 @@ var modal = new njBox({elem:'#myModalLink'}).on('shown', function() {
 })
 ```
 ## Delegate attributes
-For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api, you can add to modal ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
+For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api, you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
 
 List of interactive attributes:
 

@@ -1899,12 +1899,13 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
 njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (rawitem) {
-      return `<div class="njb__body">
-                                    ${content || this.o.text._missedContent}
-                                  </div>
-                                  <div class="njb__footer">
-                                    <button data-njb-ok>${this.o.text.ok}</button>
-                                  </div>`;
+      return (
+`<div class="njb__body">
+  ${content || this.o.text._missedContent}
+</div>
+<div class="njb__footer">
+  <button data-njb-ok>${this.o.text.ok}</button>
+</div>`);
     },
     type: 'template',
     out: false,
@@ -1915,13 +1916,14 @@ njBox.alert = function (content, okCb, cancelCb) {
 njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (rawitem) {
-      return `<div class="njb__body">
-                                    ${content || this.o.text._missedContent}
-                                  </div>
-                                  <div class="njb__footer">
-                                    <button data-njb-ok>${this.o.text.ok}</button>
-                                    <button data-njb-cancel>${this.o.text.cancel}</button>
-                                  </div>`;
+      return (
+`<div class="njb__body">
+  ${content || this.o.text._missedContent}
+</div>
+<div class="njb__footer">
+  <button data-njb-ok>${this.o.text.ok}</button>
+  <button data-njb-cancel>${this.o.text.cancel}</button>
+</div>`);
     },
     type: 'template',
     out: false,
@@ -1938,16 +1940,17 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
 
   return new njBox({
     content: function (rawitem) {
-      return `<div class="njb__body">
-                                    ${content || this.o.text._missedContent}
-                                    <div>
-                                      <input data-njb-return type="text" placeholder="${placeholder || ''}" />
-                                    </div>
-                                  </div>
-                                  <div class="njb__footer">
-                                    <button data-njb-ok>${this.o.text.ok}</button>
-                                    <button data-njb-cancel>${this.o.text.cancel}</button>
-                                  </div>`;
+      return (
+`<div class="njb__body">
+  ${content || this.o.text._missedContent}
+  <div>
+    <input data-njb-return type="text" placeholder="${placeholder || ''}" />
+  </div>
+</div>
+<div class="njb__footer">
+  <button data-njb-ok>${this.o.text.ok}</button>
+  <button data-njb-cancel>${this.o.text.cancel}</button>
+</div>`);
     },
     type: 'template',
     out: false,

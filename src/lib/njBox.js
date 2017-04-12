@@ -97,15 +97,14 @@ class njBox {
       //extend global options with gathered from dom element
       $.extend(true, this.o, this._globals.gatheredOptions)
 
-
       //gather dom elements from which we will create modal window/gallery
       this.els = this._gatherElements(o.gallery);
     }
     this._postProcessOptions();
 
     // initializing addons
-	  for (var key in njBox.a) {
-	  	if (njBox.a.hasOwnProperty(key)) {
+	  for (var key in njBox.addons) {
+	  	if (njBox.addons.hasOwnProperty(key)) {
 	  		this['_'+key+'_init']();
 	  	}
 	  }
@@ -126,7 +125,7 @@ class njBox {
     this._cb('inited');
   }
   show(index) {
-    this._init();
+    this._init();//try to init
 
     var o = this.o,
       that = this;
@@ -143,7 +142,7 @@ class njBox {
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
     this.returnValue = null;
 
-    that.state.active = this._detectIndexForOpen(index);
+    if(njBox.addons.gallery) that.state.active = this._detectIndexForOpen(index);
 
     if (!this.dom.container[0].njb_instances) {
       this.dom.container[0].njb_instances = 1;
@@ -176,6 +175,7 @@ class njBox {
     this.dom.wrap[0].clientHeight;
     this.dom.wrap[0].style.display = 'block';
 
+    this._uiUpdate();
     this._anim('show');
 
     return this;
@@ -439,16 +439,7 @@ class njBox {
     }
   }
 
-  //gather dom elements from which we will create modal window/gallery
-  _gatherElements(selector) {
-    var o = this.o;
-
-    if (selector) {
-      return this.o.el.find(selector);
-    } else {
-      return this.o.el;
-    }
-  }
+  
   _postProcessOptions() {
     var o = this.o;
     if (o.gallery) this.state.gallery = true;
@@ -525,20 +516,26 @@ class njBox {
     this._cb('data_gathered', dataProcessed, $el[0]);
     return dataProcessed;
   }
-  
-  //return array with raw options gathered from items from which modal window/gallery will be created
-  _createRawItems() {
+  //gather dom elements from which we will create modal window/gallery
+  _gatherElements(selector) {
+    if (selector) {
+      return this.o.el.find(selector);
+    } else {
+      return this.o.el;
+    }
+  }
+
+  _createItems() {
     this.rawItems = [this.o];
     this._cb('createRawItems');
-  }
-  _createItems() {
-    this._createRawItems();
+
     var els = this.rawItems;
 
     let items = [];
     for (let i = 0, l = els.length; i < l; i++) {
       items.push(this._createItem(els[i], i))
     }
+    delete this.rawItems;
     return items;
   }
   _createItem(item, index) {
@@ -556,16 +553,19 @@ class njBox {
       evaluatedContent = item.content;
     }
 
+    var content = evaluatedContent || this.o.text._missedContent;
+
     return {
-      content: evaluatedContent || this.o.text._missedContent,
-      type: item.type || this._type(item.content || this.o.text._missedContent),
+      content: content,
+      type: item.type || this._type(content),
       header: item.header,
       footer: item.footer,
       title: item.title,
       el: item.el || el,
       o: {
         status: 'inited'
-      }
+      },
+      raw: item
     }
   }
   _type(content) {//detect content type
@@ -1087,29 +1087,7 @@ class njBox {
   }
 
 
-  //gallery methods
-  _detectIndexForOpen(indexFromShow) {
-    var o = this.o,
-      that = this,
-      index = this.state.active || 0;
-
-    if (indexFromShow) {//first we check if index we have as argument in show method
-      index = indexFromShow - 1;
-    } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
-      index = o.start - 1;
-    }
-    //if we have clicked element, take index from it
-    if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
-      this.els.each(function (i, el) {
-        if (that.state.clickedEl === el) {
-          index = i;
-          return;
-        }
-      })
-    }
-
-    return index;
-  }
+  
   _insertImage(item) {
     var that = this,
       o = this.o,
@@ -1796,9 +1774,6 @@ class njBox {
     }
     //make some stuff on callbacks
     switch (type) {
-      case 'show':
-        this._uiUpdate();
-        break;
       case 'shown':
         if (this.state.gallery) this._preload();
         break;
@@ -1876,12 +1851,12 @@ if (document.body && !njBox.g) njBox.g = getDefaultInfo();
 //global options
 
 //addons
-njBox.a = {}
+njBox.addons = {}
 //default settings
 njBox.defaults = defaults;
 
 njBox.addAddon = function (name, addon) {
-	njBox.a[name] = true;
+	njBox.addons[name] = true;
 
 	if(addon.options) $.extend(true, njBox.defaults, addon.options);
 	$.extend(njBox.prototype, addon.prototype);

@@ -527,7 +527,7 @@ class njBox {
 
   _createItems() {
     this.rawItems = [this.o];
-    this._cb('createRawItems');
+    this._cb('rawItems');
 
     var els = this.rawItems;
 
@@ -739,22 +739,6 @@ class njBox {
     this.dom.title = $(o.templates.title)
     this.dom.ui[0].appendChild(this.dom.title[0])
 
-    if (this.state.gallery) {
-      this.dom.ui_count = $(o.templates.count)
-      this.dom.ui[0].appendChild(this.dom.ui_count[0])
-
-      this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
-      this.dom.ui_current[0].setAttribute('title', o.text.current)
-      this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
-      this.dom.ui_total[0].setAttribute('title', o.text.total)
-
-      if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-        if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-        if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
-        this.state.arrowsInserted = true;
-      }
-    }
-
     // insert outside close button
     if (o.close === 'outside') {
       this.dom.close = $(o.templates.close);
@@ -765,6 +749,8 @@ class njBox {
 
     this.dom.focusCatcher = $(o.templates.focusCatcher);
     this.dom.ui[0].appendChild(this.dom.focusCatcher[0]);
+
+    this._cb('domready');
   }
   _drawItem(index, prepend) {
     var o = this.o,
@@ -906,6 +892,8 @@ class njBox {
       if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
+      e.njb_stopPropagation = true;
+
       if (that.state.state !== 'inited') {
         that._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
         return;
@@ -939,13 +927,12 @@ class njBox {
     h.container_scroll = function () {
       that.position();
     }
-    this.dom.container.on('resize', h.container_resize)
-      .on('scroll', h.container_scroll)
+    h.container_out = function (e) {
+      if(e.njb_stopPropagation) return;
 
-
-    h.wrap_out = function (e) {
       var $el = $(e.target),
-        prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
+        // prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
+        prevent = $el.closest('.njb, .njb-ui').length;
       if (prevent) return;
 
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
@@ -962,9 +949,11 @@ class njBox {
           that.items[that.state.active].dom.modal.removeClass('njb_pulse');
         }, that._getAnimTime(that.items[that.state.active].dom.modal[0]))
       }
-
-
     }
+    this.dom.container.on('resize', h.container_resize)
+      .on('scroll', h.container_scroll)
+      .on('click', h.container_out)
+
     h.wrap_resize = function () {
       // that.position();
     }
@@ -1021,7 +1010,7 @@ class njBox {
     }
 
 
-    this.dom.wrap.on('click', h.wrap_out)
+    this.dom.wrap
       .on('resize', h.wrap_resize)
       .on('scroll', h.wrap_scroll)
       .on('keydown', h.wrap_keydown)
@@ -1031,7 +1020,8 @@ class njBox {
       .delegate('[data-njb-prev]', 'click', h.wrap_prev)
       .delegate('[data-njb-next]', 'click', h.wrap_next)
 
-
+    
+    
     h.window_resize = function (e) {
       that.position();
     }
@@ -1042,7 +1032,8 @@ class njBox {
       that.position();
     }
 
-    this.dom.window.on('resize', h.window_resize)
+    this.dom.window
+      .on('resize', h.window_resize)
       .on('scroll', h.window_scroll)
       .on('orientationchange', h.window_orientation)
 
@@ -1058,9 +1049,10 @@ class njBox {
     var h = this._handlers;
 
     this.dom.container.off('resize', h.container_resize)
-      .off('scroll', h.container_scroll);
+      .off('scroll', h.container_scroll)
+      .off('click', h.container_out)
 
-    this.dom.wrap.off('click', h.wrap_out)
+    this.dom.wrap
       .off('resize', h.wrap_resize)
       .off('scroll', h.wrap_scroll)
       .off('keydown', h.wrap_keydown)
@@ -1070,7 +1062,8 @@ class njBox {
       .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
       .undelegate('[data-njb-next]', 'click', h.wrap_next)
 
-    this.dom.window.off('resize', h.window_resize)
+    this.dom.window
+      .off('resize', h.window_resize)
       .off('scroll', h.window_scroll)
       .off('orientationchange', h.window_orientation)
 

@@ -19,13 +19,27 @@
           this.dom.next[0].setAttribute('title', o.text.next);
         }
 
-        this.on('show', function () {
-          // that.state.active = this._detectIndexForOpen(index);
-        })
-
-        this.on('createRawItems', function () {
+        this.on('rawItems', function () {
           this.rawItems = createRawItems.call(this);
         })
+        this.on('domready', function () {
+          if (this.state.gallery) {
+            this.dom.ui_count = $(o.templates.count)
+            this.dom.ui[0].appendChild(this.dom.ui_count[0])
+
+            this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
+            this.dom.ui_current[0].setAttribute('title', o.text.current)
+            this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
+            this.dom.ui_total[0].setAttribute('title', o.text.total)
+
+            if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+              this.state.arrowsInserted = true;
+            }
+          }
+        })
+
       },
       _detectIndexForOpen(indexFromShow) {
         var o = this.o,

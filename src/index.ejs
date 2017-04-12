@@ -13,7 +13,7 @@
   
   <style>
     html {
-      overflow-y: hidden;
+      /*overflow-y: hidden;*/
     }
     .lorem {
       height: 2000px;
@@ -74,14 +74,13 @@
   <script src="njBox-gallery.js"></script>
   <script>
     
-    window.gallery = new njBox('.gallery').on('cb', function(event, arg1, arg2) {
+    window.gallery = new njBox('.gallery',{}).on('cb', function(event, arg1, arg2) {
       // console.log(arguments);
       // if(event === 'createRawItems') {
       //   console.log(arg1)
       //   arg1[0].content="ololo"
       // }
     })
-    console.log(window.gallery);
   </script>
 </body>
 

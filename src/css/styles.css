@@ -132,13 +132,8 @@
 
   &__count {
     position: absolute;left: 20px;top:20px;
-	  /*margin-left: 15px;
-	  margin-top: 15px;*/
   
 	  transition: transform 200ms, opacity 200ms;
-  
-	  /*opacity: 0;
-	  transform: translateY(-100%);*/
   }
 
   &__title-outer {
@@ -179,6 +174,10 @@
 
 	  transition: transform 200ms, opacity 200ms, margin-right 200ms;
 	  user-select: none;
+
+    @nest .njb-ui--only & {
+      display: none;
+    }
 
     &--prev {
       left: 20px;

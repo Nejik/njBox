@@ -2,8 +2,7 @@
 
 //you can't create elements with this function
 let j = function (selector) {
-    selector = selector || '';
-    return new j.fn.init(selector);
+    return new j.fn.init(selector || '');
 };
 // if(!window.$) window.$ = window.j;
 
@@ -137,12 +136,6 @@ j.extend = function () {
 };
 j.inArray = function (element, array, i) {
     return array == null ? -1 : array.indexOf(element, i);
-}
-
-
-//only in get mode
-j.fn.attr = function (name) {
-    return this[0].getAttribute(name);
 }
 j.fn.find = function (selector) {
     var newArray = [],

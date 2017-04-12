@@ -34,7 +34,7 @@
     <a href="https://s-media-cache-ak0.pinimg.com/736x/66/a5/eb/66a5ebd96a859c119ce18260dd7a8ba5.jpg" class="link">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="link">link</a>
   </div>
-  <a href="#modal" class="link" data-njb-autofocus=".test3" data-toggle="modal">modal</a>
+  <!--<a href="#modal" class="link" data-njb-autofocus=".test3" data-toggle="modal">modal</a>-->
   <div id="modal">
     <input type="text" data-njb-return><br>
     <input type="text" class="test3"><br>
@@ -71,13 +71,16 @@
     <div>Totam, nulla. Cum asperiores laborum libero quas. Ipsam minima vitae harum ea dolor, quidem dolore molestiae repellendus. Suscipit vero libero ullam corporis, id, eligendi consequatur aperiam. Assumenda, est, aspernatur. Rem?</div>
   </div>
   <script src="njBox.js"></script>
+  <script src="njBox-gallery.js"></script>
   <script>
     
-    window.gallery = new njBox('.gallery', {
-      oncb() {
-        console.log(arguments);
-      }
-    })   
+    window.gallery = new njBox('.gallery').on('cb', function(event, arg1, arg2) {
+      // console.log(arguments);
+      // if(event === 'createRawItems') {
+      //   console.log(arg1)
+      //   arg1[0].content="ololo"
+      // }
+    })
   </script>
 </body>
 

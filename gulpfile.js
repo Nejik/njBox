@@ -170,11 +170,17 @@ gulp.task('webpack:min', function (callback) {
     callback();
   });
 })
+gulp.task('js:addons', function () {
+  return gulp .src(config.js.addonsSrc)
+              .pipe(gulp.dest(config.css.dist))
+              .pipe(bs.stream())
+})
 
 gulp.task('watch', function () {
   gulp.watch(config.html.watch, gulp.series('html'));//build and reload html
   gulp.watch(config.css.watch, gulp.series('css'));//build css
   gulp.watch("build/*.css").on('change', bs.reload);//reload css
+  gulp.watch(config.js.addonsWatch, gulp.series('js:addons'))//reload js addons
 })
 
 gulp.task('serve', function (cb) {//serve contains js task, because of webpack integration
@@ -228,8 +234,8 @@ gulp.task('serve', function (cb) {//serve contains js task, because of webpack i
 
 
 
-gulp.task('build', gulp.parallel('html', 'css', 'webpack'))
+gulp.task('build', gulp.parallel('html', 'css', 'webpack', 'js:addons'))
 
 gulp.task('prod', gulp.series(gulp.parallel('clean', 'setProduction'), gulp.parallel('css', gulp.series('webpack', 'webpack:min'))))
 
-gulp.task('default', gulp.series('html', 'css', gulp.parallel('serve','watch')))
+gulp.task('default', gulp.series('html', 'css', 'js:addons', gulp.parallel('serve','watch')))

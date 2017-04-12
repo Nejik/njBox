@@ -1,3 +1,10 @@
+
+* убрать автофокус слайда при каждой смене
+* make gallery from o.content array
++ добавить public описнаие public api: njBox.get, autobind, alert, etc
+* не рисовать стрелки если галлереи, но слайд только один
+* добавить transition на :active стрелки
+
 * data-njb-body не используется
 * потестить click false и поставить несоклько кнопок в clickels
 * добавить примеры html api настроек
@@ -14,6 +21,7 @@ To polyfill:
 
 Docs:
 * пример с njb-options
+* рассказать про this.rawItems
 * content может быть функцией
 * onok, oncancel срабатывают перед hide
 * returnValue можно получить с помощью this.returnValue в колбэке, либо первым аргументом в onok, oncancel

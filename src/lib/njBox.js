@@ -42,13 +42,13 @@ class njBox {
   }
 
   _init() {
-    var opts = this.constructorOptions;
-    //init only once
     if(this.state && this.state.inited) return;
+    var opts = this.constructorOptions;
+    delete this.constructorOptions;
+    //init only once
     
     //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
     if (!njBox.g) njBox.g = getDefaultInfo();
-
 
     //inner options, current state of app, this.state clears after every hide
     this.state = {
@@ -56,12 +56,14 @@ class njBox {
     };
 
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
-    this._globals = {}
+    this._globals = {
+      passedOptions: opts
+    }
     this._handlers = {};//all callback functions we used in event listeners lives here
 
-    this._globals.passedOptions = opts;
     let o = this.o = $.extend({}, njBox.defaults, opts);
     if (o.jquery) $ = o.jquery;
+    this.$ = $;
 
     this.dom = {
       document: $(document),
@@ -101,15 +103,15 @@ class njBox {
     }
     this._postProcessOptions();
 
-    if (this.state.gallery) {
-      this.dom.prev = $(o.templates.prev);
-      this.dom.prev[0].setAttribute('title', o.text.prev);
-      this.dom.next = $(o.templates.next)
-      this.dom.next[0].setAttribute('title', o.text.next);
-    }
+    // initializing addons
+	  for (var key in njBox.a) {
+	  	if (njBox.a.hasOwnProperty(key)) {
+	  		this['_'+key+'_init']();
+	  	}
+	  }
 
     //create items
-    this.items = this._createItems(this._createRawItems());
+    this.items = this._createItems();
 
     //create popup container dom elements
     this._createDom();
@@ -122,9 +124,6 @@ class njBox {
 
     this.state.inited = true;
     this._cb('inited');
-
-    delete this.constructorOptions;
-    console.log(this);
   }
   show(index) {
     this._init();
@@ -342,7 +341,7 @@ class njBox {
   update() {
     //gather dom elements from which we will create modal window/gallery
     this.els = this._gatherElements(this.o.gallery);
-    this.items = this._createItems(this._createRawItems());
+    this.items = this._createItems();
 
     // this._removeClickHandlers();
     this._setClickHandlers();
@@ -439,24 +438,7 @@ class njBox {
       v.body.css('maxHeight', height + 'px');
     }
   }
-  //return array with raw options gathered from items from which modal window/gallery will be created
-  _createRawItems() {
-    var o = this.o,
-      that = this;
-    if (this.state.gallery) {
-      //we don't use methods such as Array.map because we want to support old browsers
-      var rawItems = [];
-      for (var index = 0; index < this.els.length; index++) {
-        var element = this.els[index];
-        rawItems.push(this._gatherData(element))
-      }
 
-      return rawItems;
-
-    } else {
-      return [this.o];
-    }
-  }
   //gather dom elements from which we will create modal window/gallery
   _gatherElements(selector) {
     var o = this.o;
@@ -543,7 +525,16 @@ class njBox {
     this._cb('data_gathered', dataProcessed, $el[0]);
     return dataProcessed;
   }
-  _createItems(els) {
+  
+  //return array with raw options gathered from items from which modal window/gallery will be created
+  _createRawItems() {
+    this.rawItems = [this.o];
+    this._cb('createRawItems');
+  }
+  _createItems() {
+    this._createRawItems();
+    var els = this.rawItems;
+
     let items = [];
     for (let i = 0, l = els.length; i < l; i++) {
       items.push(this._createItem(els[i], i))
@@ -1434,6 +1425,13 @@ class njBox {
       this.dom.ui.removeClass('njb-ui--last');
     }
 
+    //only one class
+    if (this.items.length === 1) {
+      this.dom.ui.addClass('njb-ui--only');
+    } else {
+      this.dom.ui.removeClass('njb-ui--only');
+    }
+
     if (item.type === 'image') {
       this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
     } else {
@@ -1854,7 +1852,6 @@ class njBox {
     this._events[event] = this._events[event] || [];
     this._events[event].push(fct);
 
-    this._init();
     return this;
   }
   off(event, fct) {
@@ -1883,6 +1880,14 @@ njBox.a = {}
 //default settings
 njBox.defaults = defaults;
 
+njBox.addAddon = function (name, addon) {
+	njBox.a[name] = true;
+
+	if(addon.options) $.extend(true, njBox.defaults, addon.options);
+	$.extend(njBox.prototype, addon.prototype);
+}
+
+//get instance
 njBox.get = function (elem) {
   var el = $(elem)[0];
 
@@ -1912,7 +1917,7 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
 
 njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
-    content: function (rawitem) {
+    content: function (item) {
       return (
 `<div class="njb__body">
   ${content || this.o.text._missedContent}
@@ -1929,7 +1934,7 @@ njBox.alert = function (content, okCb, cancelCb) {
 }
 njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
-    content: function (rawitem) {
+    content: function (item) {
       return (
 `<div class="njb__body">
   ${content || this.o.text._missedContent}
@@ -1953,7 +1958,7 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
   }
 
   return new njBox({
-    content: function (rawitem) {
+    content: function (item) {
       return (
 `<div class="njb__body">
   ${content || this.o.text._missedContent}

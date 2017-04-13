@@ -1,9 +1,9 @@
 //syntax sugar like jquery
 
-//you can't create elements with this function
 let j = function (selector) {
     return new j.fn.init(selector || '');
 };
+//autobinding
 // if(!window.$) window.$ = window.j;
 
 j.match = function (el, selector) {

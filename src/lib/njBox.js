@@ -106,7 +106,6 @@ class njBox {
       $.extend(true, this.o, this._globals.gatheredOptions)
     }
     this._cb('options_setted', o);
-    this._postProcessOptions();
     
     if (o.elem) {
       //gather dom elements from which we will create modal window/gallery
@@ -267,8 +266,6 @@ class njBox {
 
     return this;
   }
-
-
   _getContainerSize() {
     var o = this.o;
 
@@ -357,9 +354,6 @@ class njBox {
       v.body.css('maxHeight', height + 'px');
     }
   }
-
-
-  _postProcessOptions() { }
   _gatherData(el) {
     let o = this.o,
       $el = $(el),
@@ -440,7 +434,6 @@ class njBox {
       return this.o.el;
     }
   }
-
   _createItems() {
     this.rawItems = [this.o];
     this._cb('rawItems');
@@ -1594,8 +1587,8 @@ njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-        `<div class="njb__body">
-  ${content || this.o.text._missedContent}
+`<div class="njb__body">
+${content || this.o.text._missedContent}
 </div>
 <div class="njb__footer">
   <button data-njb-ok>${this.o.text.ok}</button>
@@ -1611,8 +1604,8 @@ njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-        `<div class="njb__body">
-  ${content || this.o.text._missedContent}
+`<div class="njb__body">
+${content || this.o.text._missedContent}
 </div>
 <div class="njb__footer">
   <button data-njb-ok>${this.o.text.ok}</button>
@@ -1636,10 +1629,10 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
     content: function (item) {
       return (
         `<div class="njb__body">
-  ${content || this.o.text._missedContent}
-  <div>
-    <input data-njb-return type="text" placeholder="${placeholder || ''}" />
-  </div>
+${content || this.o.text._missedContent}
+<div>
+  <input data-njb-return type="text" placeholder="${placeholder || ''}" />
+</div>
 </div>
 <div class="njb__footer">
   <button data-njb-ok>${this.o.text.ok}</button>

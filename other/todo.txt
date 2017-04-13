@@ -1,4 +1,3 @@
-* рисовать sibling slides на shown
 * попробовать убрать this.els, использовать this.items для этого
 * проверить как работает title без аддона галереи
 * доделать _anim nocallback

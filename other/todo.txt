@@ -1,5 +1,6 @@
 * рисовать sibling slides на shown
 * попробовать убрать this.els, использовать this.items для этого
+* проверить как работает title без аддона галереи
 * убрать автофокус слайда при каждой смене
 * make gallery from o.content array
 + добавить public описнаие public api: njBox.get, autobind, alert, etc

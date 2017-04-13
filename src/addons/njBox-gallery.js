@@ -6,9 +6,94 @@
 (function () {
   if (window.njBox) njBox.addAddon('gallery', {
     options: {
+      templates: {
+        count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>1</span></div>',
+        prev: '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
+        next: '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
+      },
+      text: {
+        current: 'Current slide',
+        total: 'Total slides',
+        prev: 'Previous (Left arrow key)',//prev slide button title
+        next: 'Next (Right arrow key)',//next slide button title
 
+
+      }
     },
     prototype: {
+      prev: function () {
+        this._changeItem(this.state.active - 1, 'prev');
+
+        return this;
+      },
+      next: function () {
+        this._changeItem(this.state.active + 1, 'next');
+
+        return this;
+      },
+      goTo: function (index) {
+        index = index - 1;//inside gallery we have index -1, because slides starts from 0
+
+        if (typeof index !== 'number') {
+          this._error('njBox, wrong index argument in goTo method.')
+          return;
+        }
+
+        if (this.state.state === 'inited' || this.state.state === 'show') {
+          this.state.active = index;
+          return;
+        } else if (this.state.state !== 'shown'
+          || index === this.state.active
+          || index < 0
+          || index > this.items.length - 1
+        ) {
+          this._error('njBox, wrong index in goTo method.')
+          return this;
+        }
+
+        var dir = (index > this.state.active) ? 'next' : 'prev';
+
+        //the most desired cases when we should call prev/next slides :)
+        if (dir === 'next' && index === this.state.active + 1) {
+          this.next();
+        } else if (dir === 'prev' && index === this.state.active - 1) {
+          this.prev();
+        }
+        //if it is not simple prev/next, so we need to recreate slides
+        else {
+          //remove siblings
+          this.items[this.state.itemsOrder[0]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[0]].dom.modalOuter[0]);
+          this.items[this.state.itemsOrder[2]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[2]].dom.modalOuter[0]);
+          //clear position of siblings
+          this.items[this.state.itemsOrder[0]].dom.modalOuter[0].style.cssText = '';
+          this.items[this.state.itemsOrder[2]].dom.modalOuter[0].style.cssText = '';
+
+          switch (dir) {
+            case 'next':
+              // set new state
+              this.state.itemsOrder[0] = null;
+              this.state.itemsOrder[2] = index;
+
+              //draw new slides
+              this._drawItemSiblings();
+
+              this._changeItem(index, 'next')
+              break;
+            case 'prev':
+              // set new state
+              this.state.itemsOrder[0] = index;
+              this.state.itemsOrder[2] = null;
+
+              //draw new slides
+              this._drawItemSiblings();
+
+              //animation to new slide
+              this._changeItem(index, 'prev')
+              break;
+          }
+        }
+        return this;
+      },
       _gallery_init: function () {
         var that = this,
           o = this.o,
@@ -47,7 +132,7 @@
           }
           that._gallery__uiUpdate();
         })
-        this.on('change', function() {
+        this.on('change', function () {
           that._gallery__uiUpdate();
         })
       },
@@ -97,15 +182,6 @@
           item = this.items[index];
 
         if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
-
-        //set title
-        if (item.title) {
-          this.dom.ui.removeClass('njb-ui--no-title');
-        } else {
-          this.dom.ui.addClass('njb-ui--no-title');
-        }
-        this.dom.wrap.find('[data-njb-title]').html(item.title || '')
-
 
         //set item counts
         this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based

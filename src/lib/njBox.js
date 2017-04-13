@@ -36,17 +36,17 @@ class njBox {
     this.constructorOptions = opts;
 
     //this allows users to listen init callbacks via .on() on modal instance
-    setTimeout(function() {
+    setTimeout(function () {
       that._init();
     }, 0);
   }
 
   _init() {
-    if(this.state && this.state.inited) return;
+    if (this.state && this.state.inited) return;
     var opts = this.constructorOptions;
     delete this.constructorOptions;
     //init only once
-    
+
     //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
     if (!njBox.g) njBox.g = getDefaultInfo();
 
@@ -103,11 +103,11 @@ class njBox {
     this._postProcessOptions();
 
     // initializing addons
-	  for (var key in njBox.addons) {
-	  	if (njBox.addons.hasOwnProperty(key)) {
-	  		this['_'+key+'_init']();
-	  	}
-	  }
+    for (var key in njBox.addons) {
+      if (njBox.addons.hasOwnProperty(key)) {
+        this['_' + key + '_init']();
+      }
+    }
 
     //create items
     this.items = this._createItems();
@@ -142,7 +142,7 @@ class njBox {
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
     this.returnValue = null;
 
-    if(njBox.addons.gallery) that.state.active = this._detectIndexForOpen(index);
+    if (njBox.addons.gallery) that.state.active = this._detectIndexForOpen(index);
 
     if (!this.dom.container[0].njb_instances) {
       this.dom.container[0].njb_instances = 1;
@@ -164,7 +164,7 @@ class njBox {
     //draw modal on screen
     this._drawItem(this.state.active);
     this._cb('inserted')
-    
+
     this.position();
 
     //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
@@ -236,83 +236,6 @@ class njBox {
 
     return this;
   }
-  prev() {
-    this._changeItem(this.state.active - 1, 'prev');
-
-    return this;
-  }
-  next() {
-    this._changeItem(this.state.active + 1, 'next');
-
-    return this;
-  }
-  goTo(index) {
-    index = index - 1;//inside gallery we have index -1, because slides starts from 0
-
-    if (typeof index !== 'number') {
-      this._error('njBox, wrong index argument in goTo method.')
-      return;
-    }
-
-    if (this.state.state === 'inited' || this.state.state === 'show') {
-      this.state.active = index;
-      return;
-    } else if (this.state.state !== 'shown'
-      || index === this.state.active
-      || index < 0
-      || index > this.items.length - 1
-    ) {
-      this._error('njBox, wrong index in goTo method.')
-      return this;
-    }
-
-    var dir = (index > this.state.active) ? 'next' : 'prev';
-
-    //the most desired cases when we should call prev/next slides :)
-    if (dir === 'next' && index === this.state.active + 1) {
-      this.next();
-    } else if (dir === 'prev' && index === this.state.active - 1) {
-      this.prev();
-    }
-    //if it is not simple prev/next, so we need to recreate slides
-    else {
-      //remove siblings
-      this.items[this.state.itemsOrder[0]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[0]].dom.modalOuter[0]);
-      this.items[this.state.itemsOrder[2]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[2]].dom.modalOuter[0]);
-      //clear position of siblings
-      this.items[this.state.itemsOrder[0]].dom.modalOuter[0].style.cssText = '';
-      this.items[this.state.itemsOrder[2]].dom.modalOuter[0].style.cssText = '';
-
-      switch (dir) {
-        case 'next':
-          // set new state
-          this.state.itemsOrder[0] = null;
-          this.state.itemsOrder[2] = index;
-
-          //draw new slides
-          this._drawItemSiblings();
-
-          this._changeItem(index, 'next')
-          break;
-        case 'prev':
-          // set new state
-          this.state.itemsOrder[0] = index;
-          this.state.itemsOrder[2] = null;
-
-          //draw new slides
-          this._drawItemSiblings();
-
-          //animation to new slide
-          this._changeItem(index, 'prev')
-          break;
-      }
-    }
-
-
-
-
-    return this;
-  }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
       this._error('njBox, we can destroy only initialized && hidden modals.');
@@ -340,7 +263,6 @@ class njBox {
     this.els = this._gatherElements(this.o.gallery);
     this.items = this._createItems();
 
-    // this._removeClickHandlers();
     this._setClickHandlers();
 
     return this;
@@ -436,7 +358,7 @@ class njBox {
     }
   }
 
-  
+
   _postProcessOptions() {
     var o = this.o;
     if (o.gallery) this.state.gallery = true;
@@ -864,11 +786,9 @@ class njBox {
 
     if (!o.click) return;
 
+    this._removeClickHandlers();
+
     if (this.els && this.els.length) {
-      this.els.off('click', this._handlers.elsClick);
-      if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
-
-
       this._handlers.elsClick = this._clickHandler();
       this.els.on('click', this._handlers.elsClick)
       if (o.clickels) $(o.clickels).on('click', this._handlers.elsClick);
@@ -905,12 +825,12 @@ class njBox {
     }
   }
   _removeClickHandlers() {
+    var o = this.o;
+
     if (this.els && this.els.length) {
       this.els.off('click', this._handlers.elsClick)
 
-      if (this.o.clickels) {
-        $(this.o.clickels).off('click', this._handlers.elsClick)
-      }
+      if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
     }
   }
   _setEventsHandlers() {//all other event handlers
@@ -925,7 +845,7 @@ class njBox {
       that.position();
     }
     h.container_out = function (e) {
-      if(e.njb_stopPropagation) return;
+      if (e.njb_stopPropagation) return;
 
       var $el = $(e.target),
         // prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
@@ -1017,8 +937,8 @@ class njBox {
       .delegate('[data-njb-prev]', 'click', h.wrap_prev)
       .delegate('[data-njb-next]', 'click', h.wrap_next)
 
-    
-    
+
+
     h.window_resize = function (e) {
       that.position();
     }
@@ -1350,6 +1270,14 @@ class njBox {
       this._error('njBox, can\'t update ui info from item index - ' + index);
       return;
     }
+
+    //set title
+    if (item.title) {
+      this.dom.ui.removeClass('njb-ui--no-title');
+    } else {
+      this.dom.ui.addClass('njb-ui--no-title');
+    }
+    this.dom.wrap.find('[data-njb-title]').html(item.title || '')
 
     if (item.type === 'image') {
       this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
@@ -1792,10 +1720,10 @@ njBox.addons = {}
 njBox.defaults = defaults;
 
 njBox.addAddon = function (name, addon) {
-	njBox.addons[name] = true;
+  njBox.addons[name] = true;
 
-	if(addon.options) $.extend(true, njBox.defaults, addon.options);
-	$.extend(njBox.prototype, addon.prototype);
+  if (addon.options) $.extend(true, njBox.defaults, addon.options);
+  $.extend(njBox.prototype, addon.prototype);
 }
 
 //get instance
@@ -1830,7 +1758,7 @@ njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-`<div class="njb__body">
+        `<div class="njb__body">
   ${content || this.o.text._missedContent}
 </div>
 <div class="njb__footer">
@@ -1847,7 +1775,7 @@ njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-`<div class="njb__body">
+        `<div class="njb__body">
   ${content || this.o.text._missedContent}
 </div>
 <div class="njb__footer">
@@ -1871,7 +1799,7 @@ njBox.prompt = function (content, placeholder, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-`<div class="njb__body">
+        `<div class="njb__body">
   ${content || this.o.text._missedContent}
   <div>
     <input data-njb-return type="text" placeholder="${placeholder || ''}" />

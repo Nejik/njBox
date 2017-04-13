@@ -74,6 +74,13 @@ class njBox {
       //... other will be added later
     }
 
+    // initializing addons
+    for (var key in njBox.addons) {
+      if (njBox.addons.hasOwnProperty(key)) {
+        this['_' + key + '_init']();
+      }
+    }
+
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
       this._error('njBox, no elements (o.elem) or content (o.content) for modal.');
@@ -96,17 +103,13 @@ class njBox {
 
       //extend global options with gathered from dom element
       $.extend(true, this.o, this._globals.gatheredOptions)
-
+    }
+    this._cb('options_setted');
+    this._postProcessOptions();
+    
+    if (o.elem) {
       //gather dom elements from which we will create modal window/gallery
       this.els = this._gatherElements(o.gallery);
-    }
-    this._postProcessOptions();
-
-    // initializing addons
-    for (var key in njBox.addons) {
-      if (njBox.addons.hasOwnProperty(key)) {
-        this['_' + key + '_init']();
-      }
     }
 
     //create items
@@ -242,13 +245,13 @@ class njBox {
 
     this._cb('destroy');
 
-    this._events = 
-    this._globals = 
-    this._handlers = 
-    this.els = 
-    this.items = 
-    this.dom = 
-    this.$ = undefined;
+    this._events =
+      this._globals =
+      this._handlers =
+      this.els =
+      this.items =
+      this.dom =
+      this.$ = undefined;
     this.o = {};
 
 
@@ -355,10 +358,7 @@ class njBox {
   }
 
 
-  _postProcessOptions() {
-    var o = this.o;
-    if (o.gallery) this.state.gallery = true;
-  }
+  _postProcessOptions() { }
   _gatherData(el) {
     let o = this.o,
       $el = $(el),
@@ -428,7 +428,7 @@ class njBox {
       }
     }
 
-    this._cb('data_gathered', dataProcessed, $el[0]);
+    // this._cb('data_gathered', dataProcessed, $el[0]);
     return dataProcessed;
   }
   //gather dom elements from which we will create modal window/gallery
@@ -958,7 +958,7 @@ class njBox {
       .undelegate('[data-njb-close]', 'click', h.wrap_close)
       .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
       .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
-      
+
 
     this.dom.window
       .off('resize', h.window_resize)

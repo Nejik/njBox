@@ -99,13 +99,10 @@
           o = this.o,
           $ = this.$;
 
-        if (this.state.gallery) {
-          this.dom.prev = $(o.templates.prev);
-          this.dom.prev[0].setAttribute('title', o.text.prev);
-          this.dom.next = $(o.templates.next)
-          this.dom.next[0].setAttribute('title', o.text.next);
-        }
-
+        this.on('options_setted', function () {
+          var o = this.o;
+          if (o.gallery) this.state.gallery = true;
+        })
         this.on('rawItems', function () {
           this.rawItems = createRawItems.call(this);
         })
@@ -118,6 +115,11 @@
             this.dom.ui_current[0].setAttribute('title', o.text.current)
             this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
             this.dom.ui_total[0].setAttribute('title', o.text.total)
+
+            this.dom.prev = $(o.templates.prev);
+            this.dom.prev[0].setAttribute('title', o.text.prev);
+            this.dom.next = $(o.templates.next)
+            this.dom.next[0].setAttribute('title', o.text.next);
 
             if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
               if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
@@ -173,12 +175,11 @@
         this.on('shown', function () {
           if (this.state.gallery) this._preload();
         })
-
         var origGalleryState;
-        this.on('clear', function() {
+        this.on('clear', function () {
           origGalleryState = this.state.gallery;
         })
-        this.on('cleared', function() {
+        this.on('cleared', function () {
           this.state.gallery = origGalleryState;
         })
       },

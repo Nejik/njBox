@@ -129,11 +129,43 @@
         this.on('inserted', function () {
           if (that.state.gallery) {
             this._setItemsOrder(this.state.active);
+            that._gallery__uiUpdate();
           }
-          that._gallery__uiUpdate();
         })
         this.on('change', function () {
           that._gallery__uiUpdate();
+        })
+        this.on('events_setted', function () {
+          var o = this.o,
+            that = this,
+            h = this._handlers;
+
+          h.wrap_prev = function (e) {
+            that.prev();
+            e.preventDefault();
+          }
+          h.wrap_next = function (e) {
+            that.next();
+            e.preventDefault();
+          }
+
+          this.dom.wrap
+            .delegate('[data-njb-prev]', 'click', h.wrap_prev)
+            .delegate('[data-njb-next]', 'click', h.wrap_next)
+        })
+        this.on('events_removed', function () {
+          var h = this._handlers;
+
+          this.dom.wrap
+            .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
+            .undelegate('[data-njb-next]', 'click', h.wrap_next)
+        })
+        this.on('position', function () {
+          //we need autoheight for prev and next slide in gallery
+          if (this.state.gallery) {
+            if (this.state.itemsOrder[0] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[0]]);
+            if (this.state.itemsOrder[2] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[2]]);
+          }
         })
       },
       _detectIndexForOpen(indexFromShow) {

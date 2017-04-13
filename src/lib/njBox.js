@@ -223,14 +223,7 @@ class njBox {
       });
     }
 
-    //we need autoheight for every slide in gallery
-    if (this.state.gallery) {
-      for (var index = 0; index < this.state.itemsOrder.length; index++) {
-        if (this.state.itemsOrder[index] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[index]]);
-      }
-    } else {
-      this._setMaxHeight(this.items[this.state.active]);
-    }
+    this._setMaxHeight(this.items[this.state.active]);
 
     this._cb('position');
 
@@ -247,14 +240,17 @@ class njBox {
 
     this.dom.container.removeClass('njb-relative');
 
-    this._globals = undefined;
-    this._handlers = undefined;
-    this.els = undefined;
-    this.items = undefined;
-    this.v = undefined;
+    this._cb('destroy');
+
+    this._events = 
+    this._globals = 
+    this._handlers = 
+    this.els = 
+    this.items = 
+    this.dom = 
+    this.$ = undefined;
     this.o = {};
 
-    this._cb('destroyed');
 
     return this;
   }
@@ -917,15 +913,6 @@ class njBox {
       if (that._cb('cancel') === false) return;
       that.hide();
     }
-    h.wrap_prev = function (e) {
-      that.prev();
-      e.preventDefault();
-    }
-    h.wrap_next = function (e) {
-      that.next();
-      e.preventDefault();
-    }
-
 
     this.dom.wrap
       .on('resize', h.wrap_resize)
@@ -934,10 +921,6 @@ class njBox {
       .delegate('[data-njb-close]', 'click', h.wrap_close)
       .delegate('[data-njb-ok]', 'click', h.wrap_ok)
       .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
-      .delegate('[data-njb-prev]', 'click', h.wrap_prev)
-      .delegate('[data-njb-next]', 'click', h.wrap_next)
-
-
 
     h.window_resize = function (e) {
       that.position();
@@ -976,8 +959,7 @@ class njBox {
       .undelegate('[data-njb-close]', 'click', h.wrap_close)
       .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
       .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
-      .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
-      .undelegate('[data-njb-next]', 'click', h.wrap_next)
+      
 
     this.dom.window
       .off('resize', h.window_resize)

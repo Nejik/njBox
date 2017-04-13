@@ -76,11 +76,10 @@
     
     window.gallery = new njBox('.gallery',{}).on('cb', function(event, arg1, arg2) {
       // console.log(arguments);
+      if(event === 'cleared') {
+        console.log(this);
+      }
     })
-    setTimeout(function() {
-      window.gallery.destroy();
-      console.log(window.gallery)
-    }, 1000)
   </script>
 </body>
 

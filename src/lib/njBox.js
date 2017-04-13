@@ -507,7 +507,6 @@ class njBox {
 
     dom.modalOuter = $(o.templates.modalOuter);
     dom.modalOuter[0].njBox = this;
-    if (this.state.gallery) dom.modalOuter[0].setAttribute('data-njb-index', index);
 
     //main modal wrapper
     dom.modal = $(o.templates.modal);
@@ -581,7 +580,7 @@ class njBox {
       item.dom.modal.addClass('njb--content');
     }
 
-    this._cb('item_domready', item);
+    this._cb('item_domready', item, index);
   }
   _insertItemBodyContent(item) {
     var o = this.o;
@@ -1564,6 +1563,7 @@ class njBox {
   }
   _clear() {
     var o = this.o;
+    this._cb('clear');
 
     if (this.dom.container) this.dom.container[0].njb_instances--;
     if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
@@ -1590,15 +1590,13 @@ class njBox {
       }
     }
 
-    var origGalleryState = this.state.gallery;
     this.state = {
       inited: true,
       state: 'inited',
-      active: 0,
-      gallery: origGalleryState
+      active: 0
     };
 
-    this._cb('clear');
+    this._cb('cleared');
   }
   _error(msg, clear) {
     if (!msg) return;
@@ -1623,9 +1621,6 @@ class njBox {
     }
     //make some stuff on callbacks
     switch (type) {
-      case 'shown':
-        if (this.state.gallery) this._preload();
-        break;
       case 'hidden':
         this.state.state = 'inited';
         this._focusPreviousModal();

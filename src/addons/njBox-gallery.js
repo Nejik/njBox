@@ -126,6 +126,9 @@
             }
           }
         })
+        this.on('item_domready', function (item, index) {
+          if (this.state.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
+        })
         this.on('inserted', function () {
           if (that.state.gallery) {
             this._setItemsOrder(this.state.active);
@@ -166,6 +169,17 @@
             if (this.state.itemsOrder[0] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[0]]);
             if (this.state.itemsOrder[2] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[2]]);
           }
+        })
+        this.on('shown', function () {
+          if (this.state.gallery) this._preload();
+        })
+
+        var origGalleryState;
+        this.on('clear', function() {
+          origGalleryState = this.state.gallery;
+        })
+        this.on('cleared', function() {
+          this.state.gallery = origGalleryState;
         })
       },
       _detectIndexForOpen(indexFromShow) {

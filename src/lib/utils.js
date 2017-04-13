@@ -126,11 +126,6 @@ export let defaults = {
 
 	img            : 'ready',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	imgload        : 'show',//(init || show) should we load gallery images on init(before dialog open) or on open 
-	gallery        : '',//(selector) child items selector, for gallery elements.
-	arrows         : true,//(boolean) should we add navigation arrows
-	start          : false,//(number) slide number, from which we should show gallery (not zero based, first slide is number 1)
-	loop           : true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
-	preload        : '1 1',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
 	anim           : 'scale',//(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 	animclass      : 'animated',//(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration       : 'auto',//(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)

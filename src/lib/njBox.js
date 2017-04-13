@@ -100,11 +100,12 @@ class njBox {
       $elem[0].njBox = this; //prevent multiple initialization on one element
 
       this._globals.gatheredOptions = this._gatherData($elem);
+      this._cb('options_gathered', this._globals.gatheredOptions, $elem[0]);
 
       //extend global options with gathered from dom element
       $.extend(true, this.o, this._globals.gatheredOptions)
     }
-    this._cb('options_setted');
+    this._cb('options_setted', o);
     this._postProcessOptions();
     
     if (o.elem) {
@@ -112,11 +113,11 @@ class njBox {
       this.els = this._gatherElements(o.gallery);
     }
 
-    //create items
-    this.items = this._createItems();
-
     //create popup container dom elements
     this._createDom();
+
+    //create items
+    this.items = this._createItems();
 
     //this method calculate show/hide animation durations, because native callbacks buggy
     this._calculateAnimations();
@@ -884,14 +885,7 @@ class njBox {
 
           (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
           break;
-        case 37://left arrow
-          that.prev();
-          e.preventDefault();
-          break;
-        case 39://right arrow
-          that.next();
-          e.preventDefault();
-          break;
+
       }
     }
     h.wrap_close = function (e) {
@@ -1080,140 +1074,6 @@ class njBox {
         };
 
       njbSetInterval(1);
-    }
-  }
-  _preload() {
-    var o = this.o,
-      that = this;
-
-    if (!o.preload || this.state.state !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
-
-    var temp = o.preload.split(' '),
-      prev = parseInt(temp[0]),
-      prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
-      next = parseInt(temp[1]),
-      nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
-
-    //load next
-    while (next--) {
-      preload.call(this, nextState);
-      nextState = this._getItemsOrder(nextState)[2];
-    }
-
-    //load previous
-    while (prev--) {
-      preload.call(this, prevState);
-      prevState = this._getItemsOrder(prevState)[0]
-    }
-
-    function preload(index) {
-      if (index === null) return;
-      var item = this.items[index],
-        content = item.content;
-
-      if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
-    }
-  }
-  _drawItemSiblings() {
-    var o = this.o,
-      that = this;
-
-    if (typeof this.state.itemsOrder[0] === 'number') {
-      this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
-      this._drawItem(this.state.itemsOrder[0], true);
-    }
-    if (typeof this.state.itemsOrder[2] === 'number') {
-      this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
-      this._drawItem(this.state.itemsOrder[2]);
-    }
-    this.position();
-    this._preload()
-  }
-  _moveItem(item, value, unit) {
-    unit = unit || 'px';
-
-    //detect translate property
-    if (njBox.g.transform['3d']) {
-      item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)'
-    } else if (njBox.g.transform['css']) {
-      item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translateX(' + (value + unit) + ')'
-    } else {
-      item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
-    }
-  }
-  _changeItem(nextIndex, dir) {
-    if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
-
-    var o = this.o,
-      that = this;
-
-    if (!this.items[nextIndex]) {
-      if (o.loop && this.items.length > 2) {
-        if (dir === 'next' && nextIndex === this.items.length) {
-          nextIndex = 0;
-        } else if (dir === 'prev' && nextIndex === -1) {
-          nextIndex = this.items.length - 1;
-        } else {
-          return;
-        }
-      } else {
-        return;
-      }
-    }
-
-    this.state.direction = dir;
-
-    this.state.itemChanging = true;//we can't change slide during current changing
-    this.state.itemsOrder_backup = this.state.itemsOrder.slice();//copy current state
-
-    this.state.active = nextIndex;
-    this._cb('change', nextIndex);
-    this._uiUpdate();
-
-    this._setItemsOrder(nextIndex);
-
-
-
-    switch (dir) {
-      case 'prev':
-        this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
-
-        this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
-        this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
-        break;
-      case 'next':
-        this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
-
-        this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
-        this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
-        break;
-    }
-
-    setTimeout(function () {
-      if (that.state.state !== 'shown') {
-        that.state.itemChanging = false;
-        return;//case when we hide modal when slide is changing
-      }
-      //remove slide that was active before changing
-      removeSlide(that.items[that.state.itemsOrder_backup[1]]);
-
-      //remove third slide
-      var thirdItem = (dir === 'prev') ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
-      if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
-
-      delete that.state.itemsOrder_backup;
-
-      that._setItemsOrder(that.state.active);
-      that._drawItemSiblings();
-      that._setFocusInPopup(that.items[that.state.active]);
-      that.state.itemChanging = false;
-      that._cb('changed', that.state.active);
-
-    }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
-
-    function removeSlide(item) {
-      item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0])
-      item.dom.modalOuter[0].style.cssText = '';
     }
   }
   _preloader(type, item) {
@@ -1541,7 +1401,6 @@ class njBox {
       modal.removeClass(animShow);
 
       if (!nocallback) that._cb('shown');
-      that._drawItemSiblings();
       that._setFocusInPopup(that.items[that.state.active], true);
     }
     function hiddenCallback() {

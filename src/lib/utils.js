@@ -149,7 +149,7 @@ export let defaults = {
 		preloader         : '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui                : '<div class="njb-ui"></div>',
 		title             : '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
-		count             : '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
+		count             : '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>1</span></div>',
 		prev              : '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
 		next              : '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
 	},

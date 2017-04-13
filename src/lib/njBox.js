@@ -163,11 +163,8 @@ class njBox {
 
     //draw modal on screen
     this._drawItem(this.state.active);
-    if (that.state.gallery) {
-      this._setItemsOrder(this.state.active);
-      this._drawItemSiblings();
-    }
-
+    this._cb('inserted')
+    
     this.position();
 
     //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
@@ -1078,9 +1075,6 @@ class njBox {
 
     this._cb('events_removed');
   }
-
-
-  
   _insertImage(item) {
     var that = this,
       o = this.o,
@@ -1187,23 +1181,6 @@ class njBox {
       njbSetInterval(1);
     }
   }
-  _setItemsOrder(currentIndex) {
-    this.state.itemsOrder = this._getItemsOrder(currentIndex);
-  }
-  _getItemsOrder(currentIndex) {
-    var o = this.o,
-      prev = currentIndex - 1,
-      next = currentIndex + 1;
-
-    if (o.loop && this.items.length > 2) {
-      if (prev === -1) prev = this.items.length - 1;
-      if (next === this.items.length) next = 0;
-    }
-    if (!this.items[prev]) prev = null;
-    if (!this.items[next]) next = null;
-
-    return [prev, currentIndex, next];
-  }
   _preload() {
     var o = this.o,
       that = this;
@@ -1290,6 +1267,7 @@ class njBox {
 
     this.state.active = nextIndex;
     this._cb('change', nextIndex);
+    this._uiUpdate();
 
     this._setItemsOrder(nextIndex);
 
@@ -1368,39 +1346,9 @@ class njBox {
     var o = this.o,
       item = this.items[index];
 
-    if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
-
-    //set title
-    if (item.title) {
-      this.dom.ui.removeClass('njb-ui--no-title');
-    } else {
-      this.dom.ui.addClass('njb-ui--no-title');
-    }
-    this.dom.wrap.find('[data-njb-title]').html(item.title || '')
-
-
-    //set item counts
-    this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
-    this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
-
-    //arrow classes
-    if (index === 0) {
-      this.dom.ui.addClass('njb-ui--first');
-    } else {
-      this.dom.ui.removeClass('njb-ui--first');
-    }
-
-    if (index === this.items.length - 1) {
-      this.dom.ui.addClass('njb-ui--last');
-    } else {
-      this.dom.ui.removeClass('njb-ui--last');
-    }
-
-    //only one class
-    if (this.items.length === 1) {
-      this.dom.ui.addClass('njb-ui--only');
-    } else {
-      this.dom.ui.removeClass('njb-ui--only');
+    if (!item) {
+      this._error('njBox, can\'t update ui info from item index - ' + index);
+      return;
     }
 
     if (item.type === 'image') {
@@ -1408,9 +1356,6 @@ class njBox {
     } else {
       this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
     }
-
-
-
   }
 
 
@@ -1687,6 +1632,7 @@ class njBox {
       modal.removeClass(animShow);
 
       if (!nocallback) that._cb('shown');
+      that._drawItemSiblings();
       that._setFocusInPopup(that.items[that.state.active], true);
     }
     function hiddenCallback() {
@@ -1773,9 +1719,6 @@ class njBox {
       case 'hidden':
         this.state.state = 'inited';
         this._focusPreviousModal();
-        break;
-      case 'change':
-        this._uiUpdate()
         break;
     }
 

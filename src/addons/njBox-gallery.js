@@ -5,7 +5,9 @@
 */
 (function () {
   if (window.njBox) njBox.addAddon('gallery', {
-    options: {},
+    options: {
+
+    },
     prototype: {
       _gallery_init: function () {
         var that = this,
@@ -39,7 +41,15 @@
             }
           }
         })
-
+        this.on('inserted', function () {
+          if (that.state.gallery) {
+            this._setItemsOrder(this.state.active);
+          }
+          that._gallery__uiUpdate();
+        })
+        this.on('change', function() {
+          that._gallery__uiUpdate();
+        })
       },
       _detectIndexForOpen(indexFromShow) {
         var o = this.o,
@@ -62,6 +72,64 @@
         }
 
         return index;
+      },
+      _setItemsOrder(currentIndex) {
+        this.state.itemsOrder = this._getItemsOrder(currentIndex);
+      },
+      _getItemsOrder(currentIndex) {
+        var o = this.o,
+          prev = currentIndex - 1,
+          next = currentIndex + 1;
+
+        if (o.loop && this.items.length > 2) {
+          if (prev === -1) prev = this.items.length - 1;
+          if (next === this.items.length) next = 0;
+        }
+        if (!this.items[prev]) prev = null;
+        if (!this.items[next]) next = null;
+
+        return [prev, currentIndex, next];
+      },
+      _gallery__uiUpdate(index) {
+        index = index || this.state.active;
+
+        var o = this.o,
+          item = this.items[index];
+
+        if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
+
+        //set title
+        if (item.title) {
+          this.dom.ui.removeClass('njb-ui--no-title');
+        } else {
+          this.dom.ui.addClass('njb-ui--no-title');
+        }
+        this.dom.wrap.find('[data-njb-title]').html(item.title || '')
+
+
+        //set item counts
+        this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
+        this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
+
+        //arrow classes
+        if (index === 0) {
+          this.dom.ui.addClass('njb-ui--first');
+        } else {
+          this.dom.ui.removeClass('njb-ui--first');
+        }
+
+        if (index === this.items.length - 1) {
+          this.dom.ui.addClass('njb-ui--last');
+        } else {
+          this.dom.ui.removeClass('njb-ui--last');
+        }
+
+        //only one class
+        if (this.items.length === 1) {
+          this.dom.ui.addClass('njb-ui--only');
+        } else {
+          this.dom.ui.removeClass('njb-ui--only');
+        }
       }
     }
   })

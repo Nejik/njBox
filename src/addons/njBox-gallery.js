@@ -27,6 +27,114 @@
       }
     },
     prototype: {
+      _gallery_init: function () {
+        var that = this,
+          o = this.o,
+          $ = this.$;
+
+        this.on('options_setted', function () {
+          var o = this.o;
+          if (o.gallery) this.state.gallery = true;
+        })
+        this.on('items_raw', function () {
+          this._gallery_createRawItems();
+        })
+        this.on('domready', function () {
+          if (this.state.gallery) {
+            this.dom.ui_count = $(o.templates.count)
+            this.dom.ui[0].appendChild(this.dom.ui_count[0])
+
+            this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
+            this.dom.ui_current[0].setAttribute('title', o.text.current)
+            this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
+            this.dom.ui_total[0].setAttribute('title', o.text.total)
+
+            this.dom.prev = $(o.templates.prev);
+            this.dom.prev[0].setAttribute('title', o.text.prev);
+            this.dom.next = $(o.templates.next)
+            this.dom.next[0].setAttribute('title', o.text.next);
+
+            if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+              this.state.arrowsInserted = true;
+            }
+          }
+        })
+        this.on('item_domready', function (item, index) {
+          if (this.state.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
+        })
+        this.on('inserted', function () {
+          if (that.state.gallery) {
+            this._setItemsOrder(this.state.active);
+            that._gallery__uiUpdate();
+          }
+        })
+        this.on('change', function () {
+          that._gallery__uiUpdate();
+        })
+        this.on('events_setted', function () {
+          var o = this.o,
+            that = this,
+            h = this._handlers;
+
+          h.wrap_prev = function (e) {
+            that.prev();
+            e.preventDefault();
+          }
+          h.wrap_next = function (e) {
+            that.next();
+            e.preventDefault();
+          }
+
+          this.dom.wrap
+            .delegate('[data-njb-prev]', 'click', h.wrap_prev)
+            .delegate('[data-njb-next]', 'click', h.wrap_next)
+        })
+        this.on('events_removed', function () {
+          var h = this._handlers;
+
+          this.dom.wrap
+            .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
+            .undelegate('[data-njb-next]', 'click', h.wrap_next)
+        })
+        this.on('position', function () {
+          //we need autoheight for prev and next slide in gallery
+          if (this.state.gallery) {
+            if (this.state.itemsOrder[0] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[0]]);
+            if (this.state.itemsOrder[2] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[2]]);
+          }
+        })
+        this.on('show', function () {
+          this.state.active = this._detectIndexForOpen();
+        })
+        this.on('shown', function () {
+          if (this.state.gallery) {
+            that._drawItemSiblings();
+            this._preload();
+          }
+        })
+        this.on('keydown', function (e) {
+          var o = this.o;
+          switch (e.which) {
+            case 37://left arrow
+              that.prev();
+              e.preventDefault();
+              break;
+            case 39://right arrow
+              that.next();
+              e.preventDefault();
+              break;
+          }
+        })
+        var origGalleryState;
+        this.on('clear', function () {
+          origGalleryState = this.state.gallery;
+        })
+        this.on('cleared', function () {
+          this.state.gallery = origGalleryState;
+        })
+      },
       prev: function () {
         this._changeItem(this.state.active - 1, 'prev');
 
@@ -99,111 +207,6 @@
           }
         }
         return this;
-      },
-      _gallery_init: function () {
-        var that = this,
-          o = this.o,
-          $ = this.$;
-
-        this.on('options_setted', function () {
-          var o = this.o;
-          if (o.gallery) this.state.gallery = true;
-        })
-        this.on('rawItems', function () {
-          this.rawItems = this._gallery_createRawItems();
-        })
-        this.on('domready', function () {
-          if (this.state.gallery) {
-            this.dom.ui_count = $(o.templates.count)
-            this.dom.ui[0].appendChild(this.dom.ui_count[0])
-
-            this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
-            this.dom.ui_current[0].setAttribute('title', o.text.current)
-            this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
-            this.dom.ui_total[0].setAttribute('title', o.text.total)
-
-            this.dom.prev = $(o.templates.prev);
-            this.dom.prev[0].setAttribute('title', o.text.prev);
-            this.dom.next = $(o.templates.next)
-            this.dom.next[0].setAttribute('title', o.text.next);
-
-            if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
-              this.state.arrowsInserted = true;
-            }
-          }
-        })
-        this.on('item_domready', function (item, index) {
-          if (this.state.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
-        })
-        this.on('inserted', function () {
-          if (that.state.gallery) {
-            this._setItemsOrder(this.state.active);
-            that._gallery__uiUpdate();
-          }
-        })
-        this.on('change', function () {
-          that._gallery__uiUpdate();
-        })
-        this.on('events_setted', function () {
-          var o = this.o,
-            that = this,
-            h = this._handlers;
-
-          h.wrap_prev = function (e) {
-            that.prev();
-            e.preventDefault();
-          }
-          h.wrap_next = function (e) {
-            that.next();
-            e.preventDefault();
-          }
-
-          this.dom.wrap
-            .delegate('[data-njb-prev]', 'click', h.wrap_prev)
-            .delegate('[data-njb-next]', 'click', h.wrap_next)
-        })
-        this.on('events_removed', function () {
-          var h = this._handlers;
-
-          this.dom.wrap
-            .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
-            .undelegate('[data-njb-next]', 'click', h.wrap_next)
-        })
-        this.on('position', function () {
-          //we need autoheight for prev and next slide in gallery
-          if (this.state.gallery) {
-            if (this.state.itemsOrder[0] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[0]]);
-            if (this.state.itemsOrder[2] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[2]]);
-          }
-        })
-        this.on('shown', function () {
-          if (this.state.gallery) {
-            that._drawItemSiblings();
-            this._preload();
-          }
-        })
-        this.on('keydown', function (e) {
-          var o = this.o;
-          switch (e.which) {
-            case 37://left arrow
-              that.prev();
-              e.preventDefault();
-              break;
-            case 39://right arrow
-              that.next();
-              e.preventDefault();
-              break;
-          }
-        })
-        var origGalleryState;
-        this.on('clear', function () {
-          origGalleryState = this.state.gallery;
-        })
-        this.on('cleared', function () {
-          this.state.gallery = origGalleryState;
-        })
       },
       _preload: function () {
         var o = this.o,
@@ -339,19 +342,17 @@
           item.dom.modalOuter[0].style.cssText = '';
         }
       },
-      _detectIndexForOpen(indexFromShow) {
+      _detectIndexForOpen() {
         var o = this.o,
           that = this,
           index = this.state.active || 0;
 
-        if (indexFromShow) {//first we check if index we have as argument in show method
-          index = indexFromShow - 1;
-        } else if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
+        if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
           index = o.start - 1;
         }
         //if we have clicked element, take index from it
-        if (this.state.gallery && this.els && this.els.length && that.state.clickedEl) {
-          this.els.each(function (i, el) {
+        if (this.state.gallery && this.data.els && this.data.els.length && that.state.clickedEl) {
+          this.data.els.each(function (i, el) {
             if (that.state.clickedEl === el) {
               index = i;
               return;
@@ -413,18 +414,22 @@
       _gallery_createRawItems: function () {
         var o = this.o,
           that = this;
-        if (this.state.gallery) {
-          //we don't use methods such as Array.map because we want to support old browsers
-          var rawItems = [];
-          for (var index = 0; index < this.els.length; index++) {
-            var element = this.els[index],
-              gathered_data = this._gatherData(element);
-            this._cb('item_gathered', gathered_data, element);
-            rawItems.push(gathered_data)
-          }
-          return rawItems;
+
+        this.data.els = this._gatherElements(o.gallery);
+        this.data.items_raw = [];
+
+        for (var index = 0; index < this.data.els.length; index++) {
+          var element = this.data.els[index],
+            gathered_data = this._gatherData(element);
+          this._cb('item_gathered', gathered_data, element);
+          this.data.items_raw.push(gathered_data)
+        }
+      },
+      _gatherElements(selector) {
+        if (selector) {
+          return this.o.el.find(selector);
         } else {
-          return [this.o];
+          return this.o.el;
         }
       }
     }

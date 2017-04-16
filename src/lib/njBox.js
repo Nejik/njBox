@@ -42,10 +42,11 @@ class njBox {
   }
 
   _init() {
+    //init only once
     if (this.state && this.state.inited) return;
+
     var opts = this.constructorOptions;
     delete this.constructorOptions;
-    //init only once
 
     //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
     if (!njBox.g) njBox.g = getDefaultInfo();
@@ -56,10 +57,11 @@ class njBox {
     };
 
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
-    this._globals = {
-      passedOptions: opts
-    }
+    this._globals = {};
     this._handlers = {};//all callback functions we used in event listeners lives here
+    this.data = {
+      optionsPassed: opts
+    };
 
     let o = this.o = $.extend({}, njBox.defaults, opts);
     if (o.jquery) $ = o.jquery;
@@ -70,7 +72,6 @@ class njBox {
       window: $(window),
       html: $(document.documentElement),
       body: $(document.body)
-
       //... other will be added later
     }
 
@@ -99,19 +100,14 @@ class njBox {
       }
       $elem[0].njBox = this; //prevent multiple initialization on one element
 
-      this._globals.gatheredOptions = this._gatherData($elem);
-      this._cb('options_gathered', this._globals.gatheredOptions, $elem[0]);
+      this.data.optionsGathered = this._gatherData($elem);
+      this._cb('options_gathered', this.data.optionsGathered, $elem[0]);
 
       //extend global options with gathered from dom element
-      $.extend(true, this.o, this._globals.gatheredOptions)
+      $.extend(true, this.o, this.data.optionsGathered)
     }
     this._cb('options_setted', o);
     
-    if (o.elem) {
-      //gather dom elements from which we will create modal window/gallery
-      this.els = this._gatherElements(o.gallery);
-    }
-
     //create popup container dom elements
     this._createDom();
 
@@ -129,6 +125,7 @@ class njBox {
   }
   show(index) {
     this._init();//try to init
+    if(index !== undefined) this.state.active = index - 1;
 
     var o = this.o,
       that = this;
@@ -144,8 +141,6 @@ class njBox {
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
     this.returnValue = null;
-
-    if (njBox.addons.gallery) that.state.active = this._detectIndexForOpen(index);
 
     if (!this.dom.container[0].njb_instances) {
       this.dom.container[0].njb_instances = 1;
@@ -246,20 +241,18 @@ class njBox {
     this._cb('destroy');
 
     this._events =
-      this._globals =
-      this._handlers =
-      this.els =
-      this.items =
-      this.dom =
-      this.$ = undefined;
+    this._globals =
+    this._handlers =
+    this.items =
+    this.itemsRaw =
+    this.dom =
+    this.$ = undefined;
     this.o = {};
 
 
     return this;
   }
   update() {
-    //gather dom elements from which we will create modal window/gallery
-    this.els = this._gatherElements(this.o.gallery);
     this.items = this._createItems();
 
     this._setClickHandlers();
@@ -426,25 +419,20 @@ class njBox {
     // this._cb('data_gathered', dataProcessed, $el[0]);
     return dataProcessed;
   }
-  //gather dom elements from which we will create modal window/gallery
-  _gatherElements(selector) {
-    if (selector) {
-      return this.o.el.find(selector);
-    } else {
-      return this.o.el;
-    }
-  }
+  
   _createItems() {
-    this.rawItems = [this.o];
-    this._cb('rawItems');
+    var o = this.o;
 
-    var els = this.rawItems;
+    this.data.els = this.o.el;
+    this.data.items_raw = [this.o];
+
+    this._cb('items_raw', this.data);
 
     let items = [];
-    for (let i = 0, l = els.length; i < l; i++) {
-      items.push(this._createItem(els[i], i))
+
+    for (let i = 0, l = this.data.els.length; i < l; i++) {
+      items.push(this._createItem(this.data.items_raw[i], i))
     }
-    delete this.rawItems;
     return items;
   }
   _createItem(item, index) {
@@ -777,9 +765,9 @@ class njBox {
 
     this._removeClickHandlers();
 
-    if (this.els && this.els.length) {
+    if (this.data.els && this.data.els.length) {
       this._handlers.elsClick = this._clickHandler();
-      this.els.on('click', this._handlers.elsClick)
+      this.data.els.on('click', this._handlers.elsClick)
       if (o.clickels) $(o.clickels).on('click', this._handlers.elsClick);
     }
 
@@ -816,8 +804,8 @@ class njBox {
   _removeClickHandlers() {
     var o = this.o;
 
-    if (this.els && this.els.length) {
-      this.els.off('click', this._handlers.elsClick)
+    if (this.data.els && this.data.els.length) {
+      this.data.els.off('click', this._handlers.elsClick)
 
       if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
     }

@@ -1337,7 +1337,7 @@ class njBox {
 
     return Math.max.apply(Math, transitions);
   }
-  _anim(type, nocallback) {
+  _anim(type) {
     var o = this.o,
       that = this,
       modal = this.items[this.state.active].dom.modal,
@@ -1381,7 +1381,7 @@ class njBox {
       if (o.animclass) modal.removeClass(o.animclass);
       modal.removeClass(animShow);
 
-      if (!nocallback) that._cb('shown');
+      that._cb('shown');
       that._setFocusInPopup(that.items[that.state.active], true);
     }
     function hiddenCallback() {
@@ -1390,7 +1390,7 @@ class njBox {
       modal.removeClass(animHide);
 
       that._clear();
-      if (!nocallback) that._cb('hidden');
+      that._cb('hidden');
     }
   }
   _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
@@ -1556,10 +1556,6 @@ njBox.get = function (elem) {
 //autobind functions
 njBox.autobind = function () {
   $(njBox.defaults.autobind).each(function () {
-    if (this.njBox) {
-      console.error('njBox, already inited on this element')
-      return;
-    }
     new njBox({
       elem: $(this)
     })

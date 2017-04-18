@@ -1095,9 +1095,9 @@ class njBox {
 
     //set title
     if (item.title) {
-      this.dom.ui.removeClass('njb-ui--no-title');
+      this.dom.ui.addClass('njb-ui--title');
     } else {
-      this.dom.ui.addClass('njb-ui--no-title');
+      this.dom.ui.removeClass('njb-ui--title');
     }
     this.dom.wrap.find('[data-njb-title]').html(item.title || '')
 

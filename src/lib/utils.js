@@ -143,7 +143,7 @@ export let defaults = {
 
 		preloader     : '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui            : '<div class="njb-ui"></div>',
-		title         : '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>'
+		title         : '<div class="njb-ui__title"><div class="njb-ui__title-inner" data-njb-title></div></div>'
 	},
 
 	text           : {

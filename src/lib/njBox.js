@@ -1340,7 +1340,6 @@ class njBox {
   _anim(type, nocallback) {
     var o = this.o,
       that = this,
-      modalOuter = this.items[this.state.active].dom.modalOuter,
       modal = this.items[this.state.active].dom.modal,
       animShow = this._globals.animShow,
       animHide = this._globals.animHide,
@@ -1350,6 +1349,7 @@ class njBox {
 
     switch (type) {
       case 'show':
+        this.dom.wrap[0].clientHeight;//fore reflow before applying class
         this.dom.wrap.addClass('njb-wrap--visible');
 
         if (animShow) {

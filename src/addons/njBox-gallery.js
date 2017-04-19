@@ -31,7 +31,6 @@
         var that = this,
           o = this.o,
           $ = this.$;
-
         this.on('options_setted', function () {
           var o = this.o;
           if (o.gallery) this.state.gallery = true;
@@ -353,12 +352,11 @@
         var o = this.o,
           that = this,
           index = this.state.active || 0;
-
         if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
           index = o.start - 1;
         }
         //if we have clicked element, take index from it
-        if (this.state.gallery && this.data.els && this.data.els.length && that.state.clickedEl) {
+        if (this.state.gallery && this.data.els && this.data.els.length && that.state.clickedEl && o.click) {
           this.data.els.each(function (i, el) {
             if (that.state.clickedEl === el) {
               index = i;

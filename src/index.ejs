@@ -28,7 +28,7 @@
 
 <body>
   <!--<a href="https://upload.wikimedia.org/wikipedia/commons/0/0f/Grosser_Panda.JPG" class="link" data-toggle="modal" title="123">image</a>-->
-  <div class="gallery" data-njb-gallery="a">
+  <div class="gallery" data-njb-gallery="a" data-njb-click="false" data-njb-clickels=".open, .open2">
     <a href="#modal" class="link" data-njb-test1="test1">gallery</a>
     <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" data-njb-content="test" class="link" data-njb-title="title 2">link</a>
     <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" class="link" data-njb-title="title 2">link</a>
@@ -36,6 +36,8 @@
     <a href="https://s-media-cache-ak0.pinimg.com/736x/66/a5/eb/66a5ebd96a859c119ce18260dd7a8ba5.jpg" class="link">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="link">link</a>
   </div>
+  <a href="#!" class="open">Open gallery</a>
+  <a href="#!" class="open2">Open gallery2</a>
   <!--<a href="#modal" class="link" data-njb-autofocus=".test3" data-toggle="modal">modal</a>-->
   <div id="modal">
     <input type="text" data-njb-return><br>
@@ -75,7 +77,7 @@
   <script src="njBox.js"></script>
   <script src="njBox-gallery.js"></script>
   <script>
-    window.gallery = new njBox('.gallery',{start:3}).on('cb', function(event, arg1, arg2) {
+    window.gallery = new njBox('.gallery').on('cb', function(event, arg1, arg2) {
       // console.log(arguments);
       // console.log(this);
     })

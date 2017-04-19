@@ -749,7 +749,7 @@ class njBox {
   _setFocusInPopup(item, options) {
     var o = this.o,
       focusElement = this._getFocusableElement(item);
-    
+
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
@@ -766,17 +766,19 @@ class njBox {
   _setClickHandlers() {//initial click handlers
     var o = this.o;
 
-    if (!o.click) return;
-
     this._removeClickHandlers();
 
-    if (this.data.els && this.data.els.length) {
-      this._handlers.elsClick = this._clickHandler();
-      this.data.els.on('click', this._handlers.elsClick)
-      if (o.clickels) $(o.clickels).on('click', this._handlers.elsClick);
+    this._handlers.elsClick = this._clickHandler();
+
+    if (o.click) {
+      if (this.data.els && this.data.els.length) {
+        this.data.els.on('click', this._handlers.elsClick)
+      }
     }
 
-
+    if (o.clickels) {
+      $(o.clickels).on('click', this._handlers.elsClick);
+    }
   }
   _clickHandler() {
     //this method creates closure with modal instance
@@ -1407,7 +1409,7 @@ class njBox {
     openedInstance._setFocusInPopup(openedInstance.items[openedInstance.state.active]);
   }
   _options_setted() {
-    
+
   }
   _clear() {
     var o = this.o;
@@ -1471,7 +1473,7 @@ class njBox {
     switch (type) {
       case 'hidden':
         this.state.state = 'inited';
-        if(o.focusprevious) this._focusPreviousModal();
+        if (o.focusprevious) this._focusPreviousModal();
         break;
     }
 

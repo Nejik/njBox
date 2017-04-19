@@ -4,7 +4,7 @@
  * Copyright (c) 2017 N.J.
 */
 import j from 'lib/j'
-//by default we use jQuery, it makes possible to run plugin with jQuery (low ie support for example)
+//by default we use jQuery, it makes possible to run plugin with jQuery (for low ie support for example)
 let $ = window.jQuery || j;
 
 import {
@@ -747,15 +747,17 @@ class njBox {
   _setFocusInPopup(item, options) {
     var o = this.o,
       focusElement = this._getFocusableElement(item);
-
+    
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
-    } else if (o.close === "outside") {//then try to focus close buttons
-      this.dom.close[0].focus()
-    } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
-      item.dom.close[0].focus();
-    } else {//if no, focus popup itself
+    }
+    //  else if (o.close === "outside") {//then try to focus close buttons
+    //   this.dom.close[0].focus()
+    // } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
+    //   item.dom.close[0].focus();
+    // }
+    else {//if no, focus popup itself
       item.dom.modal[0].focus();
     }
   }

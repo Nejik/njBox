@@ -141,13 +141,13 @@
         })
       },
       prev: function () {
-        if (this.dom.prev[0]) this.dom.prev[0].focus();
+        // if (this.dom.prev[0]) this.dom.prev[0].focus();
         this._changeItem(this.state.active - 1, 'prev');
 
         return this;
       },
       next: function () {
-        if (this.dom.next[0]) this.dom.next[0].focus();
+        // if (this.dom.next[0]) this.dom.next[0].focus();
         this._changeItem(this.state.active + 1, 'next');
 
         return this;
@@ -338,7 +338,7 @@
 
           that._setItemsOrder(that.state.active);
           that._drawItemSiblings();
-          // that._setFocusInPopup(that.items[that.state.active]);
+          that._setFocusInPopup(that.items[that.state.active]);
           that.state.itemChanging = false;
           that._cb('changed', that.state.active);
 

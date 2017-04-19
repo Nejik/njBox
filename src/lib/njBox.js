@@ -512,6 +512,8 @@ class njBox {
         this._error('njBox, error in o.templates.body');
         return;
       }
+      //find data-njb-body in item body element
+      dom.bodyInput = dom.body[0].getAttribute('data-njb-body') !== null ? dom.body : dom.body.find('[data-njb-body]');
 
       this._insertItemBodyContent(item);
 
@@ -526,7 +528,7 @@ class njBox {
           return;
         }
         //insert header info
-        var headerInput = (dom.header[0].getAttribute('data-njb-header') !== null) ? headerInput = dom.header : headerInput = dom.header.find('[data-njb-header]')
+        var headerInput = (dom.header[0].getAttribute('data-njb-header') !== null) ? dom.header : dom.header.find('[data-njb-header]')
         headerInput[0].innerHTML = item.header;
 
         modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
@@ -541,7 +543,7 @@ class njBox {
           return;
         }
         //insert footer info
-        var footerInput = (dom.footer[0].getAttribute('data-njb-footer') !== null) ? footerInput = dom.footer : footerInput = dom.footer.find('[data-njb-footer]')
+        var footerInput = (dom.footer[0].getAttribute('data-njb-footer') !== null) ? dom.footer : dom.footer.find('[data-njb-footer]')
         footerInput[0].innerHTML = item.footer;
 
         modalFragment.appendChild(dom.footer[0])
@@ -570,11 +572,11 @@ class njBox {
 
     switch (item.type) {
       case 'text':
-        'textContent' in item.dom.body[0] ? item.dom.body[0].textContent = item.content : item.dom.body[0].innerText = item.content;
+        'textContent' in item.dom.bodyInput[0] ? item.dom.bodyInput[0].textContent = item.content : item.dom.bodyInput[0].innerText = item.content;
         item.o.status = 'loaded';
         break;
       case 'html':
-        item.dom.body[0].innerHTML = item.content;
+        item.dom.bodyInput[0].innerHTML = item.content;
         item.o.status = 'loaded';
         break;
       case 'selector':
@@ -595,7 +597,7 @@ class njBox {
     item.o.contentEl = $(item.content);
 
     if (!item.o.contentEl.length) {
-      item.dom.body[0].innerHTML = item.content;//if we don't find element with this selector
+      item.dom.bodyInput[0].innerHTML = item.content;//if we don't find element with this selector
     }
   }
   _createDom() {
@@ -696,8 +698,8 @@ class njBox {
         item.o.contentElDisplayNone = true;
         contentEl[0].style.display = 'block';
       }
-      item.dom.body[0].innerHTML = '';//clear body for case when first time we can't find contentEl on page
-      item.dom.body[0].appendChild(contentEl[0]);
+      item.dom.bodyInput[0].innerHTML = '';//clear body for case when first time we can't find contentEl on page
+      item.dom.bodyInput[0].appendChild(contentEl[0]);
       item.o.contentElInserted = true;
     }
   }
@@ -971,7 +973,7 @@ class njBox {
 
       that._preloader('hide', item);
 
-      item.dom.body[0].innerHTML = o.text.imageError.replace('%url%', item.content);
+      item.dom.bodyInput[0].innerHTML = o.text.imageError.replace('%url%', item.content);
 
       that._cb('img_error', item);//img_ready, img_load callbacks
       // rendered();
@@ -1018,7 +1020,7 @@ class njBox {
       $img[0].setAttribute('width', 'auto')//for IE <= 10
 
       //insert content
-      item.dom.body[0].appendChild(img);
+      item.dom.bodyInput[0].appendChild(img);
       item.o.imageInserted = true;
 
       //animation after image loading
@@ -1071,7 +1073,7 @@ class njBox {
         item.dom.preloader[0].setAttribute('title', o.text.preloader);
 
         item.dom.modal.addClass('njb--loading');
-        item.dom.body[0].appendChild(item.dom.preloader[0])
+        item.dom.bodyInput[0].appendChild(item.dom.preloader[0])
         break;
 
       case 'hide':

@@ -1,10 +1,5 @@
-+ добавить описнаие public api: njBox.get, autobind, alert, etc
-* убрать или сделтаь опциональным focusPreviousModal
-
-* data-njb-body не используется
 * потестить click false и поставить несоклько кнопок в clickels
 * добавить примеры html api настроек
-* возможно сделать разные колбэки для data_gather, глобальный и для галлереи
 * поработать над autoheight на мобильных, сделать кнопку рядом с закрыть отключающую autoheight
 
 * header/footer addon, или внести header/footer в dialog addon
@@ -20,6 +15,7 @@ To polyfill:
 
 
 Docs:
++ добавить описнаие public api: njBox.get, autobind, alert, etc
 * пример с njb-options
 * рассказать про this.rawItems
 * content может быть функцией

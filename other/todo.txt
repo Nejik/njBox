@@ -1,5 +1,3 @@
-* доделать _anim nocallback
-* убрать автофокус слайда при каждой смене
 * make gallery from o.content array
 + добавить public описнаие public api: njBox.get, autobind, alert, etc
 * не рисовать стрелки если галлереи, но слайд только один

@@ -331,7 +331,7 @@
 
           that._setItemsOrder(that.state.active);
           that._drawItemSiblings();
-          that._setFocusInPopup(that.items[that.state.active]);
+          // that._setFocusInPopup(that.items[that.state.active]);
           that.state.itemChanging = false;
           that._cb('changed', that.state.active);
 

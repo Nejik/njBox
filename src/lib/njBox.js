@@ -107,7 +107,7 @@ class njBox {
       $.extend(true, this.o, this.data.optionsGathered)
     }
     this._cb('options_setted', o);
-    
+
     //create popup container dom elements
     this._createDom();
 
@@ -125,7 +125,7 @@ class njBox {
   }
   show(index) {
     this._init();//try to init
-    if(index !== undefined) this.state.active = index - 1;
+    if (index !== undefined) this.state.active = index - 1;
 
     var o = this.o,
       that = this;
@@ -241,12 +241,12 @@ class njBox {
     this._cb('destroy');
 
     this._events =
-    this._globals =
-    this._handlers =
-    this.items =
-    this.itemsRaw =
-    this.dom =
-    this.$ = undefined;
+      this._globals =
+      this._handlers =
+      this.items =
+      this.itemsRaw =
+      this.dom =
+      this.$ = undefined;
     this.o = {};
 
 
@@ -419,7 +419,7 @@ class njBox {
     // this._cb('data_gathered', dataProcessed, $el[0]);
     return dataProcessed;
   }
-  
+
   _createItems() {
     var o = this.o;
 
@@ -644,7 +644,7 @@ class njBox {
     }
 
     this.dom.focusCatcher = $(o.templates.focusCatcher);
-    this.dom.ui[0].appendChild(this.dom.focusCatcher[0]);
+    this.dom.wrap[0].appendChild(this.dom.focusCatcher[0]);
 
     this._cb('domready');
   }
@@ -727,36 +727,37 @@ class njBox {
       }
     }
   }
-  _setFocusInPopup(item, initialFocus) {
+  _getFocusableElement(item) {
+    let o = this.o,
+      el,
+      autofocusEl;
+
+    if (o.autofocus) {
+      autofocusEl = item.dom.modal.find(o.autofocus)
+    }
+    if (!autofocusEl || !autofocusEl.length) {
+      autofocusEl = item.dom.modal.find('[autofocus]')
+    }
+    if (!autofocusEl || !autofocusEl.length) {
+      autofocusEl = item.dom.modal.find(this.o._focusable);
+    }
+
+    return autofocusEl;
+  }
+  _setFocusInPopup(item, options) {
     var o = this.o,
-      focusElement;
-
-    if (initialFocus) {
-      focusElement = item.dom.modal.find('[autofocus]')
-
-      if (!focusElement.length && o.autofocus) {
-        focusElement = item.dom.modal.find(o.autofocus);
-      }
-    }
-
-    if (!focusElement || !focusElement.length) {
-      focusElement = item.dom.modal.find(this.o._focusable);
-    }
+      focusElement = this._getFocusableElement(item);
 
     //first try to focus elements inside modal
     if (focusElement && focusElement.length) {
       focusElement[0].focus();
-    } else
-      /*if (this.state.gallery) {
-        this.dom.next[0].focus()
-      } else*/
-      if (o.close === "outside") {//then try to focus close buttons
-        this.dom.close[0].focus()
-      } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
-        item.dom.close[0].focus();
-      } else {//if no, focus popup itself
-        item.dom.modal[0].focus();
-      }
+    } else if (o.close === "outside") {//then try to focus close buttons
+      this.dom.close[0].focus()
+    } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
+      item.dom.close[0].focus();
+    } else {//if no, focus popup itself
+      item.dom.modal[0].focus();
+    }
   }
   _setClickHandlers() {//initial click handlers
     var o = this.o;
@@ -1571,7 +1572,7 @@ njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-`<div class="njb__body">
+        `<div class="njb__body">
 ${content || this.o.text._missedContent}
 </div>
 <div class="njb__footer">
@@ -1588,7 +1589,7 @@ njBox.confirm = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {
       return (
-`<div class="njb__body">
+        `<div class="njb__body">
 ${content || this.o.text._missedContent}
 </div>
 <div class="njb__footer">

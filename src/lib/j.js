@@ -235,8 +235,12 @@ j.fn.trigger = j.fn.triggerHandler = function (type, data) {
     })
 }
 //only in get mode
-j.fn.data = function (type, fn) {
-    return this[0].dataset;
+j.fn.data = function (type) {
+    if(type) {
+        return this[0].dataset[type];
+    } else {
+        return this[0].dataset;
+    }
 }
 j.parseJSON = function (json) {
     return JSON.parse(json);

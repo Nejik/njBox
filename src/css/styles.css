@@ -458,7 +458,7 @@
   animation-fill-mode: forwards;
 
   opacity: 0.7;
-  transition: opacity 200ms;
+  transition: 200ms;
 
   &:hover {
     opacity: 1;
@@ -479,7 +479,7 @@
   animation-fill-mode: forwards;
 
   opacity: 0.7;
-  transition: opacity 200ms;
+  transition: 200ms;
 
   &:hover {
     opacity: 1;
@@ -495,7 +495,7 @@
   animation-fill-mode: forwards;
 
   opacity: 0.7;
-  transition: opacity 200ms;
+  transition: 200ms;
 
   &:hover {
     opacity: 1;

@@ -1,5 +1,5 @@
 * make gallery from o.content array
-+ добавить public описнаие public api: njBox.get, autobind, alert, etc
++ добавить описнаие public api: njBox.get, autobind, alert, etc
 * не рисовать стрелки если галлереи, но слайд только один
 * добавить transition на :active стрелки
 *убрать или сделтаь опциональным focusPreviousModal

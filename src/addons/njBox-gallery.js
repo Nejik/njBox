@@ -35,6 +35,10 @@
         this.on('options_setted', function () {
           var o = this.o;
           if (o.gallery) this.state.gallery = true;
+
+          if ($.isArray(o.content)) {
+            this.state.gallery = true
+          }
         })
         this.on('items_raw', function () {
           this._gallery_createRawItems();
@@ -55,8 +59,9 @@
             this.dom.next[0].setAttribute('title', o.text.next);
 
             if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
               if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+
               this.state.arrowsInserted = true;
             }
           }
@@ -136,11 +141,13 @@
         })
       },
       prev: function () {
+        if (this.dom.prev[0]) this.dom.prev[0].focus();
         this._changeItem(this.state.active - 1, 'prev');
 
         return this;
       },
       next: function () {
+        if (this.dom.next[0]) this.dom.next[0].focus();
         this._changeItem(this.state.active + 1, 'next');
 
         return this;
@@ -412,18 +419,28 @@
         }
       },
       _gallery_createRawItems: function () {
-        var o = this.o,
-          that = this;
+        var o = this.o;
 
-        this.data.els = this._gatherElements(o.gallery);
-        this.data.items_raw = [];
+        if (this.$.isArray(o.content)) {
+          this.data.items_raw = o.content;
+        } else {
+          this.data.els = this._gatherElements(o.gallery);
+          this.data.items_raw = [];
 
-        for (var index = 0; index < this.data.els.length; index++) {
-          var element = this.data.els[index],
-            gathered_data = this._gatherData(element);
-          this._cb('item_gathered', gathered_data, element);
-          this.data.items_raw.push(gathered_data)
+          if (this.data.els && this.data.els.length) {
+            for (var index = 0; index < this.data.els.length; index++) {
+              var element = this.data.els[index],
+                gathered_data = this._gatherData(element);
+              this._cb('item_gathered', gathered_data, element);
+              this.data.items_raw.push(gathered_data)
+            }
+          }
         }
+
+
+
+
+
       },
       _gatherElements(selector) {
         if (selector) {

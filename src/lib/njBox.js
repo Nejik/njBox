@@ -107,6 +107,7 @@ class njBox {
       $.extend(true, this.o, this.data.optionsGathered)
     }
     this._cb('options_setted', o);
+    this._options_setted();
 
     //create popup container dom elements
     this._createDom();
@@ -428,9 +429,9 @@ class njBox {
 
     this._cb('items_raw', this.data);
 
-    let items = [];
 
-    for (let i = 0, l = this.data.els.length; i < l; i++) {
+    let items = [];
+    for (let i = 0, l = this.data.items_raw.length; i < l; i++) {
       items.push(this._createItem(this.data.items_raw[i], i))
     }
     return items;
@@ -1401,6 +1402,9 @@ class njBox {
     if (!openedBox.length) return;
     openedInstance = openedBox[openedBox.length - 1].njBox;
     openedInstance._setFocusInPopup(openedInstance.items[openedInstance.state.active]);
+  }
+  _options_setted() {
+    
   }
   _clear() {
     var o = this.o;

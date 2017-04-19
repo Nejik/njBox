@@ -22,8 +22,6 @@
         total: 'Total slides',
         prev: 'Previous (Left arrow key)',//prev slide button title
         next: 'Next (Right arrow key)',//next slide button title
-
-
       }
     },
     prototype: {

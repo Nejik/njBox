@@ -131,6 +131,7 @@
 	user-select: text;
   &__count {
     position: absolute;left: 20px;top:20px;
+    text-shadow: 0 0 2px #000;
   
 	  transition: transform 200ms, opacity 200ms;
   }

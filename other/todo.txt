@@ -1,9 +1,4 @@
-* добавить примеры html api настроек
 * поработать над autoheight на мобильных, сделать кнопку рядом с закрыть отключающую autoheight
-
-* header/footer addon, или внести header/footer в dialog addon
-* вынести position absolute в аддон, т.к. использоваться будет крайне редко
-
 
 To polyfill:
   querySelector
@@ -35,6 +30,7 @@ Docs:
 * про delayed content 
 * сохраняем инстанс модального в дом элемент
 * пример с oncb колбэком
+* добавить примеры html api настроек
 
 
 Плюсы

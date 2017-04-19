@@ -1,6 +1,5 @@
 + добавить описнаие public api: njBox.get, autobind, alert, etc
-* добавить transition на :active стрелки
-*убрать или сделтаь опциональным focusPreviousModal
+* убрать или сделтаь опциональным focusPreviousModal
 
 * data-njb-body не используется
 * потестить click false и поставить несоклько кнопок в clickels

@@ -121,6 +121,7 @@ export let defaults = {
 	close          : 'outside',//(inside || outside || boolean false) add close button inside or outside popup or don't add at all
 	autoheight     : 'image',//(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
 	autofocus      : false,//(boolean false, selector) set focus to element, after modal is shown, also you may use autofocus attribute without this option
+	focusprevious  : true,//(boolean) focus previous modal window  (case when we open two or more modal windows)
 	title          : false,//(string || boolean false) title (usually for image)
 	title_attr     : 'title',//(string || boolean false) attribute from which we gather title for slide (used basically in images)
 

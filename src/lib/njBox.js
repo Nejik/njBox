@@ -1469,7 +1469,7 @@ class njBox {
     switch (type) {
       case 'hidden':
         this.state.state = 'inited';
-        this._focusPreviousModal();
+        if(o.focusprevious) this._focusPreviousModal();
         break;
     }
 

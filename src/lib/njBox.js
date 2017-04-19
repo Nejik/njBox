@@ -630,7 +630,6 @@ class njBox {
 
     //create ui layer
     this.dom.ui = $(o.templates.ui)
-    if (!o.loop) this.dom.ui.addClass('njb-ui--no-loop');
     this.dom.wrap[0].appendChild(this.dom.ui[0])
 
     this.dom.title = $(o.templates.title)

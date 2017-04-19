@@ -59,8 +59,8 @@
             this.dom.next[0].setAttribute('title', o.text.next);
 
             if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
-              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
               if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
 
               this.state.arrowsInserted = true;
             }
@@ -397,6 +397,12 @@
         //set item counts
         this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
         this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
+
+        if(o.loop && this.items.length >= 3) {
+          this.dom.ui.removeClass('njb-ui--no-loop');
+        } else {
+          this.dom.ui.addClass('njb-ui--no-loop');
+        }
 
         //arrow classes
         if (index === 0) {

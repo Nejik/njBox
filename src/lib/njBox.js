@@ -733,10 +733,12 @@ class njBox {
     let o = this.o,
       el,
       autofocusEl;
-
-    if (o.autofocus) {
-      autofocusEl = item.dom.modal.find(o.autofocus)
-    }
+    
+    if(!o.autofocus) return;
+    
+    
+    autofocusEl = item.dom.modal.find(o.autofocus)
+    
     if (!autofocusEl || !autofocusEl.length) {
       autofocusEl = item.dom.modal.find('[autofocus]')
     }

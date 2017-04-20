@@ -27,10 +27,6 @@
 </head>
 
 <body>
-  <a class="link" data-toggle="modal" data-njb-options='{"content": "options"}' title="123">image</a>
-  <br>
-  <br>
-  <br>
   <div class="gallery" data-njb-gallery="a" data-njb-autofocus="false">
     <a href="#modal">gallery</a>
     <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" class="link" data-njb-options='{"content": "test2"}' data-njb-title="title 2">link</a>
@@ -49,12 +45,11 @@
     <div>Laudantium unde voluptatum fugit amet itaque asperiores ipsum et animi debitis, minus officiis ab incidunt consectetur sapiente sint corporis, perspiciatis tempore? Obcaecati adipisci voluptates sunt illum reiciendis id, voluptatibus praesentium.</div>
   </div>
   <script src="njBox.js"></script>
-  <!--<script src="njBox-gallery.js"></script>-->
+  <script src="njBox-gallery.js"></script>
   <script>
-    // window.gallery = new njBox('.gallery').on('cb', function(event, arg1, arg2) {
-      // console.log(arguments);
-      // console.log(this);
-    // })
+    window.gallery = new njBox('.gallery').on('inited', function(event, arg1, arg2) {
+      console.log(this);
+    })
   </script>
 </body>
 

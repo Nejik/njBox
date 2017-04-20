@@ -92,12 +92,29 @@ var modal = new njBox({
 ```
 Options priority example:
 
-1. defaults from njBox.defaults.content
-2. options passed as object in constructor (e.g. new njBox({content:"test1"})
+1. defaults from njBox.defaults
+2. options passed as object in constructor (e.g. new njBox({content:"constructor"})
 3. global JSON data object from data-njb-options (e.g. data-njb-options='{"content": "test2"}')
 4. content form "href" attribute if it is link (only for "content" option) (e.g. &lt;a href="#modal"&gt;show modal&lt;/a&gt;)
 4. content from "title" attribute (or other attribute form options, only for "title" option) (e.g. &lt;a href="pathToImg" title="My awesome image!"&gt;show modal&lt;/a&gt;)
 5. data-njb-* separate options (e.g. data-njb-content="test3")
+
+Example
+
+```html
+  <a href="content from href" class="modal" data-njb-content="content from separate data" data-njb-options='{"content": "content from data options"}'>image</a>
+```
+```js
+  var modal = new njBox({elem: '.modal', content: 'content from constructor'});
+```
+In this example "content" option calculated in next priority:
+1) njBox plugin: meow, put some content here... (default text if "content" is undefined)
+2) content from constructor
+3) content from data options
+4) content from href
+5) content from separate data
+
+"content from separate data" eventually won and modal will show this text.
 
 ### Options list:
 
@@ -122,23 +139,26 @@ Options priority example:
 | close | outside | inside \|\| outside \|\| boolean false | add close button inside or outside popup or don't add at all
 | autoheight | image | boolean \|\| image | should we set maximum height of modal? if image is selected, only images will be autoheighted
 | autofocus | false | boolean false, selector \|\| dom\jQuery element | set focus to element, after modal is shown, also you may use autofocus attribute without this option
+| focusprevious | true | boolean | focus previous modal window  (case when we open two or more modal windows)
 | title | '' | string \|\| boolean false | title (usually for image)
 | title_attr | title | string \|\| boolean false | attribute from which we gather title for slide (used basically in galleries)
 | img | ready | load \|\| ready | we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 | imgload | show | init \|\| show | should we load gallery images on init(even before dialog open, on init) or on open
+| anim | 'scale' | false \|\| string | name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
+| animclass | animated | string | additional class that will be added to modal window during animation (can be used for `animate.css` or other css animation libraries)
+| duration | auto | string \|\| number \|\| auto | duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
+| jquery | undefined | 123 | !!! jQuery NOT required for plugin, plugin can work with it to support old browsers !!! link to jquery (for modules without global scope) P.S. Plugin will try to found jquery in global namespace even without this option.
+| autobind | [data-toggle~="box"], [data-toggle~="modal"] | selector | selector that will be used for autobind (can be used only with changing global default properties) Usage: njBox.defaults.autobind = '.myAutoBindSelector'
+| _focusable | a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable] | selector | this elements we will try to focus in popup shown after option o.autofocus
+| templates | object | object | **More detailed under this table!** object with html templates for all modal parts. P.S. you cant change this from html api.
+| text | object | object | **More detailed under this table!** object with locale strings P.S. you cant change this from html api.
+| **Gallery&nbsp;addon** | | |
 | gallery | '' | selector | child items selector, for gallery elements (galleries created with this option)
 | arrows | true | boolean | should we add navigation arrows
 | start | false | number | slide number, from which we should show gallery (not zero based, first slide is number 1)
 | loop | true | boolean | show first image when call `next` on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically
 | preload | '1 1' | boolean false \|\| string | space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
-| anim | 'scale' | false \|\| string | name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
-| animclass | animated | string | additional class that will be added to modal window during animation (can be used for `animate.css` or other css animation libraries)
-| duration | auto | string \|\| number \|\| auto | duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
-| jquery | undefined | 123 | !!! jQuery NOT required for plugin, plugin can work with it to support old browsers !!! link to jquery (for modules without global scope) P.S. Plugin will try to found jquery in global namespace even without this option.
-| templates | object | object | **More detailed under this table!** object with html templates for all modal parts. P.S. you cant change this from html api.
-| text | object | object | **More detailed under this table!** object with locale strings P.S. you cant change this from html api.
-| autobind | [data-toggle~="box"], [data-toggle~="modal"] | selector | selector that will be used for autobind (can be used only with changing global default properties) Usage: njBox.defaults.autobind = '.myAutoBindSelector'
-| _focusable | a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable] | selector | this elements we will try to focus in popup shown after option o.autofocus
+
 
 ### o.templates
 
@@ -156,6 +176,8 @@ templates: {
   preloader:   '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
   ui:          '<div class="njb-ui"></div>',
   title:       '<div class="njb-ui__title-outer"><div class="njb-ui__title-inner" data-njb-title></div></div>',
+
+  //Gallery addon templates
   count:       '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>2</span></div>',
   prev:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
   next:        '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
@@ -168,18 +190,17 @@ templates: {
 text: {
   _missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
   preloader:      'Loading...',//title on preloader element
-
   imageError:     '<a href="%url%">This image</a> can not be loaded.',
-
-  current:        'Current slide',
-  total:          'Total slides',
   close:          'Close (Esc)',//title on close button
-  prev:           'Previous (Left arrow key)',//prev slide button title
-  next:           'Next (Right arrow key)',//next slide button title
-
   ok:             'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
   cancel:         'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
   placeholder:    ''//placeholder for prompt input
+  
+  //Gallery addon text
+  current:        'Current slide',
+  total:          'Total slides',
+  prev:           'Previous (Left arrow key)',//prev slide button title
+  next:           'Next (Right arrow key)',//next slide button title
 }
 ```
 
@@ -205,33 +226,43 @@ modal
 .show(index)//index - for gallery, from what index we should show gallery
 .hide()
 .position()//can be used, when you made your custom ui... or whatever
-.next()
-.prev()
-.goTo(index)
-.update()//update just recreate all slides withW current settings (can be used when you add images to gallery dynamically)
 .destroy()
-
+.update()//update just recreate all slides with current settings (can be used when you add images to gallery dynamically)
 .on(event, handler)//add event listener
 .off(event, handler)//remove event listener
+
+//Gallery addon methods
+.prev()
+.next()
+.goTo(index)
+
 ```
 
 ## Events
 
 | Title  | Callback name | Arguments | Description |
 | :--- | :--- | :---: | :--- |
-| inited | oninited | - | When instance inited(all data gathered, dom created, events prepared, etc.)
+| inited | oninited | - | When instance inited(all data gathered, dom created, events prepared, etc.) P.S. init method calls async in next event loop or in show method whichever comes first.
 | show | onshow | - | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
 | shown | onshown | - | After show animation finished.
 | hide | onhide | - | When modal begin to hide. <br /> P.S. If you return false in onhide callback, hiding modal will be canceled.
 | hidden | onhidden | - | After hide animation finished.
+| **Advanced&nbsp;events** | | | **Events below basically used for creating addons enhancing functionality of plugin, but of course you can use it also.**
+| options_gathered | onoptions_gathered | dataObject, domEl | When options gathered from dom element. P.S. You can modify options in this object
+| options_setted | onoptions_setted | optionsObject | When all gather options steps complete, object with this options will be used in plugin
+| domready | ondomready | - | When all global dom elements needed for plugin is created P.S. Mainly els from this.dom object
+| item_gathered | onitem_gathered | dataObject, domEl | **Gallery addon only.** Called for every item(slide). When options for each item(slide) gathered from dom element. P.S. You can modify options in this object
+| items_raw | onitems_raw | object | When plugin gather els and data for items. Item is a unit to show (for example in gallery each slide is item)
+| item_domready | onitem_domready | itemObject, index | Called for every item(slide). When dom created for each item. P.S. dom element you can find in item.dom object
 | data_gathered | ondata_gathered | dataObject, domEl | On gathering data from dom element (data-njb-* atrributes, title, content, etc.) <br /> P.S. In ondata_gathered callback you can modify dataObject if you need some custom logic on gathering data.
 | item_domready | onitem_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
 | events_setted | onevents_setted | - |When event handlers attached. <br />Mostly for making addons.
-| item_prepare | onitem_prepare |itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
-| item_inserted | onitem_inserted |itemObject | After item inserted.
+| item_prepare | onitem_prepare | itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
+| item_inserted | onitem_inserted | itemObject | After item inserted.
 | position | onposition | - | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
-| item_img_ready | onitem_img_ready |itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| item_img_ready | onitem_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_load | onitem_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| item_img_true | onitem_img_true | itemObject | When image is ready, depending on o.img option
 | ok | onok | - | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs.
 | cancel | oncancel | - | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs.
 | events_removed | onevents_removed | - | When event handlers detached. <br />Mostly for making addons.
@@ -246,25 +277,31 @@ var modal = new njBox({
   elem:'#myModalLink',
   onshow: function() {
     console.log('Show my modal! :)')
+    // this in callbacks always refers to modal instance, so you have access to: this.o, this.dom, this.data, this.items, this.state
   },
   onhidden: function() {
     console.log('My modal is hidden :(')
+    // this in callbacks always refers to modal instance, so you have access to: this.o, this.dom, this.data, this.items, this.state
   }
 });
 ```
-2. Listen events on created modal instance. But this method can't listen 3 events before init: data_gathered, item_domready, inited. In most cases it's not scary, because likely you will need show/shown/hide/hidden events.
+2. Listen events on created modal instance with .on method
 ```js
 var modal = new njBox({elem:'#myModalLink'});
 modal.on('shown', function() {
   console.log('My modal is shown!')
 })
 //or at once
-var modal = new njBox({elem:'#myModalLink'}).on('shown', function() {
-  console.log('My modal is shown!')
-})
+var modal = new njBox({elem:'#myModalLink'})
+                                            .on('shown', function() {
+                                              console.log('My modal is shown!')
+                                              // this in event callbacks always refers to modal instance, so you have access to: this.o, this.dom, this.data, this.items, this.state
+                                            }).on('hidden', function() {
+                                              console.log('My modal is hidden!')
+                                            })
 ```
 ## Delegate attributes
-For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api, you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
+For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api (but of course you can), you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
 
 List of interactive attributes:
 

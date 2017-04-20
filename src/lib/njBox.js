@@ -429,7 +429,6 @@ class njBox {
 
     this._cb('items_raw', this.data);
 
-
     let items = [];
     for (let i = 0, l = this.data.items_raw.length; i < l; i++) {
       items.push(this._createItem(this.data.items_raw[i], i))

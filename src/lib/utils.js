@@ -131,6 +131,12 @@ export let defaults = {
 	animclass      : 'animated',//(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration       : 'auto',//(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
 
+	
+
+	jquery         : undefined,//link to jquery (for modules without global scopr)
+	_focusable     : 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
+	autobind       : '[data-toggle~="box"], [data-toggle~="modal"]',//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
+
 	templates      : {
 		wrap          : '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop      : '<div class="njb-backdrop"></div>',
@@ -155,9 +161,5 @@ export let defaults = {
 		ok            : 'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		cancel        : 'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		placeholder   : ''//placeholder for prompt input
-	},
-
-	_focusable     : 'a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
-	jquery         : undefined,//link to jquery (for modules without global scopr)
-	autobind       : '[data-toggle~="box"], [data-toggle~="modal"]'//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
+	}
 };

@@ -17,6 +17,10 @@ Highly customizable pure javascript modal window.
  <script src="njBox.min.js"></script>
 ```
 
+## Dependencies
+
+Plugin have **no dependencies** and support all modern browsers (ie10+). But, if you need to support older browsers, you can include jQuery that supports older browsers, plugin will find it and will use it, you don't need to configure anything here. P.S. also you will need indexof polyfill.
+
 ## Usage
 
 You can initialize plugin in few ways:
@@ -156,7 +160,7 @@ In this example "content" option calculated in next priority:
 | gallery | '' | selector | child items selector, for gallery elements (galleries created with this option)
 | arrows | true | boolean | should we add navigation arrows
 | start | false | number | slide number, from which we should show gallery (not zero based, first slide is number 1)
-| loop | true | boolean | show first image when call `next` on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically
+| loop | true | boolean | show first slide when call `next` on last slide and vice versa. Requires three or more slides. If there are less than 3 slides, option will be set to false automatically
 | preload | '1 1' | boolean false \|\| string | space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
 
 
@@ -238,6 +242,15 @@ modal
 
 ```
 
+Also plugin have some useful methods on njBox class.
+```js
+njBox.get(selector)//method tat return instance of modal from this selector/dom element
+njBox.autobind()//autoinitialize modals (bootstrap style) from data-attributes. It fires automatically on document.ready
+njBox.addons//object with included addons
+njBox.defaults//object with default options P.S. you can change it of course before any initialization
+njBox.addAddon(name, addon)//register addon, addon structure you can see in njBox-gallery.js addon
+```
+
 ## Events
 
 | Title  | Callback name | Arguments | Description |
@@ -263,8 +276,8 @@ modal
 | item_img_ready | onitem_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_load | onitem_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_true | onitem_img_true | itemObject | When image is ready, depending on o.img option
-| ok | onok | - | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs.
-| cancel | oncancel | - | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs.
+| ok | onok | - | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs. Fires before hide event.
+| cancel | oncancel | - | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs. Fires before hide event.
 | events_removed | onevents_removed | - | When event handlers detached. <br />Mostly for making addons.
 | clear | onclear | - |After hiding when we remove all unnecessary data. <br />Mostly for making addons.
 | cb | oncb | event, event_arguments | Global callback that calls for EVERY event (first argument) that you can use for making some global changes. <br /> P.S. Using this callback allow you to listen callback twice, first event will fire in oncb callback where you can do some magic with all events, and later when you initialize modal in code with usual oninited, onshow, etc callbacks.
@@ -308,11 +321,12 @@ List of interactive attributes:
 | Title  | Description |
 | :--- | :--- |
 | data&#x2011;njb&#x2011;close | Closes modal 
-| data&#x2011;njb&#x2011;return | On hide, plugin will try to find input with this attribute and get value from it. Value will be stored in instance.returnValue variable, until next show, and as arguments in onok, oncancel callbacks.
+| data&#x2011;njb&#x2011;return | On hide, plugin will try to find input with this attribute and get value from it. Value will be stored in instance.returnValue variable, until next show, and will be avaliable as argument in onok, oncancel callbacks.
 | data&#x2011;njb&#x2011;prev | Go to previous slide in gallery
 | data&#x2011;njb&#x2011;next | Go to next slide in gallery
 | data&#x2011;njb&#x2011;ok | Closes modal. onok callback will be triggered.
 | data&#x2011;njb&#x2011;cancel | Closes modal. oncancel callback will be triggered.
+| autofocus | On show, plugin will try to find element with this attribute and focus it
 
 List of template attributes:
 

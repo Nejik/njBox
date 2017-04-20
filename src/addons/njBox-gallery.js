@@ -346,7 +346,7 @@
           item.dom.modalOuter[0].style.cssText = '';
         }
       },
-      _detectIndexForOpen() {
+      _detectIndexForOpen: function() {
         var o = this.o,
           that = this,
           index = this.state.active || 0;
@@ -365,10 +365,10 @@
 
         return index;
       },
-      _setItemsOrder(currentIndex) {
+      _setItemsOrder: function(currentIndex) {
         this.state.itemsOrder = this._getItemsOrder(currentIndex);
       },
-      _getItemsOrder(currentIndex) {
+      _getItemsOrder: function(currentIndex) {
         var o = this.o,
           prev = currentIndex - 1,
           next = currentIndex + 1;
@@ -382,7 +382,7 @@
 
         return [prev, currentIndex, next];
       },
-      _gallery__uiUpdate(index) {
+      _gallery__uiUpdate: function(index) {
         index = index || this.state.active;
 
         var o = this.o,
@@ -446,7 +446,7 @@
 
 
       },
-      _gatherElements(selector) {
+      _gatherElements: function(selector) {
         if (selector) {
           return this.o.el.find(selector);
         } else {

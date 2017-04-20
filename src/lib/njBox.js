@@ -351,9 +351,9 @@ class njBox {
   _gatherData(el) {
     let o = this.o,
       $el = $(el),
-      dataO = $el.data(),//data original
+      dataO = $.extend(true, {}, $el.data()),//data original, copy options to separate object, because we want to delete some options during processing, if we do that on native domstrinmap, deleting will also touch html
       dataProcessed = {};//data processed
-
+    
     if (!$el.length) {
       return dataProcessed;
     }

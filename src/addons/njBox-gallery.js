@@ -422,6 +422,8 @@
       },
       _gallery_createRawItems: function () {
         var o = this.o;
+        
+        if(!this.state.gallery) return;
 
         if (this.$.isArray(o.content)) {
           this.data.items_raw = o.content;
@@ -433,6 +435,7 @@
             for (var index = 0; index < this.data.els.length; index++) {
               var element = this.data.els[index],
                 gathered_data = this._gatherData(element);
+                console.log(gathered_data);
               this._cb('item_gathered', gathered_data, element);
               this.data.items_raw.push(gathered_data)
             }

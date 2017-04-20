@@ -26,11 +26,12 @@ You can initialize plugin in few ways:
 <a href="#modalDiv" data-toggle="modal">Show popup</a>
 <!-- or -->
 <button data-toggle="modal" data-njb-content="#modalDiv">Show popup</button>
-<!-- or gallery-->
-<div class="gallery" data-njb-gallery="a" data-toggle="modal">
-  <a href="img1.jpg" class="link"><img src="img1.jpg" alt=""></a>
-  <a href="img2.jpg" class="link"><img src="img2.jpg" alt=""></a>
-  <a href="img3.jpg" class="link"><img src="img3.jpg" alt=""></a>
+
+<!-- or gallery (with gallery addon)-->
+<div data-njb-gallery="a" data-toggle="modal">
+  <a href="img1.jpg"><img src="img1.jpg"></a>
+  <a href="img2.jpg"><img src="img2.jpg"></a>
+  <a href="img3.jpg"><img src="img3.jpg"></a>
 </div>
 ```
 2. Javascript style (if you need callbacks or advanced api)
@@ -48,11 +49,14 @@ javascript
 
 ```js
 var modal = new njBox('#myModal')
-//or
+// or
 var modal = new njBox({elem:'#myModal'})
 // or with options
-var modal = new njBox('#myModal', {option1:value1})
-//gallery example
+var modal = new njBox('#myModal', {scrollbar:'show'})
+// same as previous
+var modal = new njBox({elem: '#myModal', scrollbar:'show'})
+
+// gallery example (only with gallery addon)
 var gallery = new njBox({
   elem: '.gallery',
   gallery: 'a'
@@ -86,6 +90,14 @@ var modal = new njBox({
   onshidden: function() {}//more callbacks in advanced section
 })
 ```
+Options priority example:
+
+1. defaults from njBox.defaults.content
+2. options passed as object in constructor (e.g. new njBox({content:"test1"})
+3. global JSON data object from data-njb-options (e.g. data-njb-options='{"content": "test2"}')
+4. content form "href" attribute if it is link (only for "content" option) (e.g. &lt;a href="#modal"&gt;show modal&lt;/a&gt;)
+4. content from "title" attribute (or other attribute form options, only for "title" option) (e.g. &lt;a href="pathToImg" title="My awesome image!"&gt;show modal&lt;/a&gt;)
+5. data-njb-* separate options (e.g. data-njb-content="test3")
 
 ### Options list:
 

@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const extend = require('extend');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const WriteFilePlugin = require('write-file-webpack-plugin');
 
@@ -14,11 +15,12 @@ const babelConfig = Object.assign({}, pkg.babel, {
 });
 
 const webpackConfig = {
+  name: 'addons',
   // The base directory for resolving the entry option
   context: config.src,
 
   // The entry point for the bundle
-  entry: config.js.src,
+  entry: config.js.srcAddons,
 
   // Options affecting the output of the compilation
   output: {
@@ -66,7 +68,7 @@ const webpackConfig = {
 
   // The list of plugins for Webpack compiler
   plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin(),
+    // new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': config.isDevelopment ? '"development"' : '"production"',
       __DEV__: config.isDevelopment,
@@ -79,7 +81,12 @@ const webpackConfig = {
     rules: [
       {
         test: /.js?$/,
-        loader: `babel-loader?${JSON.stringify(babelConfig)}`,
+        use: [
+          {
+            loader: `babel-loader?${JSON.stringify(babelConfig)}`
+          }
+        ],
+        // loader: `babel-loader?${JSON.stringify(babelConfig)}`,
         exclude: /node_modules/
       },
       {
@@ -99,9 +106,9 @@ const webpackConfig = {
 
 if (config.isDevelopment) {
   Object.keys(webpackConfig.entry).forEach(function (obj) {
-    webpackConfig.entry[obj].unshift('webpack-hot-middleware/client?overlay=false&reload=true&noInfo=true');
+    webpackConfig.entry[obj].unshift('webpack-hot-middleware/client?name=addons&overlay=false&reload=true&noInfo=true');
   });
-  
+
   webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
   webpackConfig.plugins.push(new webpack.NoEmitOnErrorsPlugin());
 } else {
@@ -109,4 +116,16 @@ if (config.isDevelopment) {
   // webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
 }
 
-module.exports = webpackConfig;
+let libWebpackConfig = extend(true, {}, webpackConfig)
+libWebpackConfig.name = 'lib';
+libWebpackConfig.entry = config.js.srcLib;
+if (config.isDevelopment) {
+  Object.keys(libWebpackConfig.entry).forEach(function (obj) {
+    libWebpackConfig.entry[obj].unshift('webpack-hot-middleware/client?name=lib&overlay=false&reload=true&noInfo=true');
+  });
+}
+libWebpackConfig.output.library = 'njBox';
+libWebpackConfig.output.libraryTarget = "umd";
+libWebpackConfig.output.umdNamedDefine = true;
+
+module.exports = [libWebpackConfig, webpackConfig]

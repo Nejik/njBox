@@ -145,8 +145,10 @@ gulp.task('webpack', function (callback) {
   });
 })
 gulp.task('webpack:min', function (callback) {
-  webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
-  webpackConfig.output.filename = config.js.concatMin;
+  webpackConfig.forEach(function (obj) {
+    obj.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
+    obj.output.filename = config.js.concatMin;
+  });
 
   webpack(webpackConfig, function(err, stats) {
 
@@ -180,15 +182,14 @@ gulp.task('watch', function () {
   gulp.watch(config.html.watch, gulp.series('html'));//build and reload html
   gulp.watch(config.css.watch, gulp.series('css'));//build css
   gulp.watch("build/*.css").on('change', bs.reload);//reload css
-  gulp.watch(config.js.addonsWatch, gulp.series('js:addons'))//reload js addons
 })
 
 gulp.task('serve', function (cb) {//serve contains js task, because of webpack integration
   const compiler = webpack(webpackConfig);
 
   const webpackDevMiddleware = require('webpack-dev-middleware')(compiler, {
-    publicPath: webpackConfig.output.publicPath,
-    stats: webpackConfig.stats,
+    publicPath: config.publicPath,
+    stats: webpackConfig[0].stats,
   });
 
   compiler.plugin('done', stats => {
@@ -234,8 +235,8 @@ gulp.task('serve', function (cb) {//serve contains js task, because of webpack i
 
 
 
-gulp.task('build', gulp.parallel('html', 'css', 'webpack', 'js:addons'))
+gulp.task('build', gulp.parallel('html', 'css', 'webpack'))
 
 gulp.task('prod', gulp.series(gulp.parallel('clean', 'setProduction'), gulp.parallel('css', gulp.series('webpack', 'webpack:min'))))
 
-gulp.task('default', gulp.series('html', 'css', 'js:addons', gulp.parallel('serve','watch')))
+gulp.task('default', gulp.series('html', 'css', gulp.parallel('serve','watch')))

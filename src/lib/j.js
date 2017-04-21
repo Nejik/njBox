@@ -228,6 +228,21 @@ j.fn.undelegate = function (selector, type, fn) {
         if (emptyEvents) delete this._events;
     })
 }
+//custom event polyfill for IE
+;(function () {
+  if ( typeof window.CustomEvent === "function" ) return false;
+
+  function CustomEvent ( event, params ) {
+    params = params || { bubbles: false, cancelable: false, detail: undefined };
+    var evt = document.createEvent( 'CustomEvent' );
+    evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+    return evt;
+   }
+
+  CustomEvent.prototype = window.Event.prototype;
+
+  window.CustomEvent = CustomEvent;
+})();
 j.fn.trigger = j.fn.triggerHandler = function (type, data) {
     return this.each(function (i) {
         var event = new CustomEvent(type, { 'detail': data || null });

@@ -440,11 +440,6 @@
             }
           }
         }
-
-
-
-
-
       },
       _gatherElements: function(selector) {
         if (selector) {

@@ -43,9 +43,12 @@ let paths = {
   },
   
   js: {
-    src: [root.resolve('src/lib/njBox.js')],
-    concat: 'njBox.js',//final name of builded js file
-    concatMin: 'njBox.min.js',
+    src: {
+     'njBox': [root.resolve('src/lib/njBox.js')],
+     'njBox-gallery': [root.resolve('src/addons/njBox-gallery.js')]
+    },
+    concat: '[name].js',//final name of builded js file
+    concatMin: '[name].min.js',
     dist: dist,
     addonsSrc: [root.resolve('src/addons/njBox-gallery.js')],
     addonsWatch: [root.resolve('src/addons/*.js')]

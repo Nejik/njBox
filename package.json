@@ -33,6 +33,7 @@
     "css-mqpacker": "^5.0.1",
     "cssnano": "^3.10.0",
     "del": "^2.2.2",
+    "extend": "^3.0.0",
     "extract-text-webpack-plugin": "^2.0.0-beta",
     "file-loader": "^0.10.0",
     "gulp": "github:gulpjs/gulp#4.0",

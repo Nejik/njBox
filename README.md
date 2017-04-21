@@ -19,7 +19,7 @@ Highly customizable pure javascript modal window.
 
 ## Dependencies
 
-Plugin have **no dependencies** and support all modern browsers (ie10+). But, if you need to support older browsers, you can include jQuery that supports older browsers, plugin will find it and will use it, you don't need to configure anything here. P.S. also you will need indexof polyfill.
+Plugin have **no dependencies** and support all modern browsers (ie11+). But, if you need to support older browsers, you can include jQuery that supports older browsers, plugin will find it and will use it, you don't need to configure anything here. Also if you need ie10,9 for example, you can insert some polyfills without jQuery at all.
 
 ## Usage
 

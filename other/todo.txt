@@ -1,3 +1,4 @@
+* перенести в переменную document.documentElement
 Docs:
 * рассказать про this.rawItems
 * content может быть функцией

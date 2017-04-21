@@ -30,9 +30,9 @@ const webpackConfig = {
     chunkFilename: '[id].js',
     sourcePrefix: '  ',
 
-    library: 'njBox',
-    libraryTarget: "umd",
-    umdNamedDefine: true
+    // library: 'njBox',
+    // libraryTarget: "umd",
+    // umdNamedDefine: true
   },
 
   resolve: {
@@ -98,7 +98,10 @@ const webpackConfig = {
 };
 
 if (config.isDevelopment) {
-  webpackConfig.entry.unshift('webpack-hot-middleware/client?overlay=false&reload=true&noInfo=true');
+  Object.keys(webpackConfig.entry).forEach(function (obj) {
+    webpackConfig.entry[obj].unshift('webpack-hot-middleware/client?overlay=false&reload=true&noInfo=true');
+  });
+  
   webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
   webpackConfig.plugins.push(new webpack.NoEmitOnErrorsPlugin());
 } else {

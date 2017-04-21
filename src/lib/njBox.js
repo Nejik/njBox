@@ -1363,6 +1363,7 @@ class njBox {
         if (animShow) {
           if (o.animclass) modal.addClass(o.animclass);
 
+          modal[0].setAttribute('open', '');
           modal.addClass(animShow);
 
           setTimeout(shownCallback, animShowDur);
@@ -1371,6 +1372,7 @@ class njBox {
         }
         break;
       case 'hide':
+        modal[0].removeAttribute('open');
         this.dom.wrap.removeClass('njb-wrap--visible')
 
         if (animHide) {

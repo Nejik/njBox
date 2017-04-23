@@ -141,12 +141,12 @@ export let defaults = {
 		wrap          : '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop      : '<div class="njb-backdrop"></div>',
 		modalOuter    : '<div class="njb-outer"></div>',
-		modal         : '<aside class="njb" tabindex="-1"></aside>',
-		body          : '<div class="njb__body" data-njb-body></div>',
+		modal         : '<div class="njb" tabindex="-1" role="dialog"></div>',
+		body          : '<div class="njb__body" role="document" data-njb-body></div>',
 		header        : '<header class="njb__header" data-njb-header></header>',
 		footer        : '<footer class="njb__footer" data-njb-footer></footer>',
-		close         : '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
-		focusCatcher  : '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
+		close         : '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',
+		focusCatcher  : '<div tabindex="0" class="njb-focus-catch"></div>',
 
 		preloader     : '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui            : '<div class="njb-ui"></div>',
@@ -157,7 +157,7 @@ export let defaults = {
 		_missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
 		preloader     : 'Loading...',//title on preloader element
 		imageError    : '<a href="%url%">This image</a> can not be loaded.',
-		close         : 'Close (Esc)',//title on close button
+		close         : 'Close dialog',//title on close button
 		ok            : 'Ok',//text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		cancel        : 'Cancel',//text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		placeholder   : ''//placeholder for prompt input

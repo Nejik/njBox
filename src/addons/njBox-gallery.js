@@ -20,8 +20,8 @@
       text: {
         current: 'Current slide',
         total: 'Total slides',
-        prev: 'Previous (Left arrow key)',//prev slide button title
-        next: 'Next (Right arrow key)',//next slide button title
+        prev: 'Previous dialog item',//prev slide button title
+        next: 'Next dialog item'//next slide button title
       }
     },
     prototype: {

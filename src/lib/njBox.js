@@ -148,7 +148,7 @@ class njBox {
     } else {
       this.dom.container[0].njb_instances++;
     }
-    this.dom.container.addClass('njb-open');
+    // this.dom.container.addClass('njb-open');
 
     this._scrollbar('hide');
 
@@ -353,7 +353,7 @@ class njBox {
       $el = $(el),
       dataO = $.extend(true, {}, $el.data()),//data original, copy options to separate object, because we want to delete some options during processing, if we do that on native domstrinmap, deleting will also touch html
       dataProcessed = {};//data processed
-    
+
     if (!$el.length) {
       return dataProcessed;
     }
@@ -640,6 +640,7 @@ class njBox {
     if (o.close === 'outside') {
       this.dom.close = $(o.templates.close);
       this.dom.close[0].setAttribute('title', o.text.close);
+      this.dom.close[0].setAttribute('aria-label', o.text.close);
 
       this.dom.ui[0].appendChild(this.dom.close[0]);
     }
@@ -732,12 +733,12 @@ class njBox {
     let o = this.o,
       el,
       autofocusEl;
-    
-    if(!o.autofocus) return;
-    
-    
+
+    if (!o.autofocus) return;
+
+
     autofocusEl = item.dom.modal.find(o.autofocus)
-    
+
     if (!autofocusEl || !autofocusEl.length) {
       autofocusEl = item.dom.modal.find('[autofocus]')
     }
@@ -1308,42 +1309,43 @@ class njBox {
     this._globals.animHideDur = animHideDur;
   }
   _getAnimTime(el, property) {//get max animation or transition time
-    return this._getMaxTransitionDuration(el, 'animation') || this._getMaxTransitionDuration(el, 'transition')
-  }
-  _getMaxTransitionDuration(el, property) {//method also can get animation duration
-    var $el = $(el),
-      dur,
-      durArr,
-      del,
-      delArr,
-      transitions = [];
+    function _getMaxTransitionDuration(el, property) {//function also can get animation duration
+      var $el = $(el),
+        dur,
+        durArr,
+        del,
+        delArr,
+        transitions = [];
 
-    if (!$el.length) return 0;
-    if (!property) return 0;
+      if (!$el.length) return 0;
+      if (!property) return 0;
 
-    dur = $el.css(property + 'Duration');
-    del = $el.css(property + 'Delay');
+      dur = $el.css(property + 'Duration');
+      del = $el.css(property + 'Delay');
 
-    //make array with durations
-    if (!dur || dur === undefined) dur = '0s';
-    durArr = dur.split(', ');
-    for (var i = 0, l = durArr.length; i < l; i++) {
-      durArr[i] = (durArr[i].indexOf("ms") > -1) ? parseFloat(durArr[i]) : parseFloat(durArr[i]) * 1000;
+      //make array with durations
+      if (!dur || dur === undefined) dur = '0s';
+      durArr = dur.split(', ');
+      for (var i = 0, l = durArr.length; i < l; i++) {
+        durArr[i] = (durArr[i].indexOf("ms") > -1) ? parseFloat(durArr[i]) : parseFloat(durArr[i]) * 1000;
+      }
+
+      //make array with delays
+      if (!del || del === undefined) del = '0s';
+      delArr = del.split(', ');
+      for (var i = 0, l = delArr.length; i < l; i++) {
+        delArr[i] = (delArr[i].indexOf("ms") > -1) ? parseFloat(delArr[i]) : parseFloat(delArr[i]) * 1000;
+      }
+
+      //make array with duration+delays
+      for (var i = 0, l = durArr.length; i < l; i++) {
+        transitions[i] = durArr[i] + delArr[i]
+      }
+
+      return Math.max.apply(Math, transitions);
     }
 
-    //make array with delays
-    if (!del || del === undefined) del = '0s';
-    delArr = del.split(', ');
-    for (var i = 0, l = delArr.length; i < l; i++) {
-      delArr[i] = (delArr[i].indexOf("ms") > -1) ? parseFloat(delArr[i]) : parseFloat(delArr[i]) * 1000;
-    }
-
-    //make array with duration+delays
-    for (var i = 0, l = durArr.length; i < l; i++) {
-      transitions[i] = durArr[i] + delArr[i]
-    }
-
-    return Math.max.apply(Math, transitions);
+    return _getMaxTransitionDuration(el, 'animation') || _getMaxTransitionDuration(el, 'transition')
   }
   _anim(type) {
     var o = this.o,
@@ -1419,7 +1421,7 @@ class njBox {
     this._cb('clear');
 
     if (this.dom.container) this.dom.container[0].njb_instances--;
-    if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
+    // if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
 
     if (o['class']) this.dom.wrap.removeClass(o['class']);
 

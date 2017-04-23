@@ -256,7 +256,7 @@ var njBox = function () {
       } else {
         this.dom.container[0].njb_instances++;
       }
-      this.dom.container.addClass('njb-open');
+      // this.dom.container.addClass('njb-open');
 
       this._scrollbar('hide');
 
@@ -755,6 +755,7 @@ var njBox = function () {
       if (o.close === 'outside') {
         this.dom.close = $(o.templates.close);
         this.dom.close[0].setAttribute('title', o.text.close);
+        this.dom.close[0].setAttribute('aria-label', o.text.close);
 
         this.dom.ui[0].appendChild(this.dom.close[0]);
       }
@@ -1101,6 +1102,9 @@ var njBox = function () {
       $img.on('error', item._handlerError).on('abort', item._handlerError);
 
       // if (item.title) img.title = item.title;
+      if (item.title) {
+        img.setAttribute('aria-labelledby', 'njb-title');
+      }
       img.src = item.content;
 
       ready = img.width + img.height > 0;
@@ -1424,45 +1428,44 @@ var njBox = function () {
     key: '_getAnimTime',
     value: function _getAnimTime(el, property) {
       //get max animation or transition time
-      return this._getMaxTransitionDuration(el, 'animation') || this._getMaxTransitionDuration(el, 'transition');
-    }
-  }, {
-    key: '_getMaxTransitionDuration',
-    value: function _getMaxTransitionDuration(el, property) {
-      //method also can get animation duration
-      var $el = $(el),
-          dur,
-          durArr,
-          del,
-          delArr,
-          transitions = [];
+      function _getMaxTransitionDuration(el, property) {
+        //function also can get animation duration
+        var $el = $(el),
+            dur,
+            durArr,
+            del,
+            delArr,
+            transitions = [];
 
-      if (!$el.length) return 0;
-      if (!property) return 0;
+        if (!$el.length) return 0;
+        if (!property) return 0;
 
-      dur = $el.css(property + 'Duration');
-      del = $el.css(property + 'Delay');
+        dur = $el.css(property + 'Duration');
+        del = $el.css(property + 'Delay');
 
-      //make array with durations
-      if (!dur || dur === undefined) dur = '0s';
-      durArr = dur.split(', ');
-      for (var i = 0, l = durArr.length; i < l; i++) {
-        durArr[i] = durArr[i].indexOf("ms") > -1 ? parseFloat(durArr[i]) : parseFloat(durArr[i]) * 1000;
+        //make array with durations
+        if (!dur || dur === undefined) dur = '0s';
+        durArr = dur.split(', ');
+        for (var i = 0, l = durArr.length; i < l; i++) {
+          durArr[i] = durArr[i].indexOf("ms") > -1 ? parseFloat(durArr[i]) : parseFloat(durArr[i]) * 1000;
+        }
+
+        //make array with delays
+        if (!del || del === undefined) del = '0s';
+        delArr = del.split(', ');
+        for (var i = 0, l = delArr.length; i < l; i++) {
+          delArr[i] = delArr[i].indexOf("ms") > -1 ? parseFloat(delArr[i]) : parseFloat(delArr[i]) * 1000;
+        }
+
+        //make array with duration+delays
+        for (var i = 0, l = durArr.length; i < l; i++) {
+          transitions[i] = durArr[i] + delArr[i];
+        }
+
+        return Math.max.apply(Math, transitions);
       }
 
-      //make array with delays
-      if (!del || del === undefined) del = '0s';
-      delArr = del.split(', ');
-      for (var i = 0, l = delArr.length; i < l; i++) {
-        delArr[i] = delArr[i].indexOf("ms") > -1 ? parseFloat(delArr[i]) : parseFloat(delArr[i]) * 1000;
-      }
-
-      //make array with duration+delays
-      for (var i = 0, l = durArr.length; i < l; i++) {
-        transitions[i] = durArr[i] + delArr[i];
-      }
-
-      return Math.max.apply(Math, transitions);
+      return _getMaxTransitionDuration(el, 'animation') || _getMaxTransitionDuration(el, 'transition');
     }
   }, {
     key: '_anim',
@@ -1483,6 +1486,7 @@ var njBox = function () {
           if (animShow) {
             if (o.animclass) modal.addClass(o.animclass);
 
+            modal[0].setAttribute('open', '');
             modal.addClass(animShow);
 
             setTimeout(shownCallback, animShowDur);
@@ -1491,6 +1495,7 @@ var njBox = function () {
           }
           break;
         case 'hide':
+          modal[0].removeAttribute('open');
           this.dom.wrap.removeClass('njb-wrap--visible');
 
           if (animHide) {
@@ -1542,7 +1547,7 @@ var njBox = function () {
       this._cb('clear');
 
       if (this.dom.container) this.dom.container[0].njb_instances--;
-      if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
+      // if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
 
       if (o['class']) this.dom.wrap.removeClass(o['class']);
 
@@ -2275,23 +2280,23 @@ var defaults = exports.defaults = {
 		wrap: '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop: '<div class="njb-backdrop"></div>',
 		modalOuter: '<div class="njb-outer"></div>',
-		modal: '<aside class="njb" tabindex="-1"></aside>',
-		body: '<div class="njb__body" data-njb-body></div>',
+		modal: '<div class="njb" tabindex="-1" role="dialog"></div>',
+		body: '<div class="njb__body" role="document" data-njb-body></div>',
 		header: '<header class="njb__header" data-njb-header></header>',
 		footer: '<footer class="njb__footer" data-njb-footer></footer>',
-		close: '<button type="button" class="njb-ui__close" data-njb-close>×</button>',
-		focusCatcher: '<a href="#!" class="njb-focus-catch">This link is just focus catcher of modal window, link do nothing.</a>',
+		close: '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',
+		focusCatcher: '<div tabindex="0" class="njb-focus-catch"></div>',
 
 		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui: '<div class="njb-ui"></div>',
-		title: '<div class="njb-ui__title"><div class="njb-ui__title-inner" data-njb-title></div></div>'
+		title: '<div class="njb-ui__title"><div class="njb-ui__title-inner" id="njb-title" data-njb-title></div></div>' //id in title used for accessibility
 	},
 
 	text: {
 		_missedContent: 'njBox plugin: meow, put some content here...', //text for case, when slide have no content
 		preloader: 'Loading...', //title on preloader element
 		imageError: '<a href="%url%">This image</a> can not be loaded.',
-		close: 'Close (Esc)', //title on close button
+		close: 'Close dialog', //title on close button
 		ok: 'Ok', //text on 'ok' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		cancel: 'Cancel', //text on 'cancel' button when dialog modal(alert, prompt, confirm) or in any other custom type
 		placeholder: '' //placeholder for prompt input

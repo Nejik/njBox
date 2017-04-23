@@ -988,6 +988,9 @@ class njBox {
     $img.on('error', item._handlerError).on('abort', item._handlerError);
 
     // if (item.title) img.title = item.title;
+    if (item.title) {
+      img.setAttribute('aria-labelledby', 'njb-title')
+    }
     img.src = item.content;
 
     ready = img.width + img.height > 0;

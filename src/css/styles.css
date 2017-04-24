@@ -93,7 +93,7 @@
 
 .njb {
   max-width: 100%;
-  outline: none !important;
+  /*outline: none !important;*/
   display: inline-block;
   position: relative;
   text-align: left;

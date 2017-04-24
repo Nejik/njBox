@@ -335,7 +335,7 @@
 
           that._setItemsOrder(that.state.active);
           that._drawItemSiblings();
-          that._setFocusInPopup(that.items[that.state.active]);
+          that._focus_set(that.items[that.state.active]);
           that.state.itemChanging = false;
           that._cb('changed', that.state.active);
 
@@ -396,8 +396,12 @@
 
         if(o.loop && this.items.length >= 3) {
           this.dom.ui.removeClass('njb-ui--no-loop');
+          this.dom.prev[0].removeAttribute('disabled')
+          this.dom.next[0].removeAttribute('disabled')
         } else {
           this.dom.ui.addClass('njb-ui--no-loop');
+          this.dom.prev[0].setAttribute('disabled', true)
+          this.dom.next[0].setAttribute('disabled', true)
         }
 
         //arrow classes

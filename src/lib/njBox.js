@@ -645,8 +645,11 @@ class njBox {
       this.dom.ui[0].appendChild(this.dom.close[0]);
     }
 
-    this.dom.focusCatcher = $(o.templates.focusCatcher);
-    this.dom.wrap[0].appendChild(this.dom.focusCatcher[0]);
+    this.dom.focusCatchFirst = $(o.templates.focusCatcher);
+    this.dom.wrap[0].insertBefore(this.dom.focusCatchFirst[0], this.dom.wrap[0].firstChild)
+
+    this.dom.focusCatchLast = $(o.templates.focusCatcher)
+    this.dom.wrap[0].appendChild(this.dom.focusCatchLast[0]);
 
     this._cb('domready');
   }
@@ -729,32 +732,30 @@ class njBox {
       }
     }
   }
-  _getFocusableElement(item) {
-    let o = this.o,
-      el,
-      autofocusEl;
-
-    if (!o.autofocus) return;
-
-
-    autofocusEl = item.dom.modal.find(o.autofocus)
-
-    if (!autofocusEl || !autofocusEl.length) {
-      autofocusEl = item.dom.modal.find('[autofocus]')
-    }
-    if (!autofocusEl || !autofocusEl.length) {
-      autofocusEl = item.dom.modal.find(this.o._focusable);
-    }
-
-    return autofocusEl;
-  }
-  _setFocusInPopup(item, options) {
+  _focus_set(item, last) {
     var o = this.o,
-      focusElement = this._getFocusableElement(item);
+      focusable,
+      focusEl;
+    
+    if (last) {
+      focusable = this.dom.ui.find(this.o._focusable)
+      focusable[focusable.length - 1].focus();
+      console.log(focusable);
+      return;
+    }
+    if (o.autofocus) {
+      focusEl = item.dom.modal.find(o.autofocus)[0]
+    }
+    if (!focusEl) {
+      focusEl = item.dom.modal.find('[autofocus]')[0]
+    }
+    if (!focusEl) {
+      focusable = item.dom.modal.find(this.o._focusable)
+      focusEl = focusable[0]
+    }
 
-    //first try to focus elements inside modal
-    if (focusElement && focusElement.length) {
-      focusElement[0].focus();
+    if (focusEl) {
+      focusEl.focus();
     }
     //  else if (o.close === "outside") {//then try to focus close buttons
     //   this.dom.close[0].focus()
@@ -846,7 +847,7 @@ class njBox {
         that.hide();
       } else {
         that.items[that.state.active].dom.modal.addClass('njb_pulse');
-        that._setFocusInPopup(that.items[that.state.active]);
+        that._focus_set(that.items[that.state.active]);
 
         setTimeout(function () {
           that.items[that.state.active].dom.modal.removeClass('njb_pulse');
@@ -921,10 +922,51 @@ class njBox {
       .on('orientationchange', h.window_orientation)
 
 
-    h.focusCatch = function (e) {
-      that._setFocusInPopup(that.items[that.state.active]);
+    h.focusCatchFirst = function (e) {
+      console.log('first');
+      that._focus_set(that.items[that.state.active], true);
     }
-    this.dom.focusCatcher.on('focus', h.focusCatch)
+    h.focusCatchLast = function (e) {
+      console.log('last');
+      that._focus_set(that.items[that.state.active]);
+    }
+    h.focusCatchOut = function (e) {
+      // var el = $(e.target),
+      //   focusInUi      // if(that.items.length === 1) return;
+      // if(that.state.itemsOrder[0] !== null) prevItem = that.items[that.state.itemsOrder[0]].dom.modal;
+      // if(that.state.itemsOrder[2] !== null) nextItem = that.items[that.state.itemsOrder[2]].dom.modal;
+
+      // closestModal = el.closest('.njb');
+      // if(!closestModal.length) return;
+
+      // var uiFocusableItems = that.dom.ui.find(that.o._focusable),
+      //     lastUiEl = uiFocusableItems[uiFocusableItems.length - 1];
+
+      // if (lastUiEl && closestModal[0] === prevItem[0] || closestModal[0] === nextItem[0]) {
+      //   lastUiEl.focus();
+      // }
+    },
+      //   focusInActive,
+      //   closestModal;
+
+
+
+      // focusInUi = !!el.closest('.njb-ui').length;
+
+      // focusInActive = that.items[that.state.itemsOrder[1]].dom.modal[0] === el.closest('.njb')[0];
+
+      // if (!focusInUi) {
+
+      // }
+
+      this._focus_set(null, true)
+
+
+      // //не ui и не active
+
+    this.dom.focusCatchFirst.on('focus', h.focusCatchFirst)
+    this.dom.focusCatchLast.on('focus', h.focusCatchLast)
+    this.dom.document.on('focusin', h.focusCatchOut)//catch situations when we have focusable elements in rendered sibling item and navigate via tab
 
     this._cb('events_setted');
   }
@@ -956,7 +998,9 @@ class njBox {
       elsClick: elsClick
     }
 
-    this.dom.focusCatcher.off('focus', h.focusCatch)
+    this.dom.focusCatchFirst.off('focus', h.focusCatchFirst)
+    this.dom.focusCatchLast.off('focus', h.focusCatchLast)
+    this.dom.document.off('focusin', h.focusCatchOut)
 
     this._cb('events_removed');
   }
@@ -1397,7 +1441,7 @@ class njBox {
       modal.removeClass(animShow);
 
       that._cb('shown');
-      that._setFocusInPopup(that.items[that.state.active], true);
+      that._focus_set(that.items[that.state.active]);
     }
     function hiddenCallback() {
       if (o.animclass) modal.removeClass(o.animclass);
@@ -1414,7 +1458,7 @@ class njBox {
 
     if (!openedBox.length) return;
     openedInstance = openedBox[openedBox.length - 1].njBox;
-    openedInstance._setFocusInPopup(openedInstance.items[openedInstance.state.active]);
+    openedInstance._focus_set(openedInstance.items[openedInstance.state.active]);
   }
   _options_setted() {
 

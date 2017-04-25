@@ -103,6 +103,11 @@ class njBox {
       this.data.optionsGathered = this._gatherData($elem);
       this._cb('options_gathered', this.data.optionsGathered, $elem[0]);
 
+      // if ($elem[0].tagName.toLowerCase() === 'a') {
+      //   console.log('link');
+      // }
+      
+
       //extend global options with gathered from dom element
       $.extend(true, this.o, this.data.optionsGathered)
     }
@@ -161,7 +166,7 @@ class njBox {
     this._setEventsHandlers();
 
     //draw modal on screen
-    this._drawItem(this.state.active);
+    this._drawItem(this.items[this.state.active]);
     this._cb('inserted')
 
     this.position();
@@ -638,29 +643,23 @@ class njBox {
 
     // insert outside close button
     if (o.close === 'outside') {
-      this.dom.close = $(o.templates.close);
-      this.dom.close[0].setAttribute('title', o.text.close);
-      this.dom.close[0].setAttribute('aria-label', o.text.close);
+      this.dom.close = $(o.templates.close)
+      this.dom.close[0].setAttribute('title', o.text.close)
+      this.dom.close[0].setAttribute('aria-label', o.text.close)
 
-      this.dom.ui[0].appendChild(this.dom.close[0]);
+      this.dom.ui[0].appendChild(this.dom.close[0])
     }
 
-    this.dom.focusCatchFirst = $(o.templates.focusCatcher);
+    this.dom.focusCatchFirst = $(o.templates.focusCatcher)
     this.dom.wrap[0].insertBefore(this.dom.focusCatchFirst[0], this.dom.wrap[0].firstChild)
 
     this.dom.focusCatchLast = $(o.templates.focusCatcher)
-    this.dom.wrap[0].appendChild(this.dom.focusCatchLast[0]);
+    this.dom.wrap[0].appendChild(this.dom.focusCatchLast[0])
 
     this._cb('domready');
   }
-  _drawItem(index, prepend) {
-    var o = this.o,
-      item = this.items[index];
-
-    if (!item) {
-      this._error('njBox, we have no item with this index - ' + index, true);
-      return;
-    }
+  _drawItem(item, prepend) {
+    var o = this.o;
 
     this._cb('item_prepare', item);
 
@@ -732,15 +731,14 @@ class njBox {
       }
     }
   }
-  _focus_set(item, last) {
+  _focus_set(item, first) {
     var o = this.o,
       focusable,
       focusEl;
     
-    if (last) {
+    if (first) {
       focusable = this.dom.ui.find(this.o._focusable)
       focusable[focusable.length - 1].focus();
-      console.log(focusable);
       return;
     }
     if (o.autofocus) {
@@ -923,50 +921,26 @@ class njBox {
 
 
     h.focusCatchFirst = function (e) {
-      console.log('first');
-      that._focus_set(that.items[that.state.active], true);
+      var related = e.relatedTarget,
+          fromUi;
+      
+      if(related) {//firefox have no related
+        fromUi = !! $(related).closest('.njb-ui').length;
+        if (fromUi) {
+          that._focus_set(that.items[that.state.active]);
+        } else {
+          that._focus_set(that.items[that.state.active], true);
+        }
+      } else {
+        that._focus_set(that.items[that.state.active], true);
+      }
     }
     h.focusCatchLast = function (e) {
-      console.log('last');
       that._focus_set(that.items[that.state.active]);
     }
-    h.focusCatchOut = function (e) {
-      // var el = $(e.target),
-      //   focusInUi      // if(that.items.length === 1) return;
-      // if(that.state.itemsOrder[0] !== null) prevItem = that.items[that.state.itemsOrder[0]].dom.modal;
-      // if(that.state.itemsOrder[2] !== null) nextItem = that.items[that.state.itemsOrder[2]].dom.modal;
-
-      // closestModal = el.closest('.njb');
-      // if(!closestModal.length) return;
-
-      // var uiFocusableItems = that.dom.ui.find(that.o._focusable),
-      //     lastUiEl = uiFocusableItems[uiFocusableItems.length - 1];
-
-      // if (lastUiEl && closestModal[0] === prevItem[0] || closestModal[0] === nextItem[0]) {
-      //   lastUiEl.focus();
-      // }
-    },
-      //   focusInActive,
-      //   closestModal;
-
-
-
-      // focusInUi = !!el.closest('.njb-ui').length;
-
-      // focusInActive = that.items[that.state.itemsOrder[1]].dom.modal[0] === el.closest('.njb')[0];
-
-      // if (!focusInUi) {
-
-      // }
-
-      this._focus_set(null, true)
-
-
-      // //не ui и не active
 
     this.dom.focusCatchFirst.on('focus', h.focusCatchFirst)
     this.dom.focusCatchLast.on('focus', h.focusCatchLast)
-    this.dom.document.on('focusin', h.focusCatchOut)//catch situations when we have focusable elements in rendered sibling item and navigate via tab
 
     this._cb('events_setted');
   }
@@ -1000,7 +974,6 @@ class njBox {
 
     this.dom.focusCatchFirst.off('focus', h.focusCatchFirst)
     this.dom.focusCatchLast.off('focus', h.focusCatchLast)
-    this.dom.document.off('focusin', h.focusCatchOut)
 
     this._cb('events_removed');
   }

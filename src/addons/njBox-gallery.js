@@ -68,7 +68,7 @@
         })
         this.on('inserted', function () {
           if (that.state.gallery) {
-            this._setItemsOrder(this.state.active);
+            this._setQueue(this.state.active);
             that._gallery__uiUpdate();
           }
         })
@@ -103,8 +103,8 @@
         this.on('position', function () {
           //we need autoheight for prev and next slide in gallery
           if (this.state.gallery) {
-            if (this.state.itemsOrder[0] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[0]]);
-            if (this.state.itemsOrder[2] !== null) this._setMaxHeight(this.items[this.state.itemsOrder[2]]);
+            if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
+            if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
           }
         })
         this.on('show', function () {
@@ -180,17 +180,17 @@
         //if it is not simple prev/next, so we need to recreate slides
         else {
           //remove siblings
-          this.items[this.state.itemsOrder[0]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[0]].dom.modalOuter[0]);
-          this.items[this.state.itemsOrder[2]].dom.modalOuter[0].parentNode.removeChild(this.items[this.state.itemsOrder[2]].dom.modalOuter[0]);
+          this.queue.prev.dom.modalOuter[0].parentNode.removeChild(this.queue.prev.dom.modalOuter[0]);
+          this.queue.next.dom.modalOuter[0].parentNode.removeChild(this.queue.next.dom.modalOuter[0]);
           //clear position of siblings
-          this.items[this.state.itemsOrder[0]].dom.modalOuter[0].style.cssText = '';
-          this.items[this.state.itemsOrder[2]].dom.modalOuter[0].style.cssText = '';
+          this.queue.prev.dom.modalOuter[0].style.cssText = '';
+          this.queue.next.dom.modalOuter[0].style.cssText = '';
 
           switch (dir) {
             case 'next':
               // set new state
-              this.state.itemsOrder[0] = null;
-              this.state.itemsOrder[2] = index;
+              this.queue.prev = this._getQueueItem(null);
+              this.queue.next = this._getQueueItem(index);
 
               //draw new slides
               this._drawItemSiblings();
@@ -199,8 +199,8 @@
               break;
             case 'prev':
               // set new state
-              this.state.itemsOrder[0] = index;
-              this.state.itemsOrder[2] = null;
+              this.queue.prev = this._getQueueItem(index);
+              this.queue.next = this._getQueueItem(null);
 
               //draw new slides
               this._drawItemSiblings();
@@ -212,6 +212,36 @@
         }
         return this;
       },
+      _makeUnfocusable(el, selector) {
+        var wrap = this.$(el),
+          focusable,
+          history = [];
+        if (!wrap.length) return history;
+
+        focusable = wrap.find(selector);
+        focusable.each(function () {
+          history.push({
+            el: this,
+            tabindex: this.getAttribute('tabindex') || null
+          })
+          this.setAttribute('tabindex', '-1')
+        })
+
+        return history;
+      },
+      _restoreUnfocusable(obj) {
+        var item = obj.item,
+            tabs = obj.tabs,
+            dom;
+
+        tabs.forEach(function(tabObj) {
+          if(tabObj.tabindex !== null) {
+            tabObj.el.setAttribute('tabindex', tabObj.tabindex)
+          } else {
+            tabObj.el.removeAttribute('tabindex')
+          }
+        })
+      },
       _preload: function () {
         var o = this.o,
           that = this;
@@ -220,9 +250,9 @@
 
         var temp = o.preload.split(' '),
           prev = parseInt(temp[0]),
-          prevState = this._getItemsOrder(this.state.itemsOrder[0])[0],
+          prevState = this._getItemsOrder(this.queue.prev.index)[0],
           next = parseInt(temp[1]),
-          nextState = this._getItemsOrder(this.state.itemsOrder[2])[2];
+          nextState = this._getItemsOrder(this.queue.next.index)[2];
 
         //load next
         while (next--) {
@@ -248,15 +278,17 @@
         var o = this.o,
           that = this;
 
-        if (typeof this.state.itemsOrder[0] === 'number') {
-          this._moveItem(this.items[this.state.itemsOrder[0]], -110, '%');
-          this._drawItem(this.state.itemsOrder[0], true);
+        if (typeof this.queue.prev.index === 'number') {
+          this._moveItem(this.queue.prev.item, -110, '%');
+          this._drawItem(this.queue.prev.item, true);
+          this.queue.prev.tabs = this._makeUnfocusable(this.queue.prev.item.dom.modal, o._focusable)
         }
-        if (typeof this.state.itemsOrder[2] === 'number') {
-          this._moveItem(this.items[this.state.itemsOrder[2]], 110, '%');
-          this._drawItem(this.state.itemsOrder[2]);
+        if (typeof this.queue.next.index === 'number') {
+          this._moveItem(this.queue.next.item, 110, '%');
+          this._drawItem(this.queue.next.item);
+          this.queue.next.tabs = this._makeUnfocusable(this.queue.next.item.dom.modal, o._focusable)
         }
-        this.position();
+        this.position()
         this._preload()
       },
       _moveItem: function (item, value, unit) {
@@ -275,7 +307,8 @@
         if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
 
         var o = this.o,
-          that = this;
+          that = this,
+          queueBackup = this.$.extend(true, {}, this.queue)
 
         if (!this.items[nextIndex]) {
           if (o.loop && this.items.length > 2) {
@@ -294,28 +327,30 @@
         this.state.direction = dir;
 
         this.state.itemChanging = true;//we can't change slide during current changing
-        this.state.itemsOrder_backup = this.state.itemsOrder.slice();//copy current state
 
         this.state.active = nextIndex;
         this._cb('change', nextIndex);
         this._uiUpdate();
 
-        this._setItemsOrder(nextIndex);
+        this._setQueue(nextIndex);
 
-
-
+        //restore tabindexes of focusable elements
+        this._restoreUnfocusable(queueBackup.prev);
+        this._restoreUnfocusable(queueBackup.next);
+        
+        
         switch (dir) {
           case 'prev':
-            this.items[this.state.itemsOrder_backup[0]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+            queueBackup.prev.item.dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
 
-            this._moveItem(this.items[this.state.itemsOrder_backup[1]], 110, '%');
-            this._moveItem(this.items[this.state.itemsOrder_backup[0]], 0, '%');
+            this._moveItem(queueBackup.current.item, 110, '%');
+            this._moveItem(queueBackup.prev.item, 0, '%');
             break;
           case 'next':
-            this.items[this.state.itemsOrder_backup[2]].dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
+            queueBackup.next.item.dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
 
-            this._moveItem(this.items[this.state.itemsOrder_backup[1]], -110, '%');
-            this._moveItem(this.items[this.state.itemsOrder_backup[2]], 0, '%');
+            this._moveItem(queueBackup.current.item, -110, '%');
+            this._moveItem(queueBackup.next.item, 0, '%');
             break;
         }
 
@@ -325,28 +360,25 @@
             return;//case when we hide modal when slide is changing
           }
           //remove slide that was active before changing
-          removeSlide(that.items[that.state.itemsOrder_backup[1]]);
+          removeSlide(queueBackup.current.item);
 
           //remove third slide
-          var thirdItem = (dir === 'prev') ? that.state.itemsOrder_backup[2] : that.state.itemsOrder_backup[0];
+          var thirdItem = (dir === 'prev') ? queueBackup.next.index : queueBackup.prev.index;
           if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
 
-          delete that.state.itemsOrder_backup;
-
-          that._setItemsOrder(that.state.active);
           that._drawItemSiblings();
           that._focus_set(that.items[that.state.active]);
           that.state.itemChanging = false;
           that._cb('changed', that.state.active);
 
-        }, this._getAnimTime(this.items[this.state.itemsOrder[1]].dom.modalOuter));
+        }, this._getAnimTime(queueBackup.current.item.dom.modalOuter));
 
         function removeSlide(item) {
           item.dom.modalOuter[0].parentNode.removeChild(item.dom.modalOuter[0])
           item.dom.modalOuter[0].style.cssText = '';
         }
       },
-      _detectIndexForOpen: function() {
+      _detectIndexForOpen: function () {
         var o = this.o,
           that = this,
           index = this.state.active || 0;
@@ -365,13 +397,34 @@
 
         return index;
       },
-      _setItemsOrder: function(currentIndex) {
-        this.state.itemsOrder = this._getItemsOrder(currentIndex);
+      _setQueue: function (currentIndex) {
+        var order = this._getItemsOrder(currentIndex);
+
+        this.queue = {
+          prev: this._getQueueItem(order[0]),
+          current: this._getQueueItem(order[1]),
+          next: this._getQueueItem(order[2])
+        };
       },
-      _getItemsOrder: function(currentIndex) {
+      _getQueueItem(index) {
+        var item;
+        
+        if (index === null) {
+          index = null
+          item = null
+        } else {
+          item = this.items[index]
+        }
+
+        return {
+          index: index,
+          item: item
+        }
+      },
+      _getItemsOrder: function (index) {
         var o = this.o,
-          prev = currentIndex - 1,
-          next = currentIndex + 1;
+          prev = index - 1,
+          next = index + 1;
 
         if (o.loop && this.items.length > 2) {
           if (prev === -1) prev = this.items.length - 1;
@@ -380,9 +433,9 @@
         if (!this.items[prev]) prev = null;
         if (!this.items[next]) next = null;
 
-        return [prev, currentIndex, next];
+        return [prev, index, next];
       },
-      _gallery__uiUpdate: function(index) {
+      _gallery__uiUpdate: function (index) {
         index = index || this.state.active;
 
         var o = this.o,
@@ -394,7 +447,7 @@
         this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
         this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
 
-        if(o.loop && this.items.length >= 3) {
+        if (o.loop && this.items.length >= 3) {
           this.dom.ui.removeClass('njb-ui--no-loop');
           this.dom.prev[0].removeAttribute('disabled')
           this.dom.next[0].removeAttribute('disabled')
@@ -426,8 +479,8 @@
       },
       _gallery_createRawItems: function () {
         var o = this.o;
-        
-        if(!this.state.gallery) return;
+
+        if (!this.state.gallery) return;
 
         if (this.$.isArray(o.content)) {
           this.data.items_raw = o.content;
@@ -445,7 +498,7 @@
           }
         }
       },
-      _gatherElements: function(selector) {
+      _gatherElements: function (selector) {
         if (selector) {
           return this.o.el.find(selector);
         } else {

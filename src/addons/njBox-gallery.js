@@ -338,7 +338,6 @@
         this._restoreUnfocusable(queueBackup.prev);
         this._restoreUnfocusable(queueBackup.next);
         
-        
         switch (dir) {
           case 'prev':
             queueBackup.prev.item.dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it

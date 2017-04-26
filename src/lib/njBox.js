@@ -146,6 +146,8 @@ class njBox {
     }
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
+    if(!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically
+
     this.returnValue = null;
 
     if (!this.dom.container[0].njb_instances) {
@@ -187,11 +189,8 @@ class njBox {
       return;
     }
 
-    var o = this.o,
-      h = this._handlers;
-
     if (this._cb('hide') === false) return;//callback hide
-    if (this.state.clickedEl) this.state.clickedEl.focus();
+    if (this.state.focused) this.state.focused.focus();
 
     this._backdrop('hide');
 
@@ -497,7 +496,7 @@ class njBox {
 
     //main modal wrapper
     dom.modal = $(o.templates.modal);
-    dom.modal[0].setAttribute('tabindex', '-1');
+    dom.modal[0].tabIndex = '-1'
     dom.modal[0].njBox = this;
 
     if (!dom.modal.length) {
@@ -805,6 +804,7 @@ class njBox {
 
       that.state.clickedEvent = e;
       that.state.clickedEl = el;
+      that.state.focused = el;
 
       that.show();
     }

@@ -53,7 +53,13 @@
   <script>
     window.gallery = new njBox('.gallery').on('inited', function(event, arg1, arg2) {
       // console.log(this);
+    }).on('hidden', function() {
+      console.log(document.activeElement)
     })
+    console.log(document.activeElement)
+    setTimeout(function() {
+      window.gallery.show();
+    }, 2000)
   </script>
 </body>
 

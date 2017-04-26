@@ -222,9 +222,9 @@
         focusable.each(function () {
           history.push({
             el: this,
-            tabindex: this.getAttribute('tabindex') || null
+            tabindex: this.tabIndex || null
           })
-          this.setAttribute('tabindex', '-1')
+          this.tabIndex = '-1';
         })
 
         return history;

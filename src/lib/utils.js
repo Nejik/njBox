@@ -134,15 +134,19 @@ export let defaults = {
 	
 
 	jquery         : undefined,//link to jquery (for modules without global scopr)
-	_focusable     : 'a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
 	autobind       : '[data-toggle~="box"], [data-toggle~="modal"]',//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
+
+	//accessibility options
+	_focusable     : 'a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
+	buttonrole     : 'button',//(button || boolean false) this role will be set to elements, which opens modal window
+	role           : 'dialog',//(dialog || alertdialog || boolean false)//role that will be set to modal dialog
 
 	templates      : {
 		wrap          : '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop      : '<div class="njb-backdrop"></div>',
 		modalOuter    : '<div class="njb-outer"></div>',
-		modal         : '<div class="njb" role="dialog"></div>',
-		body          : '<div class="njb__body" role="document" data-njb-body></div>',
+		modal         : '<div class="njb"></div>',
+		body          : '<div class="njb__body" role="document" data-njb-body></div>',//rol document we need only for nvda, to toggle document reading mode
 		header        : '<header class="njb__header" data-njb-header></header>',
 		footer        : '<footer class="njb__footer" data-njb-footer></footer>',
 		close         : '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',

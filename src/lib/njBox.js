@@ -433,6 +433,10 @@ class njBox {
 
     this._cb('items_raw', this.data);
 
+    if (o.buttonrole) {
+      this.data.els.attr('role', o.buttonrole);
+    }
+
     let items = [];
     for (let i = 0, l = this.data.items_raw.length; i < l; i++) {
       items.push(this._createItem(this.data.items_raw[i], i))
@@ -498,6 +502,8 @@ class njBox {
     dom.modal = $(o.templates.modal);
     dom.modal[0].tabIndex = '-1'
     dom.modal[0].njBox = this;
+
+    if(o.role) dom.modal.attr('role', o.role)
 
     if (!dom.modal.length) {
       this._error('njBox, error in o.templates.modal');

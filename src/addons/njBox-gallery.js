@@ -75,7 +75,7 @@
         this.on('change', function () {
           that._gallery__uiUpdate();
         })
-        this.on('events_setted', function () {
+        this.on('listerens_added', function () {
           var o = this.o,
             that = this,
             h = this._handlers;
@@ -93,7 +93,7 @@
             .delegate('[data-njb-prev]', 'click', h.wrap_prev)
             .delegate('[data-njb-next]', 'click', h.wrap_next)
         })
-        this.on('events_removed', function () {
+        this.on('listeners_removed', function () {
           var h = this._handlers;
 
           this.dom.wrap

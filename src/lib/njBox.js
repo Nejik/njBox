@@ -1028,11 +1028,9 @@ class njBox {
       this._preloader('show', item);
 
       item._handlerImgReady = function () {
-        $img.off('njb_ready', item._handlerImgReady);
         checkShow('ready');
       }
-      $img.on('njb_ready', item._handlerImgReady)
-      findImgSize(img);
+      findImgSize(img, item._handlerImgReady);
 
       item._handlerLoad = function () {
         $img.off('load', item._handlerLoad);
@@ -1061,7 +1059,7 @@ class njBox {
       // if(ev === 'load') that._anim('show', true)
     }
     //helper function for image type
-    function findImgSize(img) {
+    function findImgSize(img, readyCallback) {
       var counter = 0,
         interval,
         njbSetInterval = function (delay) {
@@ -1071,7 +1069,7 @@ class njBox {
 
           interval = setInterval(function () {
             if (img.width > 0) {
-              $img.triggerHandler('njb_ready');
+              readyCallback();
 
               clearInterval(interval);
               return;

@@ -124,7 +124,7 @@ class njBox {
     this._calculateAnimations();
 
     //add initial click handlers
-    this._setClickHandlers();
+    this._addClickHandlers();
 
     this.state.inited = true;
     this._cb('inited');
@@ -165,7 +165,7 @@ class njBox {
     this.dom.container[0].appendChild(this.dom.wrap[0]);
 
     //set event handlers
-    this._setEventsHandlers();
+    this._addListeners();
 
     //draw modal on screen
     this._drawItem(this.items[this.state.active]);
@@ -194,7 +194,7 @@ class njBox {
 
     this._backdrop('hide');
 
-    this._removeEventsHandlers();
+    this._removeListeners();
 
     this._anim('hide');
 
@@ -260,7 +260,7 @@ class njBox {
   update() {
     this.items = this._createItems();
 
-    this._setClickHandlers();
+    this._addClickHandlers();
 
     return this;
   }
@@ -772,7 +772,7 @@ class njBox {
       item.dom.modal[0].focus();
     }
   }
-  _setClickHandlers() {//initial click handlers
+  _addClickHandlers() {//initial click handlers
     var o = this.o;
 
     this._removeClickHandlers();
@@ -827,7 +827,7 @@ class njBox {
       if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
     }
   }
-  _setEventsHandlers() {//all other event handlers
+  _addListeners() {//all other event handlers
     var o = this.o,
       that = this,
       h = this._handlers;
@@ -951,9 +951,9 @@ class njBox {
     this.dom.focusCatchFirst.on('focus', h.focusCatchFirst)
     this.dom.focusCatchLast.on('focus', h.focusCatchLast)
 
-    this._cb('events_setted');
+    this._cb('listerens_added');
   }
-  _removeEventsHandlers() {
+  _removeListeners() {
     var h = this._handlers;
 
     this.dom.container.off('resize', h.container_resize)
@@ -984,7 +984,7 @@ class njBox {
     this.dom.focusCatchFirst.off('focus', h.focusCatchFirst)
     this.dom.focusCatchLast.off('focus', h.focusCatchLast)
 
-    this._cb('events_removed');
+    this._cb('listeners_removed');
   }
   _insertImage(item) {
     var that = this,

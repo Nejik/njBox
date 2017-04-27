@@ -433,7 +433,7 @@ class njBox {
 
     this._cb('items_raw', this.data);
 
-    if (o.buttonrole) {
+    if (o.buttonrole && this.data.els) {
       this.data.els.attr('role', o.buttonrole);
     }
 
@@ -1037,7 +1037,6 @@ class njBox {
         checkShow('load');
       }
       $img.on('load', item._handlerLoad)
-
     }
 
     function checkShow(ev) {
@@ -1621,6 +1620,7 @@ ${content || this.o.text._missedContent}
 </div>`);
     },
     type: 'template',
+    role: 'alertdialog',
     out: false,
     onok: okCb,
     oncancel: cancelCb
@@ -1639,6 +1639,7 @@ ${content || this.o.text._missedContent}
 </div>`);
     },
     type: 'template',
+    role: 'alertdialog',
     out: false,
     onok: okCb,
     oncancel: cancelCb
@@ -1666,6 +1667,7 @@ ${content || this.o.text._missedContent}
 </div>`);
     },
     type: 'template',
+    role: 'alertdialog',
     out: false,
     onok: okCb,
     oncancel: cancelCb

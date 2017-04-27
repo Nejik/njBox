@@ -140,17 +140,20 @@ export let defaults = {
 	_focusable     : 'a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
 	buttonrole     : 'button',//(button || boolean false) this role will be set to elements, which opens modal window
 	role           : 'dialog',//(dialog || alertdialog || boolean false)//role that will be set to modal dialog
+	label          : false,//(string) add aria-label attribute to support screenreaders
+	labelledby     : false,//(id selector) add aria-labelledby attribute to support screenreaders
+	describedby    : false,//(id selector) add aria-describedby attribute to support screenreaders
 
 	templates      : {
 		wrap          : '<div class="njb-wrap"><div class="njb-items"></div></div>',
 		backdrop      : '<div class="njb-backdrop"></div>',
 		modalOuter    : '<div class="njb-outer"></div>',
 		modal         : '<div class="njb"></div>',
-		body          : '<div class="njb__body" role="document" data-njb-body></div>',//rol document we need only for nvda, to toggle document reading mode
+		body          : '<div class="njb__body" data-njb-body></div>',
 		header        : '<header class="njb__header" data-njb-header></header>',
 		footer        : '<footer class="njb__footer" data-njb-footer></footer>',
 		close         : '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',
-		focusCatcher  : '<i tabindex="0" class="njb-focus-catch"></i>',
+		focusCatcher  : '<i tabindex="0" class="njb-focus-catch" aria-hidden="true"></i>',
 
 		preloader     : '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui            : '<div class="njb-ui"></div>',

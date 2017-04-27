@@ -504,6 +504,9 @@ class njBox {
     dom.modal[0].njBox = this;
 
     if(o.role) dom.modal.attr('role', o.role)
+    if(o.label) dom.modal.attr('aria-label', o.label)
+    if(o.labelledby) dom.modal.attr('aria-labelledby', o.labelledby)
+    if(o.describedby) dom.modal.attr('aria-describedby', o.describedby)
 
     if (!dom.modal.length) {
       this._error('njBox, error in o.templates.modal');

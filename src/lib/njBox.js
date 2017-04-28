@@ -12,6 +12,8 @@ import {
   defaults
 } from 'lib/utils.js';
 
+var njBox = (function(undefined, setTimeout, document) {
+
 class njBox {
   constructor(el, options) {//el can be a string, selector/dom/j/jQuery element
     if (!arguments.length) {
@@ -33,7 +35,7 @@ class njBox {
     }
 
     opts = opts || {};
-    this.constructorOptions = opts;
+    this.co = opts;//constructorOptions
 
     //this allows users to listen init callbacks via .on() on modal instance
     setTimeout(function () {
@@ -45,8 +47,8 @@ class njBox {
     //init only once
     if (this.state && this.state.inited) return;
 
-    var opts = this.constructorOptions;
-    delete this.constructorOptions;
+    var opts = this.co;//constructorOptions
+    delete this.co;
 
     //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
     if (!njBox.g) njBox.g = getDefaultInfo();
@@ -84,18 +86,18 @@ class njBox {
 
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
-      this._error('njBox, no elements (o.elem) or content (o.content) for modal.');
+      this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
       return;
     }
     if (o.elem) {
       let $elem = $(o.elem);
       if (!$elem.length) {
-        this._error(`njBox, element not found (${o.elem})`);
+        this._e(`njBox, element not found (${o.elem})`);
         return;
       }
       if ($elem.length > 1) $elem = $($elem[0]);
       if ($elem[0].njBox) {
-        this._error('njBox, already inited on this element');
+        this._e('njBox, already inited on this element');
         return;
       }
       $elem[0].njBox = this; //prevent multiple initialization on one element
@@ -106,7 +108,7 @@ class njBox {
       // if ($elem[0].tagName.toLowerCase() === 'a') {
       //   console.log('link');
       // }
-      
+
 
       //extend global options with gathered from dom element
       $.extend(true, this.o, this.data.optionsGathered)
@@ -137,16 +139,16 @@ class njBox {
       that = this;
 
     if (this.state.state !== 'inited') {
-      this._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+      this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
     if (!this.items.length) {
-      this._error('njBox, smth goes wrong, plugin don\'t create any item to show', true);
+      this._e('njBox, smth goes wrong, plugin don\'t create any item to show', true);
       return;
     }
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
-    if(!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically
+    if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically
 
     this.returnValue = null;
 
@@ -185,7 +187,7 @@ class njBox {
   }
   hide() {
     if (this.state.state !== 'shown') {
-      this._error('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
+      this._e('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
       return;
     }
 
@@ -234,7 +236,7 @@ class njBox {
   }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
-      this._error('njBox, we can destroy only initialized && hidden modals.');
+      this._e('njBox, we can destroy only initialized && hidden modals.');
       return;
     }
 
@@ -265,26 +267,28 @@ class njBox {
     return this;
   }
   _getContainerSize() {
-    var o = this.o;
+    var o = this.o,
+        documentElement = document.documentElement,
+        documentBody = document.body;
 
     var d = this.state.dimensions = {}
 
 
     if (this.dom.container[0] === this.dom.body[0]) {
-      d.containerWidth = document.documentElement.clientWidth;
-      d.containerHeight = document.documentElement.clientHeight;
+      d.containerWidth = documentElement.clientWidth;
+      d.containerHeight = documentElement.clientHeight;
       d.containerScrollWidth = Math.max(
-        document.body.scrollWidth, document.documentElement.scrollWidth,
-        document.body.offsetWidth, document.documentElement.offsetWidth,
-        document.body.clientWidth, document.documentElement.clientWidth
+        documentBody.scrollWidth, documentElement.scrollWidth,
+        documentBody.offsetWidth, documentElement.offsetWidth,
+        documentBody.clientWidth, documentElement.clientWidth
       );
       d.containerScrollHeight = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight,
-        document.body.clientHeight, document.documentElement.clientHeight
+        documentBody.scrollHeight, documentElement.scrollHeight,
+        documentBody.offsetHeight, documentElement.offsetHeight,
+        documentBody.clientHeight, documentElement.clientHeight
       );
-      d.containerScrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-      d.containerScrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft;
+      d.containerScrollTop = window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop;
+      d.containerScrollLeft = window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft;
 
     } else {
       d.containerWidth = this.dom.container[0].clientWidth;
@@ -297,8 +301,8 @@ class njBox {
 
     d.containerMaxScrollTop = d.containerScrollHeight - d.containerHeight;
 
-    // d.winWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    d.winHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    // d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
+    d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
 
     d.autoheight = (this.dom.container[0] === this.dom.body[0]) ? d.winHeight : d.containerHeight;
     // if(this._o.scrollbarHidden) {
@@ -368,7 +372,7 @@ class njBox {
         delete dataO.njbOptions;
       }
       catch (e) {
-        this._error('njBox, fail to parse options from njb-options');
+        this._e('njBox, fail to parse options from njb-options');
         return;
       }
     }
@@ -378,7 +382,7 @@ class njBox {
 
     //try to get href from original attributes
     if ($el[0].tagName.toLowerCase() === 'a') {
-      var href = $el[0].getAttribute('href');
+      var href = $el.attr('href');
       if (href && href !== '#' && href !== '#!' && !(/^(?:javascript)/i).test(href)) {//test href for real info, not placeholder
         dataProcessed.content = href;
       }
@@ -386,7 +390,7 @@ class njBox {
 
     //get title
     if (o.title_attr) {
-      var title_attr = $el[0].getAttribute(o.title_attr);
+      var title_attr = $el.attr(o.title_attr);
       if (title_attr) dataProcessed.title = title_attr;
     }
 
@@ -493,39 +497,41 @@ class njBox {
   _createDomForItem(item, index) {
     var o = this.o,
       dom = item.dom = {},
+      modalOuter,
+      modal,
       modalFragment = document.createDocumentFragment();
 
-    dom.modalOuter = $(o.templates.modalOuter);
-    dom.modalOuter[0].njBox = this;
+    dom.modalOuter = modalOuter = $(o.templates.modalOuter);
+    modalOuter[0].njBox = this;
 
     //main modal wrapper
-    dom.modal = $(o.templates.modal);
-    dom.modal[0].tabIndex = '-1'
-    dom.modal[0].njBox = this;
+    dom.modal = modal = $(o.templates.modal);
+    modal[0].tabIndex = '-1'
+    modal[0].njBox = this;
 
-    if(o.role) dom.modal.attr('role', o.role)
-    if(o.label) dom.modal.attr('aria-label', o.label)
-    if(o.labelledby) dom.modal.attr('aria-labelledby', o.labelledby)
-    if(o.describedby) dom.modal.attr('aria-describedby', o.describedby)
+    if (o.role) modal.attr('role', o.role)
+    if (o.label) modal.attr('aria-label', o.label)
+    if (o.labelledby) modal.attr('aria-labelledby', o.labelledby)
+    if (o.describedby) modal.attr('aria-describedby', o.describedby)
 
-    if (!dom.modal.length) {
-      this._error('njBox, error in o.templates.modal');
+    if (!modal.length) {
+      this._e('njBox, error in o.templates.modal');
       return;
     }
 
-    dom.modalOuter[0].appendChild(dom.modal[0]);
+    modalOuter[0].appendChild(modal[0]);
 
     if (item.type === "template") {
-      dom.modal[0].innerHTML = item.content;
+      modal.html(item.content)
     } else {
       //insert body
       dom.body = $(o.templates.body);
       if (!dom.body.length) {
-        this._error('njBox, error in o.templates.body');
+        this._e('njBox, error in o.templates.body');
         return;
       }
       //find data-njb-body in item body element
-      dom.bodyInput = dom.body[0].getAttribute('data-njb-body') !== null ? dom.body : dom.body.find('[data-njb-body]');
+      dom.bodyInput = dom.body.attr('data-njb-body') !== null ? dom.body : dom.body.find('[data-njb-body]');
 
       this._insertItemBodyContent(item);
 
@@ -536,12 +542,12 @@ class njBox {
         dom.header = $(o.templates.header);
 
         if (!dom.header.length) {
-          this._error('njBox, error in o.templates.header');
+          this._e('njBox, error in o.templates.header');
           return;
         }
         //insert header info
-        var headerInput = (dom.header[0].getAttribute('data-njb-header') !== null) ? dom.header : dom.header.find('[data-njb-header]')
-        headerInput[0].innerHTML = item.header;
+        var headerInput = (dom.header.attr('data-njb-header') !== null) ? dom.header : dom.header.find('[data-njb-header]')
+        headerInput.html(item.header);
 
         modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
       }
@@ -551,12 +557,12 @@ class njBox {
         dom.footer = $(o.templates.footer);
 
         if (!dom.footer.length) {
-          this._error('njBox, error in njBox.templates.footer');
+          this._e('njBox, error in njBox.templates.footer');
           return;
         }
         //insert footer info
-        var footerInput = (dom.footer[0].getAttribute('data-njb-footer') !== null) ? dom.footer : dom.footer.find('[data-njb-footer]')
-        footerInput[0].innerHTML = item.footer;
+        var footerInput = (dom.footer.attr('data-njb-footer') !== null) ? dom.footer : dom.footer.find('[data-njb-footer]')
+        footerInput.html(item.footer)
 
         modalFragment.appendChild(dom.footer[0])
       }
@@ -564,17 +570,17 @@ class njBox {
       //insert close button
       if (o.close === 'inside') {
         dom.close = $(o.templates.close);
-        dom.close[0].setAttribute('title', o.text.close);
+        dom.close.attr('title', o.text.close);
 
         modalFragment.appendChild(dom.close[0]);
       }
 
-      dom.modal[0].appendChild(modalFragment)
+      modal[0].appendChild(modalFragment)
     }
     if (item.type === 'image') {
-      item.dom.modal.addClass('njb--image');
+      modal.addClass('njb--image');
     } else {
-      item.dom.modal.addClass('njb--content');
+      modal.addClass('njb--content');
     }
 
     this._cb('item_domready', item, index);
@@ -588,7 +594,7 @@ class njBox {
         item.o.status = 'loaded';
         break;
       case 'html':
-        item.dom.bodyInput[0].innerHTML = item.content;
+        item.dom.bodyInput.html(item.content)
         item.o.status = 'loaded';
         break;
       case 'selector':
@@ -599,7 +605,7 @@ class njBox {
         if (o.imgload === 'init') this._insertImage(item);
         break;
       default:
-        this._error('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
+        this._e('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
         item.o.status = 'loaded';
         return;
         break;
@@ -609,7 +615,7 @@ class njBox {
     item.o.contentEl = $(item.content);
 
     if (!item.o.contentEl.length) {
-      item.dom.bodyInput[0].innerHTML = item.content;//if we don't find element with this selector
+      item.dom.bodyInput.html(item.content)//if we don't find element with this selector
     }
   }
   _createDom() {
@@ -618,7 +624,7 @@ class njBox {
     //find container
     this.dom.container = $(o.container);
     if (!this.dom.container.length) {
-      this._error('njBox, can\'t find container element. (we use body instead)');
+      this._e('njBox, can\'t find container element. (we use body instead)');
       this.dom.container = this.dom.body;//in case if we have no container element, or wrong selector for container element
     }
     //check if container not relative position
@@ -629,7 +635,7 @@ class njBox {
     //create core elements
     this.dom.wrap = $(o.templates.wrap);
     if (!this.dom.wrap.length) {
-      this._error('njBox, smth wrong with o.templates.wrap.');
+      this._e('njBox, smth wrong with o.templates.wrap.');
       return;
     }
     if (o['class']) this.dom.wrap.addClass(o['class']);
@@ -652,12 +658,14 @@ class njBox {
     // insert outside close button
     if (o.close === 'outside') {
       this.dom.close = $(o.templates.close)
-      this.dom.close[0].setAttribute('title', o.text.close)
-      this.dom.close[0].setAttribute('aria-label', o.text.close)
+      this.dom.close.attr('title', o.text.close).attr('aria-label', o.text.close)
 
       this.dom.ui[0].appendChild(this.dom.close[0])
     }
 
+    // insert invisible, focusable nodes.
+    // while this dialog is open, we use these to make sure that focus never
+    // leaves modal boundaries
     this.dom.focusCatchFirst = $(o.templates.focusCatcher)
     this.dom.wrap[0].insertBefore(this.dom.focusCatchFirst[0], this.dom.wrap[0].firstChild)
 
@@ -708,9 +716,9 @@ class njBox {
         item.o.contentElDisplayNone = true;
         contentEl[0].style.display = 'block';
       }
-      item.dom.bodyInput[0].innerHTML = '';//clear body for case when first time we can't find contentEl on page
-      item.dom.bodyInput[0].appendChild(contentEl[0]);
-      item.o.contentElInserted = true;
+      item.dom.bodyInput.html('')//clear body for case when first time we can't find contentEl on page
+      item.dom.bodyInput[0].appendChild(contentEl[0])
+      item.o.contentElInserted = true
     }
   }
   _removeSelectorItemsElement() {
@@ -743,7 +751,7 @@ class njBox {
     var o = this.o,
       focusable,
       focusEl;
-    
+
     if (first) {
       focusable = this.dom.ui.find(this.o._focusable)
       focusable[focusable.length - 1].focus();
@@ -805,7 +813,7 @@ class njBox {
       e.njb_stopPropagation = true;
 
       if (that.state.state !== 'inited') {
-        that._error('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+        that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
         return;
       }
       if ($(el).closest('.njb-close-system, .njb-arrow').length) return;//don't remember why it here O_o
@@ -931,10 +939,10 @@ class njBox {
 
     h.focusCatchFirst = function (e) {
       var related = e.relatedTarget,
-          fromUi;
-      
-      if(related) {//firefox have no related
-        fromUi = !! $(related).closest('.njb-ui').length;
+        fromUi;
+
+      if (related) {//firefox have no related
+        fromUi = !!$(related).closest('.njb-ui').length;
         if (fromUi) {
           that._focus_set(that.items[that.state.active]);
         } else {
@@ -1003,9 +1011,9 @@ class njBox {
 
       that._preloader('hide', item);
 
-      item.dom.bodyInput[0].innerHTML = o.text.imageError.replace('%url%', item.content);
+      item.dom.bodyInput.html(o.text.imageError.replace('%url%', item.content));
 
-      that._cb('img_error', item);//img_ready, img_load callbacks
+      that._cb('img_e', item);//img_ready, img_load callbacks
       // rendered();
 
       item.o.status = 'error';
@@ -1015,7 +1023,7 @@ class njBox {
 
     // if (item.title) img.title = item.title;
     if (item.title) {
-      img.setAttribute('aria-labelledby', 'njb-title')
+      $img.attr('aria-labelledby', 'njb-title')
     }
     img.src = item.content;
 
@@ -1047,7 +1055,7 @@ class njBox {
       item.o.status = 'loaded';
       that._preloader('hide', item);
 
-      $img[0].setAttribute('width', 'auto')//for IE <= 10
+      $img.attr('width', 'auto')//for IE <= 10
 
       //insert content
       item.dom.bodyInput[0].appendChild(img);
@@ -1100,7 +1108,7 @@ class njBox {
       case 'show':
         item.o.preloader = true;
         item.dom.preloader = $(o.templates.preloader)
-        item.dom.preloader[0].setAttribute('title', o.text.preloader);
+                              .attr('title', o.text.preloader);
 
         item.dom.modal.addClass('njb--loading');
         item.dom.bodyInput[0].appendChild(item.dom.preloader[0])
@@ -1124,7 +1132,7 @@ class njBox {
       item = this.items[index];
 
     if (!item) {
-      this._error('njBox, can\'t update ui info from item index - ' + index);
+      this._e('njBox, can\'t update ui info from item index - ' + index);
       return;
     }
 
@@ -1203,7 +1211,7 @@ class njBox {
           return;
         } else {
           // ie 7 don't support delete on dom elements
-          this.dom.container[0].njb_scrollbar = null;
+          this.dom.container[0].njb_scrollbar = undefined;
         }
 
         if (this.dom.container[0] === this.dom.body[0]) {
@@ -1391,7 +1399,7 @@ class njBox {
         if (animShow) {
           if (o.animclass) modal.addClass(o.animclass);
 
-          modal[0].setAttribute('open', '');
+          modal.attr('open', '');
           modal.addClass(animShow);
 
           setTimeout(shownCallback, animShowDur);
@@ -1479,12 +1487,10 @@ class njBox {
 
     this._cb('cleared');
   }
-  _error(msg, clear) {
+  _e(msg, clear) {//_e
     if (!msg) return;
 
     if (clear) this._clear();
-
-    console.error(msg);
   }
   _cb(type) {//cb - callback
     var o = this.o,
@@ -1589,9 +1595,9 @@ njBox.get = function (elem) {
   var el = $(elem)[0];
 
   if (el) {
-    return el.njBox || null;
+    return el.njBox || undefined;
   } else {
-    return null;
+    return undefined;
   };
 }
 //autobind functions
@@ -1673,5 +1679,8 @@ ${content || this.o.text._missedContent}
     oncancel: cancelCb
   }).show()
 }
+
+return njBox;
+})(undefined, setTimeout, document);
 
 export default njBox;

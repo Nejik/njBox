@@ -937,7 +937,7 @@ var njBox = function (undefined, setTimeout, document) {
           if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return; //handle only left button click without key modificators
           e.preventDefault ? e.preventDefault() : e.returnValue = false;
 
-          e.njb_stopPropagation = true;
+          e.njb_sp = true; //e.njb_stopPropagation
 
           if (that.state.state !== 'inited') {
             that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -979,7 +979,7 @@ var njBox = function (undefined, setTimeout, document) {
           that.position();
         };
         h.container_out = function (e) {
-          if (e.njb_stopPropagation) return;
+          if (e.njb_sp) return;
 
           var $el = $(e.target),
 
@@ -1824,11 +1824,12 @@ j.match = function (el, selector) {
 };
 j.fn = j.prototype;
 j.fn.init = function (selector) {
+    console.log(selector);
     var query;
 
     if (typeof selector === 'string' && selector.length > 0) {
         //detect html input
-        if (selector.charAt(0) === "<" && selector.charAt(selector.length - 1) === ">") {
+        if (selector.charAt(0) === "<") {
             j.str2dom ? query = j.str2dom(selector) : query = [];
         } else {
             query = document.querySelectorAll(selector);

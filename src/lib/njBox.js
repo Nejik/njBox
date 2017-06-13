@@ -158,11 +158,11 @@ class njBox {
       this.dom.container[0].njb_instances++;
     }
     // this.dom.container.addClass('njb-open');
-
+    
     this._scrollbar('hide');
 
     this._backdrop('show');
-
+    
     //insert wrap
     this.dom.container[0].appendChild(this.dom.wrap[0]);
 
@@ -182,7 +182,7 @@ class njBox {
 
     this._uiUpdate();
     this._anim('show');
-
+    
     return this;
   }
   hide() {
@@ -810,7 +810,7 @@ class njBox {
       if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      e.njb_stopPropagation = true;
+      e.njb_sp = true;//e.njb_stopPropagation
 
       if (that.state.state !== 'inited') {
         that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -847,7 +847,7 @@ class njBox {
       that.position();
     }
     h.container_out = function (e) {
-      if (e.njb_stopPropagation) return;
+      if (e.njb_sp) return;
 
       var $el = $(e.target),
         // prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;

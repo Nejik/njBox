@@ -20,11 +20,12 @@ j.match = function (el, selector) {
 }
 j.fn = j.prototype;
 j.fn.init = function (selector) {
+    console.log(selector);
     var query;
 
     if (typeof selector === 'string' && selector.length > 0) {
         //detect html input
-        if (selector.charAt(0) === "<" && selector.charAt(selector.length - 1) === ">") {
+        if (selector.charAt(0) === "<") {
             (j.str2dom) ? query = j.str2dom(selector) : query = [];
         } else {
             query = document.querySelectorAll(selector);

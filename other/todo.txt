@@ -1,3 +1,4 @@
+* debugger на 1 строку clickhandler 2 раза сработал Оо
 * aria label or aria-labelledby from header option
 * role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
 * хэндлить когда фокус уходит в смежные слайды

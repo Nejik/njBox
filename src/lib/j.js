@@ -20,7 +20,6 @@ j.match = function (el, selector) {
 }
 j.fn = j.prototype;
 j.fn.init = function (selector) {
-    console.log(selector);
     var query;
 
     if (typeof selector === 'string' && selector.length > 0) {

@@ -9,6 +9,7 @@ let $ = window.jQuery || j;
 
 import {
   getDefaultInfo,
+  getItemFromDom,
   defaults
 } from 'lib/utils.js';
 
@@ -531,7 +532,7 @@ class njBox {
         return;
       }
       //find data-njb-body in item body element
-      dom.bodyInput = dom.body.attr('data-njb-body') !== null ? dom.body : dom.body.find('[data-njb-body]');
+      dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
 
       this._insertItemBodyContent(item);
 
@@ -546,8 +547,7 @@ class njBox {
           return;
         }
         //insert header info
-        var headerInput = (dom.header.attr('data-njb-header') !== null) ? dom.header : dom.header.find('[data-njb-header]')
-        headerInput.html(item.header);
+        getItemFromDom(dom.header, 'data-njb-header').html(item.header)
 
         modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
       }
@@ -561,8 +561,7 @@ class njBox {
           return;
         }
         //insert footer info
-        var footerInput = (dom.footer.attr('data-njb-footer') !== null) ? dom.footer : dom.footer.find('[data-njb-footer]')
-        footerInput.html(item.footer)
+        getItemFromDom(dom.footer, 'data-njb-footer').html(item.footer)
 
         modalFragment.appendChild(dom.footer[0])
       }

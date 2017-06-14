@@ -98,6 +98,10 @@ export function getDefaultInfo() {
 	return options
 }
 
+export function getItemFromDom(dom, selector) {
+	return dom.attr(selector) !== null ? dom : dom.find(`[${selector}]`);
+}
+
 export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string) content for modal

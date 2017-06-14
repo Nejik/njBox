@@ -211,7 +211,7 @@ class njBox {
     this._getContainerSize();
 
     //position of global wrapper
-    if (o.position === 'absolute') {
+    if (o.layout === 'absolute') {
       //global wrap positioning
       var scrollTop = this.state.dimensions.containerScrollTop,
         scrollLeft = this.state.dimensions.containerScrollLeft;
@@ -644,8 +644,8 @@ class njBox {
     this.dom.items = this.dom.wrap.find('.njb-items');
 
     //if container custom element(not body), use forcely absolute position
-    if (this.dom.container[0] !== this.dom.body[0]) o.position = 'absolute';
-    if (o.position === 'absolute') this.dom.wrap.addClass('njb-absolute');
+    if (this.dom.container[0] !== this.dom.body[0]) o.layout = 'absolute';
+    if (o.layout === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
     //create ui layer
     this.dom.ui = $(o.templates.ui)
@@ -1253,7 +1253,7 @@ class njBox {
           if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animShowDur + 'ms')
 
           //insert backdrop div
-          if (o.position === 'absolute') this.dom.backdrop.addClass('njb-absolute');
+          if (o.layout === 'absolute') this.dom.backdrop.addClass('njb-absolute');
           this.dom.container[0].appendChild(this.dom.backdrop[0]);
 
           // this.dom.backdrop[0].clientHeight;
@@ -1612,6 +1612,8 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
     njBox.autobind();
   })
 }
+
+//builtin dialog methods
 
 njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({

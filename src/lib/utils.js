@@ -105,7 +105,7 @@ export function getItemFromDom(dom, selector) {
 export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string) content for modal
-	type           : '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template simila to html, but template inserted without .njb__body tag, directly to .njb
+	type           : '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag, directly to .njb
 	header         : undefined,//(html) html that will be added as modal header (for first slide)
 	footer         : undefined,//(html) html that will be added as modal footer (for first slide)
 	// we need quotes here because of ie8..
@@ -113,7 +113,7 @@ export let defaults = {
 	zindex         : false,//(boolean false || number) zindex that will be set on modal, probably not a good idea to use this option, set it in css and use o.class instead
 
 	container      : 'body',//(selector) appends modal to specific element
-	position       : 'fixed',//(fixed || absolute), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically
+	layout         : 'fixed',//(fixed || absolute || custom), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically
 	click          : true,//(boolean) should we set click handler on element(o.elem)?
 	clickels       : '',//(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 

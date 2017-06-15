@@ -168,7 +168,7 @@ class njBox {
     var containerToInsert;
 
     //insert wrap
-    if (!this.state.popover) {
+    if (!this._globals.popover) {
       this.dom.container[0].appendChild(this.dom.wrap[0]);
       containerToInsert = this.dom.items[0];
     } else {
@@ -280,10 +280,10 @@ class njBox {
         that = this;
     
     if(o.layout === 'popover') {
-      this.state.popover = true;
+      that._globals.popover = true
     }
 
-    if (this.state.popover) {
+    if (that._globals.popover) {
       o.backdrop = false;
     }
   }
@@ -449,7 +449,6 @@ class njBox {
     // this._cb('data_gathered', dataProcessed, $el[0]);
     return dataProcessed;
   }
-
   _createItems() {
     var o = this.o;
 
@@ -600,7 +599,7 @@ class njBox {
     } else {
       modal.addClass('njb--content');
     }
-    if(this.state.popover) modal.addClass('njb--popover');
+    if(this._globals.popover) modal.addClass('njb--popover');
 
     this._cb('item_domready', item, index);
   }
@@ -695,7 +694,7 @@ class njBox {
   }
   _drawItem(item, prepend, container) {
     var o = this.o,
-        itemToInsert = this.state.popover ? item.dom.modal[0] : item.dom.modalOuter[0];
+        itemToInsert = this._globals.popover ? item.dom.modal[0] : item.dom.modalOuter[0];
     
     this._cb('item_prepare', item);
 
@@ -858,7 +857,8 @@ class njBox {
   _addListeners() {//all other event handlers
     var o = this.o,
       that = this,
-      h = this._handlers;
+      h = this._handlers,
+      popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
 
     h.container_resize = function () {
       that.position();
@@ -933,7 +933,7 @@ class njBox {
       that.hide();
     }
 
-    this.dom.wrap
+    popWrap
       .on('resize', h.wrap_resize)
       .on('scroll', h.wrap_scroll)
       .on('keydown', h.wrap_keydown)
@@ -982,13 +982,15 @@ class njBox {
     this._cb('listerens_added');
   }
   _removeListeners() {
-    var h = this._handlers;
+    var h = this._handlers,
+        that = this,
+        popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
 
     this.dom.container.off('resize', h.container_resize)
       .off('scroll', h.container_scroll)
       .off('click', h.container_out)
 
-    this.dom.wrap
+    popWrap
       .off('resize', h.wrap_resize)
       .off('scroll', h.wrap_scroll)
       .off('keydown', h.wrap_keydown)
@@ -1432,7 +1434,6 @@ class njBox {
         this.dom.wrap.removeClass('njb-wrap--visible')
 
         if (animHide) {
-
           if (o.animclass) modal.addClass(o.animclass);
           if (animHide === animShow) modal.addClass('njb-anim-reverse');
           modal.addClass(animHide);
@@ -1449,6 +1450,7 @@ class njBox {
 
       that._cb('shown');
       that._focus_set(that.items[that.state.active]);
+      console.log(that);
     }
     function hiddenCallback() {
       if (o.animclass) modal.removeClass(o.animclass);
@@ -1468,7 +1470,9 @@ class njBox {
     openedInstance._focus_set(openedInstance.items[openedInstance.state.active]);
   }
   _clear() {
-    var o = this.o;
+    var o = this.o,
+        modal = this.items[this.state.active].dom.modal;
+
     this._cb('clear');
 
     if (this.dom.container) this.dom.container[0].njb_instances--;
@@ -1480,6 +1484,7 @@ class njBox {
 
 
     if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
+    if(this._globals.popover) modal[0].parentNode.removeChild(modal[0]);
 
     this._removeSelectorItemsElement();
 

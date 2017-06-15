@@ -122,7 +122,7 @@ class njBox {
 
     //create items
     this.items = this._createItems();
-
+ 
     //this method calculate show/hide animation durations, because native callbacks buggy
     this._calculateAnimations();
 
@@ -132,6 +132,7 @@ class njBox {
     this.state.inited = true;
     this._cb('inited');
   }
+  
   show(index) {
     this._init();//try to init
     if (index !== undefined) this.state.active = index - 1;
@@ -164,15 +165,22 @@ class njBox {
 
     this._backdrop('show');
     
-    //insert wrap
-    this.dom.container[0].appendChild(this.dom.wrap[0]);
+    var containerToInsert;
 
+    //insert wrap
+    if (!this.state.popover) {
+      this.dom.container[0].appendChild(this.dom.wrap[0]);
+      containerToInsert = this.dom.items[0];
+    } else {
+      containerToInsert = this.dom.container[0];
+    }
     //set event handlers
     this._addListeners();
 
-    //draw modal on screen
-    this._drawItem(this.items[this.state.active]);
+    this._drawItem(this.items[this.state.active], false, containerToInsert);
     this._cb('inserted')
+
+    //draw modal on screen
 
     this.position();
 
@@ -266,6 +274,18 @@ class njBox {
     this._addClickHandlers();
 
     return this;
+  }
+  _options_setted() {
+    var o = this.o,
+        that = this;
+    
+    if(o.layout === 'popover') {
+      this.state.popover = true;
+    }
+
+    if (this.state.popover) {
+      o.backdrop = false;
+    }
   }
   _getContainerSize() {
     var o = this.o,
@@ -502,13 +522,12 @@ class njBox {
       modal,
       modalFragment = document.createDocumentFragment();
 
-    dom.modalOuter = modalOuter = $(o.templates.modalOuter);
-    modalOuter[0].njBox = this;
-
     //main modal wrapper
     dom.modal = modal = $(o.templates.modal);
     modal[0].tabIndex = '-1'
     modal[0].njBox = this;
+
+    dom.modalOuter = modalOuter = $(o.templates.modalOuter);
 
     if (o.role) modal.attr('role', o.role)
     if (o.label) modal.attr('aria-label', o.label)
@@ -581,6 +600,7 @@ class njBox {
     } else {
       modal.addClass('njb--content');
     }
+    if(this.state.popover) modal.addClass('njb--popover');
 
     this._cb('item_domready', item, index);
   }
@@ -673,18 +693,19 @@ class njBox {
 
     this._cb('domready');
   }
-  _drawItem(item, prepend) {
-    var o = this.o;
-
+  _drawItem(item, prepend, container) {
+    var o = this.o,
+        itemToInsert = this.state.popover ? item.dom.modal[0] : item.dom.modalOuter[0];
+    
     this._cb('item_prepare', item);
 
     //insert content in items, where inserting is delayed to show event
     this._insertDelayedContent(item);
 
     if (prepend) {
-      this.dom.items[0].insertBefore(item.dom.modalOuter[0], this.dom.items[0].firstChild)
+      container.insertBefore(itemToInsert, container.firstChild)
     } else {
-      this.dom.items[0].appendChild(item.dom.modalOuter[0]);
+      container.appendChild(itemToInsert);
     }
 
     this._cb('item_inserted', item);
@@ -1446,9 +1467,6 @@ class njBox {
     openedInstance = openedBox[openedBox.length - 1].njBox;
     openedInstance._focus_set(openedInstance.items[openedInstance.state.active]);
   }
-  _options_setted() {
-
-  }
   _clear() {
     var o = this.o;
     this._cb('clear');
@@ -1612,6 +1630,26 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
     njBox.autobind();
   })
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //builtin dialog methods
 

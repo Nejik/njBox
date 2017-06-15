@@ -280,12 +280,12 @@
 
         if (typeof this.queue.prev.index === 'number') {
           this._moveItem(this.queue.prev.item, -110, '%');
-          this._drawItem(this.queue.prev.item, true);
+          this._drawItem(this.queue.prev.item, true, this.dom.items[0]);
           this.queue.prev.tabs = this._makeUnfocusable(this.queue.prev.item.dom.modal, o._focusable)
         }
         if (typeof this.queue.next.index === 'number') {
           this._moveItem(this.queue.next.item, 110, '%');
-          this._drawItem(this.queue.next.item);
+          this._drawItem(this.queue.next.item, false, this.dom.items[0]);
           this.queue.next.tabs = this._makeUnfocusable(this.queue.next.item.dom.modal, o._focusable)
         }
         this.position()

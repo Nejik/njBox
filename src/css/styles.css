@@ -105,6 +105,11 @@
   user-select: text;
   will-change: opacity, transform;
 
+  &--popover {
+    box-shadow: 0 0 5px rgba(0,0,0,.5);
+    position: absolute;
+  }
+
   &--loading {
     & .njb__body {
       overflow: visible;
@@ -513,7 +518,9 @@
   & {
     border-radius: 2px;
     background-color: #fff;
-    margin: 10px;
+    @nest .njb-items & {
+      margin: 10px;
+    }
   }
   & .njb__header {
     padding: 5px;

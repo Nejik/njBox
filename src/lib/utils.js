@@ -101,6 +101,13 @@ export function getDefaultInfo() {
 export function getItemFromDom(dom, selector) {
 	return dom.attr(selector) !== null ? dom : dom.find(`[${selector}]`);
 }
+export function getArray(stringOrArray) {
+	if (typeof stringOrArray === 'string') {
+		return stringOrArray.split(' ');
+	} else if(typeof stringOrArray === 'object') {
+		return stringOrArray;
+	}
+}
 
 export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal

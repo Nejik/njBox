@@ -63,14 +63,8 @@
     //   console.log(document.activeElement)
     // })
     // console.log(document.activeElement)
-    new njBox('.popover1', {
-      onposition: function() {
-        var coords = this.state.coords,
-            coordsNew = [parseInt(this.state.coords[0])+1, parseInt(this.state.coords[1])+1];
-
-        this.state.coords = coordsNew;
-        console.log(this.state.coords);
-      }
+    var t = new njBox('.popover1', {
+      
     })
   </script>
 </body>

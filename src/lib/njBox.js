@@ -10,6 +10,7 @@ let $ = window.jQuery || j;
 import {
   getDefaultInfo,
   getItemFromDom,
+  getArray,
   defaults
 } from 'lib/utils.js';
 
@@ -211,15 +212,14 @@ class njBox {
 
     return this;
   }
-  position() {
-    if (!this.state.inited) return;
+  position(coordinates) {
+    if (!this.state || !this.state.inited) return;
     var o = this.o,
         activeModal = this.items[this.state.active].dom.modal;
 
     this.state.dimensions = this._getContainerSize();
 
     this.state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
-
 
     //position of global wrapper
     if (o.layout === 'absolute') {
@@ -242,7 +242,9 @@ class njBox {
 
     if(this._globals.popover) this._setMaxHeight(this.items[this.state.active]);
 
-    if(!this.state.coords && o.coords) this.state.coords = o.coords.split(' ');
+    if(!this.state.coords && o.coords) this.state.coords = getArray(o.coords);//coordinates from o.coords setted only first time
+
+    if(coordinates) this.state.coords = getArray(coordinates);
 
     this._cb('position');
 
@@ -686,7 +688,7 @@ class njBox {
     this.dom.items = this.dom.wrap.find('.njb-items');
 
     //if container custom element(not body), use forcely absolute position
-    if (this.dom.container[0] !== this.dom.body[0]) o.layout = 'absolute';
+    if (this.dom.container[0] !== this.dom.body[0] && o.layout !== 'popover') o.layout = 'absolute';
     if (o.layout === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
     //create ui layer

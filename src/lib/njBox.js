@@ -214,9 +214,14 @@ class njBox {
   position() {
     if (!this.state.inited) return;
 
-    var o = this.o;
+    var o = this.o,
+        activeModal = this.items[this.state.active].dom.modal,
+        coords;
 
-    this._getContainerSize();
+    this.state.dimensions = this._getContainerSize();
+
+    this.state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
+
 
     //position of global wrapper
     if (o.layout === 'absolute') {
@@ -236,8 +241,18 @@ class njBox {
         'height': this.state.dimensions.containerScrollHeight + 'px'
       });
     }
+    if(this._globals.popover) {
+      if(o.coords) {
+        coords = o.coords.split(' ');
+        if (coords.length === 2) {
+          activeModal.css('left', coords[0] + "px")
+                    .css('top', coords[1] + "px")
+        }
+      }
+    } else {
+      this._setMaxHeight(this.items[this.state.active]);
+    }
 
-    this._setMaxHeight(this.items[this.state.active]);
 
     this._cb('position');
 
@@ -292,8 +307,7 @@ class njBox {
         documentElement = document.documentElement,
         documentBody = document.body;
 
-    var d = this.state.dimensions = {}
-
+    var d = {}
 
     if (this.dom.container[0] === this.dom.body[0]) {
       d.containerWidth = documentElement.clientWidth;
@@ -322,13 +336,23 @@ class njBox {
 
     d.containerMaxScrollTop = d.containerScrollHeight - d.containerHeight;
 
-    // d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
+    d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
     d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
 
     d.autoheight = (this.dom.container[0] === this.dom.body[0]) ? d.winHeight : d.containerHeight;
     // if(this._o.scrollbarHidden) {
     //  this._o.winWidth -= njBox.g.scrollbarSize;
     // }
+    return d;
+  }
+  _getDomSize(domObject) {
+    var rectOriginal = domObject.getBoundingClientRect(),
+        rectComputed = this.$.extend({}, rectOriginal);
+    
+    rectComputed.width = rectComputed.right - rectComputed.left;
+    rectComputed.height = rectComputed.bottom - rectComputed.top;
+    
+    return rectComputed;
   }
   _setMaxHeight(item) {
     let o = this.o;
@@ -434,7 +458,9 @@ class njBox {
 
 
     function transformType(val) {//transform string from data attributes to boolean and number
-      var parsedFloat = parseFloat(val);
+      var hasWhitespace = /\s/.test(val),
+          parsedFloat = hasWhitespace ? val : parseFloat(val);
+
       if (val === 'true') {
         return true;
       } else if (val === 'false') {
@@ -1201,7 +1227,7 @@ class njBox {
             //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
             if (!this.dom.container[0].njb_scrollbar && !this.state.scrollbarHidden && (sb || this.dom.html.css('overflowY') === 'scroll' || this.dom.body.css('overflowY') === 'scroll')) {
               //existing of that variable means that other instance of popup hides scrollbar on this element already
-              this.dom.html.addClass('njb-hideScrollbar');
+              if(!this._globals.popover) this.dom.html.addClass('njb-hideScrollbar');
               this.dom.html.css('paddingRight', parseInt(this.dom.html.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
             }
           } else {
@@ -1210,7 +1236,7 @@ class njBox {
             //don't add padding to container if no scrollbar (simple short page) or popup already opened
             // if (!this.state.scrollbarHidden && (sb || this.dom.container.css('overflowY') === 'scroll')) {
 
-            this.dom.container.addClass('njb-hideScrollbar');
+            if(!this._globals.popover) this.dom.container.addClass('njb-hideScrollbar');
             // this.dom.container.css('paddingRight', parseInt(this.dom.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
 
             // }
@@ -1237,7 +1263,7 @@ class njBox {
         }
 
         if (this.dom.container[0] === this.dom.body[0]) {
-          this.dom.html.removeClass('njb-hideScrollbar');
+          if(!this._globals.popover) this.dom.html.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
 
           if (computedPadding) {//if greater than 0
@@ -1247,7 +1273,7 @@ class njBox {
           }
         } else {
 
-          this.dom.container.removeClass('njb-hideScrollbar');
+          if(!this._globals.popover) this.dom.container.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.dom.container.css('paddingRight')) - njBox.g.scrollbarSize;
 
           if (computedPadding) {//if greater than 0
@@ -1450,7 +1476,6 @@ class njBox {
 
       that._cb('shown');
       that._focus_set(that.items[that.state.active]);
-      console.log(that);
     }
     function hiddenCallback() {
       if (o.animclass) modal.removeClass(o.animclass);

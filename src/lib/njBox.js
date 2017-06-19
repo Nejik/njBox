@@ -213,10 +213,8 @@ class njBox {
   }
   position() {
     if (!this.state.inited) return;
-
     var o = this.o,
-        activeModal = this.items[this.state.active].dom.modal,
-        coords;
+        activeModal = this.items[this.state.active].dom.modal;
 
     this.state.dimensions = this._getContainerSize();
 
@@ -241,20 +239,19 @@ class njBox {
         'height': this.state.dimensions.containerScrollHeight + 'px'
       });
     }
-    if(this._globals.popover) {
-      if(o.coords) {
-        coords = o.coords.split(' ');
-        if (coords.length === 2) {
-          activeModal.css('left', coords[0] + "px")
-                    .css('top', coords[1] + "px")
-        }
-      }
-    } else {
-      this._setMaxHeight(this.items[this.state.active]);
-    }
 
+    if(this._globals.popover) this._setMaxHeight(this.items[this.state.active]);
+
+    if(!this.state.coords && o.coords) this.state.coords = o.coords.split(' ');
 
     this._cb('position');
+
+    if(this._globals.popover) {
+      if (this.state.coords.length === 2) {
+        activeModal.css('left', this.state.coords[0] + "px")
+                  .css('top', this.state.coords[1] + "px")
+      }
+    }
 
     return this;
   }

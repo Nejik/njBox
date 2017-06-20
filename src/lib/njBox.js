@@ -107,11 +107,6 @@ class njBox {
       this.data.optionsGathered = this._gatherData($elem);
       this._cb('options_gathered', this.data.optionsGathered, $elem[0]);
 
-      // if ($elem[0].tagName.toLowerCase() === 'a') {
-      //   console.log('link');
-      // }
-
-
       //extend global options with gathered from dom element
       $.extend(true, this.o, this.data.optionsGathered)
     }
@@ -308,9 +303,18 @@ class njBox {
     if(o.layout === 'popover') {
       that._globals.popover = true
     }
-
+    
     if (that._globals.popover) {
-      o.backdrop = false;
+      o.backdrop = that._getPassedOption('backdrop') || false;
+      o.scrollbar = that._getPassedOption('scrollbar') || 'show';
+      o.out = that._getPassedOption('out') || false;
+    }
+  }
+  _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
+    if (this.data.optionsGathered[optionName] !== undefined) {
+      return this.data.optionsGathered[optionName]
+    } else if(this.data.optionsPassed[optionName] !== undefined) {
+      return this.data.optionsPassed[optionName]
     }
   }
   _getContainerSize() {
@@ -1263,7 +1267,7 @@ class njBox {
             //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
             if (!this.dom.container[0].njb_scrollbar && !this.state.scrollbarHidden && (sb || this.dom.html.css('overflowY') === 'scroll' || this.dom.body.css('overflowY') === 'scroll')) {
               //existing of that variable means that other instance of popup hides scrollbar on this element already
-              if(!this._globals.popover) this.dom.html.addClass('njb-hideScrollbar');
+              this.dom.html.addClass('njb-hideScrollbar');
               this.dom.html.css('paddingRight', parseInt(this.dom.html.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
             }
           } else {
@@ -1272,7 +1276,7 @@ class njBox {
             //don't add padding to container if no scrollbar (simple short page) or popup already opened
             // if (!this.state.scrollbarHidden && (sb || this.dom.container.css('overflowY') === 'scroll')) {
 
-            if(!this._globals.popover) this.dom.container.addClass('njb-hideScrollbar');
+            this.dom.container.addClass('njb-hideScrollbar');
             // this.dom.container.css('paddingRight', parseInt(this.dom.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
 
             // }
@@ -1299,7 +1303,7 @@ class njBox {
         }
 
         if (this._globals.containerisBody) {
-          if(!this._globals.popover) this.dom.html.removeClass('njb-hideScrollbar');
+          this.dom.html.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
 
           if (computedPadding) {//if greater than 0
@@ -1309,7 +1313,7 @@ class njBox {
           }
         } else {
 
-          if(!this._globals.popover) this.dom.container.removeClass('njb-hideScrollbar');
+          this.dom.container.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.dom.container.css('paddingRight')) - njBox.g.scrollbarSize;
 
           if (computedPadding) {//if greater than 0

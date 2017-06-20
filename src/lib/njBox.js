@@ -213,7 +213,7 @@ class njBox {
         activeModal = this.items[this.state.active].dom.modal,
         coords,
         state = this.state;
-
+    
     state.dimensions = this._getContainerSize();
 
     state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
@@ -253,6 +253,8 @@ class njBox {
 
     this.state.coords = coords;
 
+    this._setMaxHeight(this.items[this.state.active]);
+    
     this._cb('position');
 
     if(this._globals.popover) {

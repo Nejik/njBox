@@ -215,11 +215,8 @@ class njBox {
         state = this.state;
     
     state.dimensions = this._getContainerSize();
-
     state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
-
     state.dimensions.clickedEl = this._getDomSize(this.state.clickedEl);
-    console.log(this);
 
     //position of global wrapper
     if (o.layout === 'absolute') {
@@ -240,11 +237,13 @@ class njBox {
       });
     }
 
-    if(this._globals.popover) this._setMaxHeight(this.items[this.state.active]);
+    if(!this._globals.popover) this._setMaxHeight(this.items[this.state.active]);
 
     if(o.coords) coords = getArray(o.coords);
-
     if(coordinates) coords = getArray(coordinates);
+
+    var positionCB = this._cb('position');
+    if(positionCB !== undefined) coords = getArray(positionCB);
 
     //post process coordinates
     if (coords[0] === 'center') {//horizontal coordinate
@@ -253,18 +252,12 @@ class njBox {
     if (coords[1] === 'center') {//vertical coordinate
       coords[1] = (state.dimensions.containerHeight - state.dimensions.modal.height) / 2;
     }
-
+    
     this.state.coords = coords;
 
-    this._setMaxHeight(this.items[this.state.active]);
-
-    this._cb('position');
-
-    if(this._globals.popover) {
-      if (this.state.coords.length === 2) {
-        activeModal.css('left', this.state.coords[0] + "px")
-                  .css('top', this.state.coords[1] + "px")
-      }
+    if(this._globals.popover && this.state.coords.length === 2) {
+      activeModal.css('left', this.state.coords[0] + "px")
+                .css('top', this.state.coords[1] + "px")
     }
 
     return this;

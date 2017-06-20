@@ -302,12 +302,9 @@ class njBox {
     
     if(o.layout === 'popover') {
       that._globals.popover = true
-    }
-    
-    if (that._globals.popover) {
       o.backdrop = that._getPassedOption('backdrop') || false;
       o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-      o.out = that._getPassedOption('out') || false;
+      o.out = that._getPassedOption('out') || true;
     }
   }
   _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
@@ -904,17 +901,13 @@ class njBox {
       popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
 
     h.container_resize = function (e) {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.container_scroll = function (e) {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.container_out = function (e) {
-      if (e.njb_sp) return;
+      if(that.state.state !== 'shown' || e.njb_sp) return;
 
       var $el = $(e.target),
         // prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
@@ -928,32 +921,26 @@ class njBox {
         if (that._cb('cancel') === false) return;
         that.hide();
       } else {
-        that.items[that.state.active].dom.modal.addClass('njb_pulse');
+        that.items[that.state.active].dom.modal.addClass('njb--pulse');
         that._focus_set(that.items[that.state.active]);
 
         setTimeout(function () {
-          that.items[that.state.active].dom.modal.removeClass('njb_pulse');
+          that.items[that.state.active].dom.modal.removeClass('njb--pulse');
         }, that._getAnimTime(that.items[that.state.active].dom.modal[0]))
       }
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     this.dom.container.on('resize', h.container_resize)
       .on('scroll', h.container_scroll)
       .on('click', h.container_out)
 
     h.wrap_resize = function () {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_scroll = function (e) {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_keydown = function (e) {
       that._cb('keydown', e);
-      if (e.njb_sp) return;
 
       switch (e.which) {
         case 27://esc
@@ -966,31 +953,24 @@ class njBox {
           break;
 
       }
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_close = function (e) {
-      if (e.njb_sp) return;
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if (that._cb('cancel') === false) return;
       that.hide();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_ok = function (e) {
-      if (e.njb_sp) return;
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if (that._cb('ok') === false) return;
       that.hide();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_cancel = function (e) {
-      if (e.njb_sp) return;
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if (that._cb('cancel') === false) return;
       that.hide();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
 
     popWrap
@@ -1002,19 +982,13 @@ class njBox {
       .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
 
     h.window_resize = function (e) {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.window_scroll = function (e) {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.window_orientation = function (e) {
-      if (e.njb_sp) return;
       that.position();
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
 
     this.dom.window

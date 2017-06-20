@@ -379,7 +379,7 @@
 
 
 /*pulse animation uses in modal windows, when user try to close modal with outside click*/
-.njb_pulse {
+.njb--pulse {
   animation: pulseModal 200ms ease-in-out 1;
 }
 /*perspective fixes troubles with font in webkit*/

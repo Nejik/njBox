@@ -145,13 +145,13 @@ export let defaults = {
 
 	
 
-	jquery         : undefined,//link to jquery (for modules without global scopr)
+	jquery         : undefined,//link to jquery (for modules without global scope)
 	autobind       : '[data-toggle~="box"], [data-toggle~="modal"]',//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 
 	//accessibility options
 	_focusable     : 'a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
 	buttonrole     : 'button',//(button || boolean false) this role will be set to elements, which opens modal window
-	role           : 'dialog',//(dialog || alertdialog || boolean false)//role that will be set to modal dialog https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_alertdialog_role
+	role           : 'dialog',//(dialog || alertdialog || boolean false) role that will be set to modal dialog https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_alertdialog_role
 	label          : false,//(string) add aria-label attribute to support screenreaders
 	labelledby     : false,//(id selector) add aria-labelledby attribute to support screenreaders
 	describedby    : false,//(id selector) add aria-describedby attribute to support screenreaders

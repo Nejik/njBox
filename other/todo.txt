@@ -1,10 +1,7 @@
-* debugger на 1 строку clickhandler 2 раза сработал Оо
-* aria label or aria-labelledby from header option
-* role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
-* хэндлить когда фокус уходит в смежные слайды
-* убрать o.close inside
-* перенести в переменную document.documentElement
-* сделать focus trap item перед диалогом, что-бы фокус не уходил за приделы модального
+* If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
+  aria label or aria-labelledby from header option
+  role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
+
 Docs:
 * пример как сделать o.close inside
 * в tips добавить подсказку что ширину/высоту можно через css ставить
@@ -24,12 +21,11 @@ Docs:
 * пример с oncb колбэком
 * добавить примеры html api настроек
 * потестить передачу jquery в тестовых методах, сейчас поидее оно не используется при инициализации
-
+* в position можно передовать координаты 3 способами, через o.coords, через аргумент в метод .position("100 100"), через возвращение результата в колбэке position. Передавать можно как строку чисел с пробелом или как массив из 2 чисел
 
 Плюсы
 адаптивное по умолчанию
 центрировние с помощью css
-модальное окно не дает выйти фокусу за пределы себя
-
-В документацию
-в position можно передовать координаты 3 способами, через o.coords, через аргумент в метод .position("100 100"), через возвращение результата в колбэке position. Передавать можно как строку чисел с пробелом или как массив из 2 чисел
+Keeping track of the last focused element so that focus can return to it once the modal is closed.
+Allowing for multiple options to close the modal window (close button, escape key, mouse click on overlay).
+Trapping focus within the modal so that users can't tab out of it and interact with content that is obscured by the modal.

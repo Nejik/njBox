@@ -121,6 +121,11 @@
           user-select: text;
   will-change: opacity, transform
 }
+.njb--popover {
+  max-width: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, .5);
+  position: absolute;
+}
 .njb--loading {
 }
 .njb--loading .njb__body {
@@ -474,7 +479,7 @@
   }
 }
 /*pulse animation uses in modal windows, when user try to close modal with outside click*/
-.njb_pulse {
+.njb--pulse {
   -webkit-animation: pulseModal 200ms ease-in-out 1;
           animation: pulseModal 200ms ease-in-out 1;
 }
@@ -581,6 +586,8 @@
 .njb--content {
   border-radius: 2px;
   background-color: #fff;
+}
+.njb-items .njb--content {
   margin: 10px;
 }
 .njb--content .njb__header {

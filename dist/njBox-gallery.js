@@ -106,17 +106,17 @@
             $ = this.$;
         this.on('options_setted', function () {
           var o = this.o;
-          if (o.gallery) this.state.gallery = true;
+          if (o.gallery) this._globals.gallery = true;
 
           if ($.isArray(o.content)) {
-            this.state.gallery = true;
+            this._globals.gallery = true;
           }
         });
         this.on('items_raw', function () {
           this._gallery_createRawItems();
         });
         this.on('domready', function () {
-          if (this.state.gallery) {
+          if (this._globals.gallery) {
             this.dom.ui_count = $(o.templates.count);
             this.dom.ui[0].appendChild(this.dom.ui_count[0]);
 
@@ -130,7 +130,7 @@
             this.dom.next = $(o.templates.next);
             this.dom.next[0].setAttribute('title', o.text.next);
 
-            if (o.arrows && !this.state.arrowsInserted && this.state.gallery) {
+            if (o.arrows && !this.state.arrowsInserted && this._globals.gallery) {
               if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
               if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
 
@@ -139,10 +139,10 @@
           }
         });
         this.on('item_domready', function (item, index) {
-          if (this.state.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
+          if (this._globals.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
         });
         this.on('inserted', function () {
-          if (that.state.gallery) {
+          if (that._globals.gallery) {
             this._setQueue(this.state.active);
             that._gallery__uiUpdate();
           }
@@ -173,7 +173,7 @@
         });
         this.on('position', function () {
           //we need autoheight for prev and next slide in gallery
-          if (this.state.gallery) {
+          if (this._globals.gallery) {
             if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
             if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
           }
@@ -182,7 +182,7 @@
           this.state.active = this._detectIndexForOpen();
         });
         this.on('shown', function () {
-          if (this.state.gallery) {
+          if (this._globals.gallery) {
             that._drawItemSiblings();
             this._preload();
           }
@@ -201,13 +201,6 @@
               e.preventDefault();
               break;
           }
-        });
-        var origGalleryState;
-        this.on('clear', function () {
-          origGalleryState = this.state.gallery;
-        });
-        this.on('cleared', function () {
-          this.state.gallery = origGalleryState;
         });
       },
       prev: function prev() {
@@ -350,12 +343,12 @@
 
         if (typeof this.queue.prev.index === 'number') {
           this._moveItem(this.queue.prev.item, -110, '%');
-          this._drawItem(this.queue.prev.item, true);
+          this._drawItem(this.queue.prev.item, true, this.dom.items[0]);
           this.queue.prev.tabs = this._makeUnfocusable(this.queue.prev.item.dom.modal, o._focusable);
         }
         if (typeof this.queue.next.index === 'number') {
           this._moveItem(this.queue.next.item, 110, '%');
-          this._drawItem(this.queue.next.item);
+          this._drawItem(this.queue.next.item, false, this.dom.items[0]);
           this.queue.next.tabs = this._makeUnfocusable(this.queue.next.item.dom.modal, o._focusable);
         }
         this.position();
@@ -450,12 +443,12 @@
         var o = this.o,
             that = this,
             index = this.state.active || 0;
-        if (this.state.gallery && o.start - 1 && this.items[o.start - 1]) {
+        if (this._globals.gallery && o.start - 1 && this.items[o.start - 1]) {
           //then we check o.start option
           index = o.start - 1;
         }
         //if we have clicked element, take index from it
-        if (this.state.gallery && this.data.els && this.data.els.length && that.state.clickedEl && o.click) {
+        if (this._globals.gallery && this.data.els && this.data.els.length && that.state.clickedEl && o.click) {
           this.data.els.each(function (i, el) {
             if (that.state.clickedEl === el) {
               index = i;
@@ -550,7 +543,7 @@
       _gallery_createRawItems: function _gallery_createRawItems() {
         var o = this.o;
 
-        if (!this.state.gallery) return;
+        if (!this._globals.gallery) return;
 
         if (this.$.isArray(o.content)) {
           this.data.items_raw = o.content;

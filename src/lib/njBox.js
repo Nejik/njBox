@@ -218,6 +218,9 @@ class njBox {
 
     state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
 
+    state.dimensions.clickedEl = this._getDomSize(this.state.clickedEl);
+    console.log(this);
+
     //position of global wrapper
     if (o.layout === 'absolute') {
       //global wrap positioning
@@ -254,7 +257,7 @@ class njBox {
     this.state.coords = coords;
 
     this._setMaxHeight(this.items[this.state.active]);
-    
+
     this._cb('position');
 
     if(this._globals.popover) {
@@ -363,6 +366,7 @@ class njBox {
     var rectOriginal = domObject.getBoundingClientRect(),
         rectComputed = this.$.extend({}, rectOriginal);
     
+    rectComputed.el = domObject;
     rectComputed.width = rectComputed.right - rectComputed.left;
     rectComputed.height = rectComputed.bottom - rectComputed.top;
     

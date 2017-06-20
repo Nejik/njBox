@@ -320,7 +320,7 @@ class njBox {
 
     var d = {}
 
-    if (this.dom.container[0] === this.dom.body[0]) {
+    if (this._globals.containerisBody) {
       d.containerWidth = documentElement.clientWidth;
       d.containerHeight = documentElement.clientHeight;
       d.containerScrollWidth = Math.max(
@@ -350,7 +350,7 @@ class njBox {
     d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
     d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
 
-    d.autoheight = (this.dom.container[0] === this.dom.body[0]) ? d.winHeight : d.containerHeight;
+    d.autoheight = (this._globals.containerisBody) ? d.winHeight : d.containerHeight;
     // if(this._o.scrollbarHidden) {
     //  this._o.winWidth -= njBox.g.scrollbarSize;
     // }
@@ -682,8 +682,10 @@ class njBox {
       this._e('njBox, can\'t find container element. (we use body instead)');
       this.dom.container = this.dom.body;//in case if we have no container element, or wrong selector for container element
     }
+    this._globals.containerisBody = this.dom.container[0] === this.dom.body[0];
+
     //check if container not relative position
-    if (this.dom.container[0] !== this.dom.body[0] && this.dom.container.css('position') === 'static') {
+    if (!this._globals.containerisBody && this.dom.container.css('position') === 'static') {
       this.dom.container.addClass('njb-relative');
     }
 
@@ -700,7 +702,7 @@ class njBox {
     this.dom.items = this.dom.wrap.find('.njb-items');
 
     //if container custom element(not body), use forcely absolute position
-    if (this.dom.container[0] !== this.dom.body[0] && o.layout !== 'popover') o.layout = 'absolute';
+    if (!this._globals.containerisBody && o.layout !== 'popover') o.layout = 'absolute';
     if (o.layout === 'absolute') this.dom.wrap.addClass('njb-absolute');
 
     //create ui layer
@@ -866,7 +868,7 @@ class njBox {
       if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      e.njb_sp = true;//e.njb_stopPropagation
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
 
       if (that.state.state !== 'inited') {
         that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -897,11 +899,15 @@ class njBox {
       h = this._handlers,
       popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
 
-    h.container_resize = function () {
+    h.container_resize = function (e) {
+      if (e.njb_sp) return;
       that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
-    h.container_scroll = function () {
+    h.container_scroll = function (e) {
+      if (e.njb_sp) return;
       that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.container_out = function (e) {
       if (e.njb_sp) return;
@@ -925,19 +931,25 @@ class njBox {
           that.items[that.state.active].dom.modal.removeClass('njb_pulse');
         }, that._getAnimTime(that.items[that.state.active].dom.modal[0]))
       }
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     this.dom.container.on('resize', h.container_resize)
       .on('scroll', h.container_scroll)
       .on('click', h.container_out)
 
     h.wrap_resize = function () {
-      // that.position();
+      if (e.njb_sp) return;
+      that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_scroll = function (e) {
-      // that.position();
+      if (e.njb_sp) return;
+      that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_keydown = function (e) {
       that._cb('keydown', e);
+      if (e.njb_sp) return;
 
       switch (e.which) {
         case 27://esc
@@ -950,24 +962,31 @@ class njBox {
           break;
 
       }
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_close = function (e) {
+      if (e.njb_sp) return;
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if (that._cb('cancel') === false) return;
       that.hide();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_ok = function (e) {
+      if (e.njb_sp) return;
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if (that._cb('ok') === false) return;
       that.hide();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.wrap_cancel = function (e) {
+      if (e.njb_sp) return;
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if (that._cb('cancel') === false) return;
       that.hide();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
 
     popWrap
@@ -979,13 +998,19 @@ class njBox {
       .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
 
     h.window_resize = function (e) {
+      if (e.njb_sp) return;
       that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.window_scroll = function (e) {
+      if (e.njb_sp) return;
       that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
     h.window_orientation = function (e) {
+      if (e.njb_sp) return;
       that.position();
+      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
     }
 
     this.dom.window
@@ -1232,7 +1257,7 @@ class njBox {
         if (o.scrollbar === 'hide') {
           if (this.state.scrollbarHidden) return;
 
-          if (this.dom.container[0] === this.dom.body[0]) {//we can insert modal window in any custom element, that's why we need this if
+          if (this._globals.containerisBody) {//we can insert modal window in any custom element, that's why we need this if
             var sb = (document.documentElement.scrollHeight || document.body.scrollHeight) > document.documentElement.clientHeight;//check for scrollbar existance (we can have no scrollbar on simple short pages)
 
             //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
@@ -1273,7 +1298,7 @@ class njBox {
           this.dom.container[0].njb_scrollbar = undefined;
         }
 
-        if (this.dom.container[0] === this.dom.body[0]) {
+        if (this._globals.containerisBody) {
           if(!this._globals.popover) this.dom.html.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
 
@@ -1519,8 +1544,11 @@ class njBox {
     this._scrollbar('show');
 
 
-    if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
-    if(this._globals.popover) modal[0].parentNode.removeChild(modal[0]);
+    if(this._globals.popover) {
+      modal[0].parentNode.removeChild(modal[0]);
+    } else {
+      if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
+    }
 
     this._removeSelectorItemsElement();
 
@@ -1660,9 +1688,17 @@ njBox.get = function (elem) {
 }
 //autobind functions
 njBox.autobind = function () {
+  //autobind global
   $(njBox.defaults.autobind).each(function () {
     new njBox({
       elem: $(this)
+    })
+  })
+  //autobind popover
+  $('[data-toggle~="popover"]').each(function() {
+    new njBox({
+      elem: $(this),
+      layout: 'popover'
     })
   })
 }

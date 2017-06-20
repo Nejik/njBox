@@ -1,6 +1,4 @@
-* проверить остается ли название метода parseStringToArray после минификации
-* заменить везде this на that и посомтреть насколько меньше станет ужатый файл
-* если у нас gallery, то layout не может быть custom
+* если у нас gallery, то layout не может быть popover
 * debugger на 1 строку clickhandler 2 раза сработал Оо
 * aria label or aria-labelledby from header option
 * role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html

@@ -31,7 +31,10 @@
           $ = this.$;
         this.on('options_setted', function () {
           var o = this.o;
-          if (o.gallery) this._globals.gallery = true;
+          if (o.gallery) {
+            this._globals.gallery = true;
+            if(o.layout === "popover") o.layout = "fixed";
+          }
 
           if ($.isArray(o.content)) {
             this._globals.gallery = true

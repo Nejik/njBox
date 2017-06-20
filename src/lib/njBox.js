@@ -110,7 +110,6 @@ class njBox {
       //extend global options with gathered from dom element
       $.extend(true, this.o, this.data.optionsGathered)
     }
-    this._cb('options_setted', o);
     this._options_setted();
 
     //create popup container dom elements
@@ -298,6 +297,8 @@ class njBox {
     var o = this.o,
         that = this;
     
+    this._cb('options_setted', o);
+
     if(o.layout === 'popover') {
       that._globals.popover = true
       o.backdrop = that._getPassedOption('backdrop') || false;

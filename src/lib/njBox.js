@@ -319,7 +319,7 @@ class njBox {
 
     var d = {}
 
-    if (this._globals.containerisBody) {
+    if (this._globals.containerIsBody) {
       d.containerWidth = documentElement.clientWidth;
       d.containerHeight = documentElement.clientHeight;
       d.containerScrollWidth = Math.max(
@@ -349,7 +349,7 @@ class njBox {
     d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
     d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
 
-    d.autoheight = (this._globals.containerisBody) ? d.winHeight : d.containerHeight;
+    d.autoheight = (this._globals.containerIsBody) ? d.winHeight : d.containerHeight;
     // if(this._o.scrollbarHidden) {
     //  this._o.winWidth -= njBox.g.scrollbarSize;
     // }
@@ -682,10 +682,10 @@ class njBox {
       this._e('njBox, can\'t find container element. (we use body instead)');
       this.dom.container = this.dom.body;//in case if we have no container element, or wrong selector for container element
     }
-    this._globals.containerisBody = this.dom.container[0] === this.dom.body[0];
+    this._globals.containerIsBody = this.dom.container[0] === this.dom.body[0];
 
     //check if container not relative position
-    if (!this._globals.containerisBody && this.dom.container.css('position') === 'static') {
+    if (!this._globals.containerIsBody && this.dom.container.css('position') === 'static') {
       this.dom.container.addClass('njb-relative');
     }
 
@@ -702,8 +702,10 @@ class njBox {
     this.dom.items = this.dom.wrap.find('.njb-items');
 
     //if container custom element(not body), use forcely absolute position
-    if (!this._globals.containerisBody && o.layout !== 'popover') o.layout = 'absolute';
-    if (o.layout === 'absolute') this.dom.wrap.addClass('njb-absolute');
+    if (!this._globals.containerIsBody && o.layout !== 'popover') {
+      o.layout = 'absolute';
+      this.dom.wrap.addClass('njb-absolute');
+    }
 
     //create ui layer
     this.dom.ui = $(o.templates.ui)
@@ -1230,7 +1232,7 @@ class njBox {
         if (o.scrollbar === 'hide') {
           if (this.state.scrollbarHidden) return;
 
-          if (this._globals.containerisBody) {//we can insert modal window in any custom element, that's why we need this if
+          if (this._globals.containerIsBody) {//we can insert modal window in any custom element, that's why we need this if
             var sb = (document.documentElement.scrollHeight || document.body.scrollHeight) > document.documentElement.clientHeight;//check for scrollbar existance (we can have no scrollbar on simple short pages)
 
             //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
@@ -1271,7 +1273,7 @@ class njBox {
           this.dom.container[0].njb_scrollbar = undefined;
         }
 
-        if (this._globals.containerisBody) {
+        if (this._globals.containerIsBody) {
           this.dom.html.removeClass('njb-hideScrollbar');
           var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
 

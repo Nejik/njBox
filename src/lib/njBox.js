@@ -869,8 +869,6 @@ class njBox {
       if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      e.njb_sp = true;//e.njb_stopPropagation, custom stop propagation
-
       if (that.state.state !== 'inited') {
         that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
         return;
@@ -907,10 +905,8 @@ class njBox {
       that.position();
     }
     h.container_out = function (e) {
-      if(that.state.state !== 'shown' || e.njb_sp) return;
-
+      if(that.state.clickedEl === e.target || that.state.state !== 'shown') return;
       var $el = $(e.target),
-        // prevent = $el.closest('.njb, [data-njb-close], [data-njb-prev], [data-njb-next]').length;
         prevent = $el.closest('.njb, .njb-ui').length;
       if (prevent) return;
 

@@ -125,7 +125,7 @@ In this example "content" option calculated in next priority:
 | Name  | Default | Type | Description |
 | :--- | :---: | :--- | :--- |
 | elem | '' | selector \|\| dom\jQuery element | dom element for triggering modal
-| content | undefined | string | content for modal
+| content | undefined | string \|\| function | content for modal
 | type | '' | html \|\| selector \|\| text \|\| image | type of content, if selector used, whole element will be inserted in modal
 | header | undefined | html | html that will be added as modal header
 | footer | undefined | html | html that will be added as modal footer

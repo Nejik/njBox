@@ -10,7 +10,7 @@ let $ = window.jQuery || j;
 import {
   getDefaultInfo,
   getItemFromDom,
-  getArray,
+  parseCoords,
   defaults
 } from 'lib/utils.js';
 
@@ -206,12 +206,14 @@ class njBox {
 
     return this;
   }
-  position(coordinates) {
-    if (!this.state || !this.state.inited) return;
-    var o = this.o,
+  position(coordinates) {//cordinates used only for popover mode
+    var that = this,
+        o = this.o,
         activeModal = this.items[this.state.active].dom.modal,
         coords,
-        state = this.state;
+        state = that.state;
+
+    if (!state || !state.inited || (state.state !== 'show' && state.state !== 'shown')) return;
     
     state.dimensions = this._getContainerSize();
     state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
@@ -236,30 +238,50 @@ class njBox {
       });
     }
 
-    if(!this._globals.popover) this._setMaxHeight(this.items[this.state.active]);
+    if (this._globals.popover) {
+      if (coordinates) {
+        coords = (typeof coordinates === 'function') ? coordinates() : coordinates;
+      } else {
+        coords = this._getCoordsFromPlacement(o.placement, this.state.dimensions);
+      }
 
-    if(o.coords) coords = getArray(o.coords);
-    if(coordinates) coords = getArray(coordinates);
+      coords = parseCoords(coords);
+      this.state.coords = coords;
 
-    var positionCB = this._cb('position');
-    if(positionCB !== undefined) coords = getArray(positionCB);
-
-    //post process coordinates
-    if (coords[0] === 'center') {//horizontal coordinate
-      coords[0] = (state.dimensions.containerWidth - state.dimensions.modal.width) / 2;
+      if(this._globals.popover && this.state.coords && this.state.coords.length === 2) {
+        activeModal.css('left', this.state.coords[0] + "px")
+                  .css('top', this.state.coords[1] + "px")
+      }
+    } else {
+      this._setMaxHeight(this.items[this.state.active]);
     }
-    if (coords[1] === 'center') {//vertical coordinate
-      coords[1] = (state.dimensions.containerHeight - state.dimensions.modal.height) / 2;
-    }
-    
-    this.state.coords = coords;
 
-    if(this._globals.popover && this.state.coords.length === 2) {
-      activeModal.css('left', this.state.coords[0] + "px")
-                .css('top', this.state.coords[1] + "px")
-    }
+    this._cb('position');
 
     return this;
+  }
+  _getCoordsFromPlacement(value, dimensions) {
+    var that = this,
+        o = that.o,
+        coords = value,
+        cbPlacement = that._cb('placement');
+    
+    if (cbPlacement !== undefined) coords = cbPlacement;
+
+    if(typeof coords === 'function') coords = coords();
+
+    coords = parseCoords(coords);
+
+    switch (coords) {
+      case 'center':
+        coords = [
+          (dimensions.containerWidth - dimensions.modal.width) / 2,
+          (dimensions.containerHeight - dimensions.modal.height) / 2
+        ]
+        break;
+    }
+
+    return coords
   }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
@@ -927,9 +949,13 @@ class njBox {
         }, that._getAnimTime(that.items[that.state.active].dom.modal[0]))
       }
     }
-    this.dom.container.on('resize', h.container_resize)
+
+    if (!that._globals.popover) {
+      this.dom.container.on('resize', h.container_resize)
       .on('scroll', h.container_scroll)
-      .on('click', h.container_out)
+    }
+
+    this.dom.container.on('click', h.container_out)
 
     h.wrap_resize = function () {
       that.position();
@@ -971,9 +997,12 @@ class njBox {
       that.hide();
     }
 
-    popWrap
+    if (!that._globals.popover) {
+      popWrap
       .on('resize', h.wrap_resize)
       .on('scroll', h.wrap_scroll)
+    }
+    popWrap
       .on('keydown', h.wrap_keydown)
       .delegate('[data-njb-close]', 'click', h.wrap_close)
       .delegate('[data-njb-ok]', 'click', h.wrap_ok)
@@ -989,10 +1018,12 @@ class njBox {
       that.position();
     }
 
-    this.dom.window
+    if (!that._globals.popover) {
+      this.dom.window
       .on('resize', h.window_resize)
       .on('scroll', h.window_scroll)
       .on('orientationchange', h.window_orientation)
+    }
 
 
     h.focusCatchFirst = function (e) {

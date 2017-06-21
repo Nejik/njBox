@@ -1,3 +1,6 @@
+* проверить placement как функцию и сделать onplacement callback
+* disable autofocus on popovers
+
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
   aria label or aria-labelledby from header option
   role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
@@ -21,7 +24,7 @@ Docs:
 * пример с oncb колбэком
 * добавить примеры html api настроек
 * потестить передачу jquery в тестовых методах, сейчас поидее оно не используется при инициализации
-* в position можно передовать координаты 3 способами, через o.coords, через аргумент в метод .position("100 100"), через возвращение результата в колбэке position. Передавать можно как строку чисел с пробелом или как массив из 2 чисел
+* координаты позиционирования можно передавать через аргумент .position, через o.placement, через колбэк onplacement (o.placement, потом результат колбэка onplacement и самый сильный аргумент из o.position) Передавать можно функцию в любой из способов.
 
 Плюсы
 адаптивное по умолчанию

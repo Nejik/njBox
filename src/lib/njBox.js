@@ -263,22 +263,59 @@ class njBox {
   _getCoordsFromPlacement(value, dimensions) {
     var that = this,
         o = that.o,
-        coords = value,
-        cbPlacement = that._cb('placement');
+        placement = value,
+        cbPlacement = that._cb('placement', dimensions.modal.el, dimensions.clickedEl.el);
     
-    if (cbPlacement !== undefined) coords = cbPlacement;
+    if (cbPlacement !== undefined) placement = cbPlacement;
 
-    if(typeof coords === 'function') coords = coords();
+    if(typeof placement === 'function') placement = placement();
 
-    coords = parseCoords(coords);
+    placement = parseCoords(placement);
 
-    switch (coords) {
+    var popoverWiderThanClicked = dimensions.modal.width > dimensions.clickedEl.width,
+        popoverTallerThanClicked = dimensions.modal.height > dimensions.clickedEl.height,
+        offset = parseCoords(o.offset),
+        coords = [],
+        leftForTopAndBottom,
+        topForLeftAndRight;
+    console.log(offset);
+    if (popoverWiderThanClicked) {
+      leftForTopAndBottom = dimensions.clickedEl.left - ((dimensions.modal.width - dimensions.clickedEl.width) / 2)
+    } else {
+      leftForTopAndBottom = dimensions.clickedEl.left + ((dimensions.clickedEl.width - dimensions.modal.width) / 2)
+    }
+
+    if (popoverTallerThanClicked) {
+      topForLeftAndRight = dimensions.clickedEl.top - ((dimensions.modal.height - dimensions.clickedEl.height) / 2)
+    } else {
+      topForLeftAndRight = dimensions.clickedEl.top + ((dimensions.clickedEl.height - dimensions.modal.height) / 2)
+    }
+
+    switch (placement) {
       case 'center':
-        coords = [
-          (dimensions.containerWidth - dimensions.modal.width) / 2,
-          (dimensions.containerHeight - dimensions.modal.height) / 2
-        ]
-        break;
+        coords[0] = (dimensions.containerWidth - dimensions.modal.width) / 2
+        coords[1] = (dimensions.containerHeight - dimensions.modal.height) / 2
+      break;
+      
+      case 'bottom':
+        coords[0] = leftForTopAndBottom;
+        coords[1] = dimensions.clickedEl.bottom + offset[1];
+      break;
+
+      case 'top':
+        coords[0] = leftForTopAndBottom;
+        coords[1] = dimensions.clickedEl.top - dimensions.modal.height - offset[1];
+      break;
+
+      case 'left':
+        coords[0] = dimensions.clickedEl.left - dimensions.modal.width - offset[0];
+        coords[1] = topForLeftAndRight;
+      break
+
+      case 'right':
+        coords[0] = dimensions.clickedEl.right + offset[0];
+        coords[1] = topForLeftAndRight;
+      break
     }
 
     return coords

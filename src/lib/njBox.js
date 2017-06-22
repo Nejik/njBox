@@ -163,11 +163,11 @@ class njBox {
     var containerToInsert;
 
     //insert wrap
-    if (!this._globals.popover) {
+    if (this._globals.popover) {
+      containerToInsert = this.dom.container[0];
+    } else {
       this.dom.container[0].appendChild(this.dom.wrap[0]);
       containerToInsert = this.dom.items[0];
-    } else {
-      containerToInsert = this.dom.container[0];
     }
     //set event handlers
     this._addListeners();
@@ -278,17 +278,25 @@ class njBox {
         coords = [],
         leftForTopAndBottom,
         topForLeftAndRight;
-    console.log(offset);
+    
+    console.log(dimensions);
+    
     if (popoverWiderThanClicked) {
       leftForTopAndBottom = dimensions.clickedEl.left - ((dimensions.modal.width - dimensions.clickedEl.width) / 2)
     } else {
       leftForTopAndBottom = dimensions.clickedEl.left + ((dimensions.clickedEl.width - dimensions.modal.width) / 2)
+    }
+    if (dimensions.containerScrollLeft) {
+      leftForTopAndBottom += dimensions.containerScrollLeft;
     }
 
     if (popoverTallerThanClicked) {
       topForLeftAndRight = dimensions.clickedEl.top - ((dimensions.modal.height - dimensions.clickedEl.height) / 2)
     } else {
       topForLeftAndRight = dimensions.clickedEl.top + ((dimensions.clickedEl.height - dimensions.modal.height) / 2)
+    }
+    if (dimensions.containerScrollTop) {
+      topForLeftAndRight += dimensions.containerScrollTop;
     }
 
     switch (placement) {
@@ -317,8 +325,44 @@ class njBox {
         coords[1] = topForLeftAndRight;
       break
     }
+    
+    return that._checkBounds(coords, o.boundary, dimensions);
+  }
+  _checkBounds(currentcoords, boundary, dimensions) {
+    if(!boundary) return;
+    console.log('currentcoords', currentcoords);
 
-    return coords
+    var boundaryEl = (boundary === 'window') ? window : $(boundary)[0],
+        boundaryCoords,
+        fixedCoords = currentcoords;
+    
+    if (boundaryEl) {
+      if (boundary === 'window') {
+        boundaryCoords = {
+          top:0,
+          left:0,
+          right: dimensions.winWidth,
+          bottom: dimensions.winHeight,
+          width: dimensions.winWidth,
+          height: dimensions.winHeight
+        }
+      } else {
+        boundaryCoords = this._getDomSize(boundaryEl)
+      }
+    }
+    console.log('boundaryCoords', boundaryCoords);
+    
+    // if (currentcoords[0] < boundaryCoords.left) {
+    //   fixedCoords[0] = 0;
+    // }
+    
+    // if (currentcoords[1] < boundaryCoords.top) {
+    //   fixedCoords[1] = 0;
+    // }
+    
+
+    console.log('fixedCoords', fixedCoords);
+    return fixedCoords;
   }
   destroy() {
     if (!this.state.inited || this.state.state !== 'inited') {
@@ -377,7 +421,9 @@ class njBox {
         documentElement = document.documentElement,
         documentBody = document.body;
 
-    var d = {}
+    var d = {},
+        winScrollTop = window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop,
+        winScrollLeft = window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft;
 
     if (this._globals.containerIsBody) {
       d.containerWidth = documentElement.clientWidth;
@@ -392,9 +438,8 @@ class njBox {
         documentBody.offsetHeight, documentElement.offsetHeight,
         documentBody.clientHeight, documentElement.clientHeight
       );
-      d.containerScrollTop = window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop;
-      d.containerScrollLeft = window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft;
-
+      d.containerScrollTop = winScrollTop;
+      d.containerScrollLeft = winScrollLeft;
     } else {
       d.containerWidth = this.dom.container[0].clientWidth;
       d.containerHeight = this.dom.container[0].clientHeight;
@@ -408,6 +453,8 @@ class njBox {
 
     d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
     d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
+    d.winScrollTop = winScrollTop;
+    d.winScrollLeft = winScrollLeft;
 
     d.autoheight = (this._globals.containerIsBody) ? d.winHeight : d.containerHeight;
     // if(this._o.scrollbarHidden) {

@@ -128,8 +128,11 @@ export let defaults = {
 
 	container      : 'body',//(selector) appends modal to specific element
 	layout         : 'fixed',//(fixed || absolute || popover), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically, popover mode not modal at all, it is like tooltip)
+
 	placement      : 'center',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second. The this context is set to the popover instance.
-	offset         : '0 0',//(string or array) popover specific option, offset of the popover relative to its target
+	offset         : '0 0',//(string or array) popover specific option. Offset of the popover relative to its target
+	boundary       : 'window',//(boolean || selector) popover specific option. Should popover stay in boundaries of some element?
+	
 	click          : true,//(boolean) should we set click handler on element(o.elem)?
 	clickels       : '',//(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 

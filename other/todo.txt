@@ -1,3 +1,4 @@
+*проверить boundary кастомного элемента
 * проверить placement как функцию и сделать onplacement callback
 * disable autofocus on popovers
 

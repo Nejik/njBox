@@ -108,7 +108,7 @@
   &--popover {
     max-width: none;
     box-shadow: 0 0 5px rgba(0,0,0,.5);
-    position: absolute;
+    position: absolute;left: 0;top: 0;
   }
 
   &--loading {

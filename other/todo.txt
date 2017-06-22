@@ -1,4 +1,6 @@
+*переписать _getContainerSize
 *проверить boundary кастомного элемента
+*autofocus сделать опциональным
 * проверить placement как функцию и сделать onplacement callback
 * disable autofocus on popovers
 

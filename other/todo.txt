@@ -1,4 +1,5 @@
 *переписать _getContainerSize
+*вешать глобальные обработчики на document вместо body, т.к. out например не работает, если клик ниже body(не критично)
 *проверить boundary кастомного элемента
 *autofocus сделать опциональным
 * проверить placement как функцию и сделать onplacement callback

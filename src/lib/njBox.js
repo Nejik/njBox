@@ -215,9 +215,7 @@ class njBox {
 
     if (!state || !state.inited || (state.state !== 'show' && state.state !== 'shown')) return;
     
-    state.dimensions = this._getContainerSize();
-    state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
-    state.dimensions.clickedEl = this._getDomSize(this.state.clickedEl);
+    that.state.dimensions = that._getDimensions();
 
     //position of global wrapper
     if (o.layout === 'absolute') {
@@ -259,6 +257,16 @@ class njBox {
     this._cb('position');
 
     return this;
+  }
+  _getDimensions() {
+    var that = this,
+        o = that.o,
+        dimensions = {};
+    
+    dimensions = that._getContainerSize();
+    dimensions.modal = that._getDomSize(that.items[that.state.active].dom.modal[0]);
+    dimensions.clickedEl = that._getDomSize(that.state.clickedEl);
+    return dimensions;
   }
   _getCoordsFromPlacement(value, dimensions) {
     var that = this,
@@ -1651,6 +1659,8 @@ class njBox {
 
     if(this._globals.popover) {
       modal[0].parentNode.removeChild(modal[0]);
+      modal.css('left','0')
+            .css('top','0')
     } else {
       if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
     }

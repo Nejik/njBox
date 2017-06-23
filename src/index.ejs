@@ -25,11 +25,17 @@
     .popover1 {
       color:red;
     }
+    .test5 {
+      width: 500px;
+      /*height:500px;*/
+      border: 1px solid #000;
+    }
   </style>
   <title>njBox</title>
 </head>
 
 <body>
+  
   
   <div class="gallery" data-njb-gallery="a" data-njb-autofocus="false" data-toggle="modal" data-njb-layout="popover">
     <a href="#modal2">modal1</a>
@@ -71,7 +77,10 @@
     <div>Neque illum nesciunt, ullam inventore totam molestiae beatae nobis quae non ab quo perspiciatis recusandae molestias dolorum, officiis natus dicta aperiam adipisci consequatur fugiat eos. Reiciendis aperiam distinctio repellendus et.</div>
     <div>Voluptatum perspiciatis quos amet quaerat alias, accusantium obcaecati esse delectus consequuntur labore autem, et! Nihil earum perferendis sequi facilis temporibus ut laboriosam, vel at omnis nesciunt animi quasi voluptatibus. A.</div>
     <div>Ad quam nam itaque, fugiat ratione! Voluptate, qui animi. Est iusto quod consequuntur itaque, corporis suscipit. Doloremque amet, aliquid, ullam cum, illum consequatur aliquam laboriosam enim voluptate at veritatis similique.
-     Nam vero in  eaque adipisci quam, ad ipsam <a href="#modal1" class="popover1" data-njb-header="header" data-njb-footer="footer">Open modal</a>error expedita excepturi commodi molestias  fugiat! Aperiam recusandae expedita culpa iusto asperiores debitis, beatae, ratione quaerat. Perferendis velit doloribus asperiores illum, vero.</div>
+     Nam vero in  eaque adipisci quam, ad ipsam error <a href="#modal1" class="popover1" data-njb-header="header" data-njb-footer="footer">Open modal</a> expedita excepturi commodi molestias  fugiat! Aperiam recusandae expedita culpa iusto asperiores debitis, beatae, ratione quaerat. Perferendis velit doloribus asperiores illum, vero.</div>
+    
+  </div>
+  <div class="test5">
     
   </div>
   <div id="modal1" class="njb-hidden">
@@ -94,8 +103,7 @@
     // })
     // console.log(document.activeElement)
     var t = new njBox('.popover1', {
-      placement: 'right',
-      offset: '10 10',
+      // placement: 'right',
       layout:"popover"
     })
   </script>

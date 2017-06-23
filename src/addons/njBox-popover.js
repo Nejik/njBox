@@ -6,7 +6,7 @@
 (function () {
   if (window.njBox) njBox.addAddon('popover', {
     options: {
-      // placement: 'bottom'//(string || function) Where popover should be placed - top || right || bottom || left || center. Top/right\bottom\left are relative to clicked element, but "center" relative to window.
+      placement: 'bottom'//(string || function) Where popover should be placed - top || right || bottom || left || center. Top/right\bottom\left are relative to clicked element, but "center" relative to window.
     },
     prototype: {
       _popover_init: function () {

@@ -217,6 +217,8 @@ class njBox {
     
     that.state.dimensions = that._getDimensions();
 
+    this._cb('position');
+
     //position of global wrapper
     if (o.layout === 'absolute') {
       //global wrap positioning
@@ -254,15 +256,15 @@ class njBox {
       this._setMaxHeight(this.items[this.state.active]);
     }
 
-    this._cb('position');
-
+    
+    this._cb('positioned');
     return this;
   }
   _getDimensions() {
     var that = this,
         o = that.o,
         dimensions = {};
-
+    
     dimensions.window = that._getDomSize(that.dom.window[0]);
     dimensions.container = that._getDomSize(this._globals.containerIsBody ? that.dom.window[0] : this.dom.container[0])
     dimensions.modal = that._getDomSize(that.items[that.state.active].dom.modal[0]);
@@ -302,8 +304,6 @@ class njBox {
         scrollLeft: window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft,
         scrollTop: window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop
       }
-      rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width;
-      rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height;
     } else {
       rectOriginal = domObject.getBoundingClientRect()
       rectComputed = this.$.extend({}, rectOriginal)
@@ -315,9 +315,9 @@ class njBox {
       rectComputed.scrollHeight = domObject.scrollHeight;
       rectComputed.scrollLeft = domObject.scrollLeft;
       rectComputed.scrollTop = domObject.scrollTop;
-      rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width;
-      rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height;
     }
+    rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width < 0 ? 0 : rectComputed.scrollWidth - rectComputed.width;
+    rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height < 0 ? 0 : rectComputed.scrollHeight - rectComputed.height;
     
     return rectComputed;
   }
@@ -360,8 +360,8 @@ class njBox {
 
     switch (placement) {
       case 'center':
-        coords[0] = (dimensions.container.width - dimensions.modal.width) / 2
-        coords[1] = (dimensions.container.height - dimensions.modal.height) / 2
+        coords[0] = ((dimensions.container.width - dimensions.modal.width) / 2) + dimensions.window.scrollLeft;
+        coords[1] = ((dimensions.container.height - dimensions.modal.height) / 2) + dimensions.window.scrollTop
       break;
       
       case 'bottom':
@@ -385,43 +385,27 @@ class njBox {
       break
     }
     
-    return that._checkBounds(coords, o.boundary, dimensions);
+    return that._checkBounds(coords);
   }
-  _checkBounds(currentcoords, boundary, dimensions) {
-    if(!boundary) return;
-
+  _checkBounds(currentcoords) {
     var that = this,
         o = that.o,
-        boundaryEl = (boundary === 'window') ? window : $(boundary)[0],
+        boundary = o.boundary,
         offset = parseCoords(o.offset),
-        boundaryCoords,
+        dimensions = that.state.dimensions,
+        boundaryCoords = this._getDomSize(window),
         fixedCoords = currentcoords;
     
-    if (boundaryEl) {
-      if (boundary === 'window') {
-        boundaryCoords = {
-          top:0,
-          left:0,
-          right: dimensions.window.width,
-          bottom: dimensions.window.height,
-          width: dimensions.window.width,
-          height: dimensions.window.height,
-          scrollWidth: dimensions.window.scrollWidth,
-          scrollHeight: dimensions.window.scrollHeight
-        }
-      } else {
-        boundaryCoords = this._getDomSize(boundaryEl)
-      }
-    }
+    if(!boundary) return currentcoords;
     
     //fix negative left position
     if (currentcoords[0] < boundaryCoords.left) {
-      fixedCoords[0] = 0;
+      fixedCoords[0] = boundaryCoords.left;
     }
     
     //fix negative top position
     if (currentcoords[1] < boundaryCoords.top) {
-      fixedCoords[1] = 0;
+      fixedCoords[1] = boundaryCoords.top;
     }
 
     //fix negative right position
@@ -479,6 +463,7 @@ class njBox {
       o.backdrop = that._getPassedOption('backdrop') || false;
       o.scrollbar = that._getPassedOption('scrollbar') || 'show';
       o.out = that._getPassedOption('out') || true;
+      o.container = 'body';//you cant change container in popover mode
     }
   }
   _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults

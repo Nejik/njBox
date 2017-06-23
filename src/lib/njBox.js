@@ -220,10 +220,10 @@ class njBox {
     //position of global wrapper
     if (o.layout === 'absolute') {
       //global wrap positioning
-      var scrollTop = this.state.dimensions.containerScrollTop,
-        scrollLeft = this.state.dimensions.containerScrollLeft;
+      var scrollTop = this.state.dimensions.container.scrollTop,
+        scrollLeft = this.state.dimensions.container.scrollLeft;
 
-      if (scrollTop <= this.state.dimensions.containerMaxScrollTop) {
+      if (scrollTop <= this.state.dimensions.container.scrollTopMax) {
         this.dom.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' })
       }
 
@@ -231,8 +231,8 @@ class njBox {
       this.dom.backdrop.css({ 'width': 'auto', 'height': 'auto' });
       this.dom.backdrop[0].clientHeight;
       this.dom.backdrop.css({
-        'width': this.state.dimensions.containerScrollWidth + 'px',
-        'height': this.state.dimensions.containerScrollHeight + 'px'
+        'width': this.state.dimensions.container.scrollWidth + 'px',
+        'height': this.state.dimensions.container.scrollHeight + 'px'
       });
     }
 
@@ -262,11 +262,64 @@ class njBox {
     var that = this,
         o = that.o,
         dimensions = {};
-    
-    dimensions = that._getContainerSize();
+
+    dimensions.window = that._getDomSize(that.dom.window[0]);
+    dimensions.container = that._getDomSize(this._globals.containerIsBody ? that.dom.window[0] : this.dom.container[0])
     dimensions.modal = that._getDomSize(that.items[that.state.active].dom.modal[0]);
     dimensions.clickedEl = that._getDomSize(that.state.clickedEl);
+
+    dimensions.autoheight = (that._globals.containerIsBody) ? dimensions.window.height : dimensions.container.height;
+
     return dimensions;
+  }
+  _getDomSize(domObject) {
+    var isWindow = $.isWindow(domObject),
+        rectOriginal,
+        rectComputed,
+        d = document,
+        documentElement = d.documentElement,
+        documentBody = d.body;
+    
+    if (isWindow) {
+      rectComputed = {
+        el: domObject,
+        left: 0,
+        top: 0,
+        right: documentElement.clientWidth,
+        bottom: documentElement.clientHeight,
+        width: documentElement.clientWidth,
+        height: documentElement.clientHeight,
+        scrollWidth: Math.max(
+          documentBody.scrollWidth, documentElement.scrollWidth,
+          documentBody.offsetWidth, documentElement.offsetWidth,
+          documentBody.clientWidth, documentElement.clientWidth
+        ),
+        scrollHeight: Math.max(
+          documentBody.scrollHeight, documentElement.scrollHeight,
+          documentBody.offsetHeight, documentElement.offsetHeight,
+          documentBody.clientHeight, documentElement.clientHeight
+        ),
+        scrollLeft: window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft,
+        scrollTop: window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop
+      }
+      rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width;
+      rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height;
+    } else {
+      rectOriginal = domObject.getBoundingClientRect()
+      rectComputed = this.$.extend({}, rectOriginal)
+      
+      rectComputed.el = domObject;
+      rectComputed.width = rectComputed.right - rectComputed.left;
+      rectComputed.height = rectComputed.bottom - rectComputed.top;
+      rectComputed.scrollWidth = domObject.scrollWidth;
+      rectComputed.scrollHeight = domObject.scrollHeight;
+      rectComputed.scrollLeft = domObject.scrollLeft;
+      rectComputed.scrollTop = domObject.scrollTop;
+      rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width;
+      rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height;
+    }
+    
+    return rectComputed;
   }
   _getCoordsFromPlacement(value, dimensions) {
     var that = this,
@@ -292,8 +345,8 @@ class njBox {
     } else {
       leftForTopAndBottom = dimensions.clickedEl.left + ((dimensions.clickedEl.width - dimensions.modal.width) / 2)
     }
-    if (dimensions.containerScrollLeft) {
-      leftForTopAndBottom += dimensions.containerScrollLeft;
+    if (dimensions.container.scrollLeft) {
+      leftForTopAndBottom += dimensions.container.scrollLeft;
     }
 
     if (popoverTallerThanClicked) {
@@ -301,14 +354,14 @@ class njBox {
     } else {
       topForLeftAndRight = dimensions.clickedEl.top + ((dimensions.clickedEl.height - dimensions.modal.height) / 2)
     }
-    if (dimensions.containerScrollTop) {
-      topForLeftAndRight += dimensions.containerScrollTop;
+    if (dimensions.container.scrollTop) {
+      topForLeftAndRight += dimensions.container.scrollTop;
     }
 
     switch (placement) {
       case 'center':
-        coords[0] = (dimensions.containerWidth - dimensions.modal.width) / 2
-        coords[1] = (dimensions.containerHeight - dimensions.modal.height) / 2
+        coords[0] = (dimensions.container.width - dimensions.modal.width) / 2
+        coords[1] = (dimensions.container.height - dimensions.modal.height) / 2
       break;
       
       case 'bottom':
@@ -349,12 +402,12 @@ class njBox {
         boundaryCoords = {
           top:0,
           left:0,
-          right: dimensions.winWidth,
-          bottom: dimensions.winHeight,
-          width: dimensions.winWidth,
-          height: dimensions.winHeight,
-          scrollWidth: dimensions.winScrollWidth,
-          scrollHeight: dimensions.winScrollHeight
+          right: dimensions.window.width,
+          bottom: dimensions.window.height,
+          width: dimensions.window.width,
+          height: dimensions.window.height,
+          scrollWidth: dimensions.window.scrollWidth,
+          scrollHeight: dimensions.window.scrollHeight
         }
       } else {
         boundaryCoords = this._getDomSize(boundaryEl)
@@ -435,65 +488,11 @@ class njBox {
       return this.data.optionsPassed[optionName]
     }
   }
-  _getContainerSize() {
-    var o = this.o,
-        documentElement = document.documentElement,
-        documentBody = document.body;
 
-    var d = {},
-        winScrollTop = window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop,
-        winScrollLeft = window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft,
-        winScrollWidth = Math.max(
-          documentBody.scrollWidth, documentElement.scrollWidth,
-          documentBody.offsetWidth, documentElement.offsetWidth,
-          documentBody.clientWidth, documentElement.clientWidth
-        ),
-        winScrollHeight = Math.max(
-          documentBody.scrollHeight, documentElement.scrollHeight,
-          documentBody.offsetHeight, documentElement.offsetHeight,
-          documentBody.clientHeight, documentElement.clientHeight
-        );
-    if (this._globals.containerIsBody) {
-      d.containerWidth = documentElement.clientWidth;
-      d.containerHeight = documentElement.clientHeight;
-      d.containerScrollWidth = winScrollWidth;
-      d.containerScrollHeight = winScrollHeight;
-      d.containerScrollTop = winScrollTop;
-      d.containerScrollLeft = winScrollLeft;
-    } else {
-      d.containerWidth = this.dom.container[0].clientWidth;
-      d.containerHeight = this.dom.container[0].clientHeight;
-      d.containerScrollWidth = this.dom.container[0].scrollWidth;
-      d.containerScrollHeight = this.dom.container[0].scrollHeight;
-      d.containerScrollTop = this.dom.container[0].scrollTop;
-      d.containerScrollLeft = this.dom.container[0].scrollLeft;
-    }
 
-    d.containerMaxScrollTop = d.containerScrollHeight - d.containerHeight;
+  
 
-    d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
-    d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
-    d.winScrollTop = winScrollTop;
-    d.winScrollLeft = winScrollLeft;
-    d.winScrollWidth = winScrollWidth;
-    d.winScrollHeight = winScrollHeight;
 
-    d.autoheight = (this._globals.containerIsBody) ? d.winHeight : d.containerHeight;
-    // if(this._o.scrollbarHidden) {
-    //  this._o.winWidth -= njBox.g.scrollbarSize;
-    // }
-    return d;
-  }
-  _getDomSize(domObject) {
-    var rectOriginal = domObject.getBoundingClientRect(),
-        rectComputed = this.$.extend({}, rectOriginal);
-    
-    rectComputed.el = domObject;
-    rectComputed.width = rectComputed.right - rectComputed.left;
-    rectComputed.height = rectComputed.bottom - rectComputed.top;
-    
-    return rectComputed;
-  }
   _setMaxHeight(item) {
     let o = this.o;
 

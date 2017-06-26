@@ -29,10 +29,13 @@
           var that = this,
               o = this.o,
               coords,
-              activeModal = this.items[this.state.active].dom.modal,
-              coordinates = this.state.coordinatesFromPositionMethod;
-
-
+              activeModal = that.items[that.state.active].dom.modal,
+              coordinates = that.state.coordsFromPosition;
+          
+          if(this.state.positionArgs.length) {
+            coordinates = this.state.coordsFromPosition = this.state.positionArgs[0];
+          }
+          
           if (this._globals.popover) {
             if (coordinates) {
               coords = (typeof coordinates === 'function') ? coordinates() : coordinates;

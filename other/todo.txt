@@ -1,11 +1,10 @@
-*потестить координаты в position методе
-* заменить все this на that для уменьшния размеров мин файла
+* переименовать parseCoords во что-то и использовать везде для парсинга строки с пробелом
 * все ссылки на дом элементы хранить в обертках j и сделать методы append/prepend
 * ранить defaults в ссылке где-то в инстансе, что-бы был доступ елси нету njbox в глобальном контексте
-* переименовать parseCoords во что-то и использовать везде для парсинга строки с пробелом
 * подумать как избавить от обращения к глобальным njBox....
 * autofocus сделать опциональным
 * проверить placement как функцию и сделать onplacement callback
+* заменить все this на that для уменьшния размеров мин файла
 * disable autofocus on popovers
 
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.

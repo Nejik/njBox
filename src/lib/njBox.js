@@ -127,6 +127,7 @@ class njBox {
     this._cb('inited');
   }
   show(index) {
+    this.state.showArgs = arguments;
     this._init();//try to init
     if (index !== undefined) this.state.active = index - 1;
 
@@ -189,6 +190,7 @@ class njBox {
     return this;
   }
   hide() {
+    this.state.hideArgs = arguments;
     if (this.state.state !== 'shown') {
       this._e('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
       return;
@@ -205,12 +207,12 @@ class njBox {
 
     return this;
   }
-  position(coordinates) {//cordinates used only for popover mode
+  position() {
+    this.state.positionArgs = arguments;
+
     var that = this,
         o = this.o,
         state = that.state;
-    
-    this.state.coordinatesFromPositionMethod = coordinates;
 
     if (!state || !state.inited || (state.state !== 'show' && state.state !== 'shown')) return;
     
@@ -243,6 +245,7 @@ class njBox {
     return this;
   }
   destroy() {
+    this.state.destroyArgs = arguments;
     if (!this.state.inited || this.state.state !== 'inited') {
       this._e('njBox, we can destroy only initialized && hidden modals.');
       return;
@@ -268,6 +271,7 @@ class njBox {
     return this;
   }
   update() {
+    this.state.updateArgs = arguments;
     this.items = this._createItems();
 
     this._addClickHandlers();

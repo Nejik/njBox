@@ -10,7 +10,6 @@ let $ = window.jQuery || j;
 import {
   getDefaultInfo,
   getItemFromDom,
-  parseCoords,
   defaults
 } from 'lib/utils.js';
 
@@ -110,7 +109,7 @@ class njBox {
       //extend global options with gathered from dom element
       $.extend(true, this.o, this.data.optionsGathered)
     }
-    this._options_setted();
+    this._cb('options_setted', o);
 
     //create popup container dom elements
     this._createDom();
@@ -127,7 +126,6 @@ class njBox {
     this.state.inited = true;
     this._cb('inited');
   }
-  
   show(index) {
     this._init();//try to init
     if (index !== undefined) this.state.active = index - 1;
@@ -160,15 +158,16 @@ class njBox {
 
     this._backdrop('show');
     
-    var containerToInsert;
 
-    //insert wrap
+    var containerToInsert;
+    //insert modal to page
     if (this._globals.popover) {
       containerToInsert = this.dom.container[0];
     } else {
       this.dom.container[0].appendChild(this.dom.wrap[0]);
       containerToInsert = this.dom.items[0];
     }
+
     //set event handlers
     this._addListeners();
 
@@ -209,9 +208,9 @@ class njBox {
   position(coordinates) {//cordinates used only for popover mode
     var that = this,
         o = this.o,
-        activeModal = this.items[this.state.active].dom.modal,
-        coords,
         state = that.state;
+    
+    this.state.coordinatesFromPositionMethod = coordinates;
 
     if (!state || !state.inited || (state.state !== 'show' && state.state !== 'shown')) return;
     
@@ -237,28 +236,50 @@ class njBox {
         'height': this.state.dimensions.container.scrollHeight + 'px'
       });
     }
-
-    if (this._globals.popover) {
-      if (coordinates) {
-        coords = (typeof coordinates === 'function') ? coordinates() : coordinates;
-      } else {
-        coords = this._getCoordsFromPlacement(o.placement, this.state.dimensions);
-      }
-
-      coords = parseCoords(coords);
-      this.state.coords = coords;
-
-      if(this._globals.popover && this.state.coords && this.state.coords.length === 2) {
-        activeModal.css('left', this.state.coords[0] + "px")
-                  .css('top', this.state.coords[1] + "px")
-      }
-    } else {
-      this._setMaxHeight(this.items[this.state.active]);
-    }
-
+    
+    this._setMaxHeight(this.items[this.state.active]);
     
     this._cb('positioned');
     return this;
+  }
+  destroy() {
+    if (!this.state.inited || this.state.state !== 'inited') {
+      this._e('njBox, we can destroy only initialized && hidden modals.');
+      return;
+    }
+
+    this._removeClickHandlers();
+
+
+    this.dom.container.removeClass('njb-relative');
+
+    this._cb('destroy');
+
+    this._events =
+      this._globals =
+      this._handlers =
+      this.items =
+      this.itemsRaw =
+      this.dom =
+      this.$ = undefined;
+    this.o = {};
+
+
+    return this;
+  }
+  update() {
+    this.items = this._createItems();
+
+    this._addClickHandlers();
+
+    return this;
+  }
+  _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
+    if (this.data.optionsGathered[optionName] !== undefined) {
+      return this.data.optionsGathered[optionName]
+    } else if(this.data.optionsPassed[optionName] !== undefined) {
+      return this.data.optionsPassed[optionName]
+    }
   }
   _getDimensions() {
     var that = this,
@@ -321,167 +342,10 @@ class njBox {
     
     return rectComputed;
   }
-  _getCoordsFromPlacement(value, dimensions) {
-    var that = this,
-        o = that.o,
-        placement = value,
-        cbPlacement = that._cb('placement', dimensions.modal.el, dimensions.clickedEl.el);
-    
-    if (cbPlacement !== undefined) placement = cbPlacement;
-
-    if(typeof placement === 'function') placement = placement();
-
-    placement = parseCoords(placement);
-
-    var popoverWiderThanClicked = dimensions.modal.width > dimensions.clickedEl.width,
-        popoverTallerThanClicked = dimensions.modal.height > dimensions.clickedEl.height,
-        offset = parseCoords(o.offset),
-        coords = [],
-        leftForTopAndBottom,
-        topForLeftAndRight;
-    
-    if (popoverWiderThanClicked) {
-      leftForTopAndBottom = dimensions.clickedEl.left - ((dimensions.modal.width - dimensions.clickedEl.width) / 2)
-    } else {
-      leftForTopAndBottom = dimensions.clickedEl.left + ((dimensions.clickedEl.width - dimensions.modal.width) / 2)
-    }
-    if (dimensions.container.scrollLeft) {
-      leftForTopAndBottom += dimensions.container.scrollLeft;
-    }
-
-    if (popoverTallerThanClicked) {
-      topForLeftAndRight = dimensions.clickedEl.top - ((dimensions.modal.height - dimensions.clickedEl.height) / 2)
-    } else {
-      topForLeftAndRight = dimensions.clickedEl.top + ((dimensions.clickedEl.height - dimensions.modal.height) / 2)
-    }
-    if (dimensions.container.scrollTop) {
-      topForLeftAndRight += dimensions.container.scrollTop;
-    }
-
-    switch (placement) {
-      case 'center':
-        coords[0] = ((dimensions.container.width - dimensions.modal.width) / 2) + dimensions.window.scrollLeft;
-        coords[1] = ((dimensions.container.height - dimensions.modal.height) / 2) + dimensions.window.scrollTop
-      break;
-      
-      case 'bottom':
-        coords[0] = leftForTopAndBottom;
-        coords[1] = dimensions.clickedEl.bottom + offset[1];
-      break;
-
-      case 'top':
-        coords[0] = leftForTopAndBottom;
-        coords[1] = dimensions.clickedEl.top - dimensions.modal.height - offset[1];
-      break;
-
-      case 'left':
-        coords[0] = dimensions.clickedEl.left - dimensions.modal.width - offset[0];
-        coords[1] = topForLeftAndRight;
-      break
-
-      case 'right':
-        coords[0] = dimensions.clickedEl.right + offset[0];
-        coords[1] = topForLeftAndRight;
-      break
-    }
-    
-    return that._checkBounds(coords);
-  }
-  _checkBounds(currentcoords) {
-    var that = this,
-        o = that.o,
-        boundary = o.boundary,
-        offset = parseCoords(o.offset),
-        dimensions = that.state.dimensions,
-        boundaryCoords = this._getDomSize(window),
-        fixedCoords = currentcoords;
-    
-    if(!boundary) return currentcoords;
-    
-    //fix negative left position
-    if (currentcoords[0] < boundaryCoords.left) {
-      fixedCoords[0] = boundaryCoords.left;
-    }
-    
-    //fix negative top position
-    if (currentcoords[1] < boundaryCoords.top) {
-      fixedCoords[1] = boundaryCoords.top;
-    }
-
-    //fix negative right position
-    if(currentcoords[0] + dimensions.modal.width > boundaryCoords.scrollWidth) {
-      fixedCoords[0] = (boundaryCoords.scrollWidth - dimensions.modal.width)
-    }
-    
-    //fix negative bottom position
-    if (currentcoords[1] + dimensions.modal.height > boundaryCoords.scrollHeight) {
-      fixedCoords[1] = (boundaryCoords.scrollHeight - dimensions.modal.height);
-    }
-
-    return fixedCoords;
-  }
-  destroy() {
-    if (!this.state.inited || this.state.state !== 'inited') {
-      this._e('njBox, we can destroy only initialized && hidden modals.');
-      return;
-    }
-
-    this._removeClickHandlers();
-
-
-    this.dom.container.removeClass('njb-relative');
-
-    this._cb('destroy');
-
-    this._events =
-      this._globals =
-      this._handlers =
-      this.items =
-      this.itemsRaw =
-      this.dom =
-      this.$ = undefined;
-    this.o = {};
-
-
-    return this;
-  }
-  update() {
-    this.items = this._createItems();
-
-    this._addClickHandlers();
-
-    return this;
-  }
-  _options_setted() {
-    var o = this.o,
-        that = this;
-    
-    this._cb('options_setted', o);
-
-    if(o.layout === 'popover') {
-      that._globals.popover = true
-      o.backdrop = that._getPassedOption('backdrop') || false;
-      o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-      o.out = that._getPassedOption('out') || true;
-      o.container = 'body';//you cant change container in popover mode
-    }
-  }
-  _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
-    if (this.data.optionsGathered[optionName] !== undefined) {
-      return this.data.optionsGathered[optionName]
-    } else if(this.data.optionsPassed[optionName] !== undefined) {
-      return this.data.optionsPassed[optionName]
-    }
-  }
-
-
-  
-
-
   _setMaxHeight(item) {
     let o = this.o;
 
-    if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
+    if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image' || this._globals.popover) return;
 
     if (!this.state.autoheightAdded) {
       // this.dom.wrap.addClass('njb-wrap--autoheight');
@@ -749,7 +613,8 @@ class njBox {
     } else {
       modal.addClass('njb--content');
     }
-    if(this._globals.popover) modal.addClass('njb--popover');
+
+    item.toInsert = modalOuter;
 
     this._cb('item_domready', item, index);
   }
@@ -815,7 +680,7 @@ class njBox {
     this.dom.items = this.dom.wrap.find('.njb-items');
 
     //if container custom element(not body), use forcely absolute position
-    if (!this._globals.containerIsBody && o.layout !== 'popover') {
+    if (!this._globals.containerIsBody && o.layout === 'fixed') {
       o.layout = 'absolute';
       this.dom.wrap.addClass('njb-absolute');
     }
@@ -848,7 +713,7 @@ class njBox {
   }
   _drawItem(item, prepend, container) {
     var o = this.o,
-        itemToInsert = this._globals.popover ? item.dom.modal[0] : item.dom.modalOuter[0];
+        itemToInsert = item.toInsert[0];
     
     this._cb('item_prepare', item);
 
@@ -1009,8 +874,7 @@ class njBox {
   _addListeners() {//all other event handlers
     var o = this.o,
       that = this,
-      h = this._handlers,
-      popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
+      h = this._handlers;
 
     h.container_resize = function (e) {
       that.position();
@@ -1040,17 +904,15 @@ class njBox {
       }
     }
 
-    if (!that._globals.popover) {
-      this.dom.container.on('resize', h.container_resize)
-      .on('scroll', h.container_scroll)
-    }
-
-    this.dom.container.on('click', h.container_out)
+    that.dom.container.on('resize', h.container_resize)
+                      .on('scroll', h.container_scroll)
+    
+    that.dom.container.on('click', h.container_out)
 
     h.wrap_resize = function () {
       that.position();
     }
-    h.wrap_scroll = function (e) {
+    h.wrap_scroll = function () {
       that.position();
     }
     h.wrap_keydown = function (e) {
@@ -1087,34 +949,26 @@ class njBox {
       that.hide();
     }
 
-    if (!that._globals.popover) {
-      popWrap
-      .on('resize', h.wrap_resize)
-      .on('scroll', h.wrap_scroll)
-    }
-    popWrap
-      .on('keydown', h.wrap_keydown)
-      .delegate('[data-njb-close]', 'click', h.wrap_close)
-      .delegate('[data-njb-ok]', 'click', h.wrap_ok)
-      .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+    that.dom.wrap .on('resize', h.wrap_resize)
+                  .on('scroll', h.wrap_scroll)
+                  .on('keydown', h.wrap_keydown)
+                  .delegate('[data-njb-close]', 'click', h.wrap_close)
+                  .delegate('[data-njb-ok]', 'click', h.wrap_ok)
+                  .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
 
-    h.window_resize = function (e) {
+    h.window_resize = function () {
       that.position();
     }
-    h.window_scroll = function (e) {
+    h.window_scroll = function () {
       that.position();
     }
-    h.window_orientation = function (e) {
+    h.window_orientation = function () {
       that.position();
     }
 
-    if (!that._globals.popover) {
-      this.dom.window
-      .on('resize', h.window_resize)
-      .on('scroll', h.window_scroll)
-      .on('orientationchange', h.window_orientation)
-    }
-
+    that.dom.window.on('resize', h.window_resize)
+                    .on('scroll', h.window_scroll)
+                    .on('orientationchange', h.window_orientation)
 
     h.focusCatchFirst = function (e) {
       var related = e.relatedTarget,
@@ -1138,18 +992,17 @@ class njBox {
     this.dom.focusCatchFirst.on('focus', h.focusCatchFirst)
     this.dom.focusCatchLast.on('focus', h.focusCatchLast)
 
-    this._cb('listerens_added');
+    this._cb('listeners_added');
   }
   _removeListeners() {
     var h = this._handlers,
-        that = this,
-        popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
+        that = this;
 
-    this.dom.container.off('resize', h.container_resize)
+    that.dom.container.off('resize', h.container_resize)
       .off('scroll', h.container_scroll)
       .off('click', h.container_out)
 
-    popWrap
+    that.dom.wrap
       .off('resize', h.wrap_resize)
       .off('scroll', h.wrap_scroll)
       .off('keydown', h.wrap_keydown)
@@ -1158,7 +1011,7 @@ class njBox {
       .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
 
 
-    this.dom.window
+    that.dom.window
       .off('resize', h.window_resize)
       .off('scroll', h.window_scroll)
       .off('orientationchange', h.window_orientation)
@@ -1170,8 +1023,8 @@ class njBox {
       elsClick: elsClick
     }
 
-    this.dom.focusCatchFirst.off('focus', h.focusCatchFirst)
-    this.dom.focusCatchLast.off('focus', h.focusCatchLast)
+    that.dom.focusCatchFirst.off('focus', h.focusCatchFirst)
+    that.dom.focusCatchLast.off('focus', h.focusCatchLast)
 
     this._cb('listeners_removed');
   }
@@ -1736,23 +1589,23 @@ class njBox {
 
   //event emitter
   on(event, fct) {
-    this._events = this._events || {};
-    this._events[event] = this._events[event] || [];
-    this._events[event].push(fct);
+    this._e = this._e || {};//._e - events
+    this._e[event] = this._e[event] || [];
+    this._e[event].push(fct);
 
     return this;
   }
   off(event, fct) {
-    this._events = this._events || {};
-    if (event in this._events === false) return;
-    this._events[event].splice(this._events[event].indexOf(fct), 1);
+    this._e = this._e || {};
+    if (event in this._e === false) return;
+    this._e[event].splice(this._e[event].indexOf(fct), 1);
     return this;
   }
   trigger(event /* , args... */) {
-    this._events = this._events || {};
-    if (event in this._events === false) return;
-    for (var i = 0; i < this._events[event].length; i++) {
-      this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+    this._e = this._e || {};
+    if (event in this._e === false) return;
+    for (var i = 0; i < this._e[event].length; i++) {
+      this._e[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
     }
     return this;
   }
@@ -1792,14 +1645,7 @@ njBox.autobind = function () {
     new njBox({
       elem: $(this)
     })
-  })
-  //autobind popover
-  $('[data-toggle~="popover"]').each(function() {
-    new njBox({
-      elem: $(this),
-      layout: 'popover'
-    })
-  })
+  }) 
 }
 if (typeof window !== 'undefined') {//autobind only in browser and on document ready
   $(function () {

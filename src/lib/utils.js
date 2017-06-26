@@ -101,20 +101,6 @@ export function getDefaultInfo() {
 export function getItemFromDom(dom, selector) {
 	return dom.attr(selector) !== null ? dom : dom.find(`[${selector}]`);
 }
-export function parseCoords(stringOrArray) {
-	if (typeof stringOrArray === 'string') {
-		if (/\s/.test(stringOrArray)) {
-			var arr = stringOrArray.split(' ')
-			arr[0] = parseFloat(arr[0])
-			arr[1] = parseFloat(arr[1])
-			return arr;
-		} else {
-			return stringOrArray;
-		}
-	} else if(typeof stringOrArray === 'object') {
-		return stringOrArray;
-	}
-}
 
 export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal

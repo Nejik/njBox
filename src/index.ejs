@@ -103,7 +103,10 @@
     // })
     // console.log(document.activeElement)
     var t = new njBox('.popover1', {
-      // placement: 'right',
+      // placement: 'right',,
+      placement: function() {
+        return 'bottom'
+      },
       layout:"popover"
     })
   </script>

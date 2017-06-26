@@ -50,7 +50,8 @@ let paths = {
     concatMin: '[name].min.js',
     dist: dist,
     srcAddons: {
-      'njBox-gallery': [root.resolve('src/addons/njBox-gallery.js')]
+      'njBox-gallery': [root.resolve('src/addons/njBox-gallery.js')],
+      'njBox-popover': [root.resolve('src/addons/njBox-popover.js')]
     }
   }
 }

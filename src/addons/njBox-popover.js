@@ -21,9 +21,7 @@
           o.out = that._getPassedOption('out') || true;
           o.container = 'body';//you cant change container in popover mode
         }
-        console.log('пробуем поповер', this);
         if(!that._globals.popover) return;
-        console.log('ставим поповер', this);
         
         that.on('position', function () {
           var that = this,

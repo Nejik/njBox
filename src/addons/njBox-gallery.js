@@ -38,6 +38,8 @@
         if ($.isArray(o.content)) {
           that._globals.gallery = true
         }
+        
+        if(!that._globals.gallery) return;
 
         this.on('items_raw', function () {
           this._gallery_createRawItems();

@@ -14,17 +14,17 @@
           o = this.o,
           $ = this.$;
         
-        that.on('options_setted', function () {
-          var o = this.o;
-          
-          if(o.layout === 'popover') {
-            that._globals.popover = true
-            o.backdrop = that._getPassedOption('backdrop') || false;
-            o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-            o.out = that._getPassedOption('out') || true;
-            o.container = 'body';//you cant change container in popover mode
-          }
-        })
+        if(o.layout === 'popover') {
+          that._globals.popover = true
+          o.backdrop = that._getPassedOption('backdrop') || false;
+          o.scrollbar = that._getPassedOption('scrollbar') || 'show';
+          o.out = that._getPassedOption('out') || true;
+          o.container = 'body';//you cant change container in popover mode
+        }
+        console.log('пробуем поповер', this);
+        if(!that._globals.popover) return;
+        console.log('ставим поповер', this);
+        
         that.on('position', function () {
           var that = this,
               o = this.o,

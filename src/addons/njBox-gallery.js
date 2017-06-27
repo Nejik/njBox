@@ -20,8 +20,8 @@
       text: {
         current: 'Current slide',
         total: 'Total slides',
-        prev: 'Previous dialog item',//prev slide button title
-        next: 'Next dialog item'//next slide button title
+        prev: 'Previous gallery item',//prev slide button title
+        next: 'Next gallery item'//next slide button title
       }
     },
     prototype: {
@@ -29,51 +29,51 @@
         var that = this,
           o = this.o,
           $ = this.$;
-        this.on('options_setted', function () {
-          var o = this.o;
-          if (o.gallery) {
-            this._globals.gallery = true;
-            if(o.layout === "popover") o.layout = "fixed";
-          }
+        
+        if (o.gallery) {
+          that._globals.gallery = true;
+          if(o.layout === "popover") o.layout = "fixed";
+        }
 
-          if ($.isArray(o.content)) {
-            this._globals.gallery = true
-          }
-        })
+        if ($.isArray(o.content)) {
+          that._globals.gallery = true
+        }
+
         this.on('items_raw', function () {
           this._gallery_createRawItems();
         })
         this.on('domready', function () {
-          if (this._globals.gallery) {
-            this.dom.ui_count = $(o.templates.count)
-            this.dom.ui[0].appendChild(this.dom.ui_count[0])
+          if (!this._globals.gallery) return;
 
-            this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
-            this.dom.ui_current[0].setAttribute('title', o.text.current)
-            this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
-            this.dom.ui_total[0].setAttribute('title', o.text.total)
+          this.dom.ui_count = $(o.templates.count)
+          this.dom.ui[0].appendChild(this.dom.ui_count[0])
 
-            this.dom.prev = $(o.templates.prev);
-            this.dom.prev[0].setAttribute('title', o.text.prev);
-            this.dom.next = $(o.templates.next)
-            this.dom.next[0].setAttribute('title', o.text.next);
+          this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
+          this.dom.ui_current[0].setAttribute('title', o.text.current)
+          this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
+          this.dom.ui_total[0].setAttribute('title', o.text.total)
 
-            if (o.arrows && !this.state.arrowsInserted && this._globals.gallery) {
-              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+          this.dom.prev = $(o.templates.prev);
+          this.dom.prev[0].setAttribute('title', o.text.prev);
+          this.dom.next = $(o.templates.next)
+          this.dom.next[0].setAttribute('title', o.text.next);
 
-              this.state.arrowsInserted = true;
-            }
+          if (o.arrows && !this.state.arrowsInserted && this._globals.gallery) {
+            if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+            if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+
+            this.state.arrowsInserted = true;
           }
+          
         })
         this.on('item_domready', function (item, index) {
           if (this._globals.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
         })
         this.on('inserted', function () {
-          if (that._globals.gallery) {
-            this._setQueue(this.state.active);
-            that._gallery__uiUpdate();
-          }
+          if (!that._globals.gallery) return
+
+          this._setQueue(this.state.active);
+          that._gallery__uiUpdate();
         })
         this.on('change', function () {
           that._gallery__uiUpdate();
@@ -99,25 +99,26 @@
         this.on('listeners_removed', function () {
           var h = this._handlers;
 
-          that.dom.wrap
-            .undelegate('[data-njb-prev]', 'click', h.wrap_prev)
-            .undelegate('[data-njb-next]', 'click', h.wrap_next)
+          if (that._globals.gallery) {
+            that.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev)
+                         .undelegate('[data-njb-next]', 'click', h.wrap_next)
+          }
         })
         this.on('position', function () {
           //we need autoheight for prev and next slide in gallery
-          if (this._globals.gallery) {
-            if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
-            if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
-          }
+          if (!this._globals.gallery) return; 
+
+          if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
+          if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
         })
         this.on('show', function () {
           this.state.active = this._detectIndexForOpen();
         })
         this.on('shown', function () {
-          if (this._globals.gallery) {
-            that._drawItemSiblings();
-            this._preload();
-          }
+          if (!this._globals.gallery) return;
+
+          this._drawItemSiblings();
+          this._preload();
         })
         this.on('keydown', function (e) {
           var o = this.o;
@@ -229,8 +230,8 @@
         var item = obj.item,
             tabs = obj.tabs,
             dom;
-
-        tabs.forEach(function(tabObj) {
+        
+        if(tabs) tabs.forEach(function(tabObj) {
           if(tabObj.tabindex !== null) {
             tabObj.el.setAttribute('tabindex', tabObj.tabindex)
           } else {
@@ -273,7 +274,6 @@
       _drawItemSiblings: function () {
         var o = this.o,
           that = this;
-
         if (typeof this.queue.prev.index === 'number') {
           this._moveItem(this.queue.prev.item, -110, '%');
           this._drawItem(this.queue.prev.item, true, this.dom.items[0]);
@@ -442,34 +442,51 @@
         this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
         this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
 
-        if (o.loop && this.items.length >= 3) {
-          this.dom.ui.removeClass('njb-ui--no-loop');
-          this.dom.prev[0].removeAttribute('disabled')
-          this.dom.next[0].removeAttribute('disabled')
-        } else {
-          this.dom.ui.addClass('njb-ui--no-loop');
-          this.dom.prev[0].setAttribute('disabled', true)
-          this.dom.next[0].setAttribute('disabled', true)
-        }
-
         //arrow classes
         if (index === 0) {
+          this.state.gallery_first = true;
           this.dom.ui.addClass('njb-ui--first');
         } else {
+          this.state.gallery_first = false;
           this.dom.ui.removeClass('njb-ui--first');
         }
 
         if (index === this.items.length - 1) {
+          this.state.gallery_last = true;
           this.dom.ui.addClass('njb-ui--last');
         } else {
+          this.state.gallery_last = false;
           this.dom.ui.removeClass('njb-ui--last');
         }
 
         //only one class
         if (this.items.length === 1) {
+          this.state.gallery_only = true;
           this.dom.ui.addClass('njb-ui--only');
         } else {
+          this.state.gallery_only = false;
           this.dom.ui.removeClass('njb-ui--only');
+        }
+
+        if (o.loop && this.items.length >= 3) {
+          this.state.gallery_noloop = false;
+          this.dom.ui.removeClass('njb-ui--no-loop');
+        } else {
+          this.state.gallery_noloop = true;
+          this.dom.ui.addClass('njb-ui--no-loop');
+        }
+
+        if (this.state.gallery_noloop) {
+          if (this.state.gallery_first) {
+            this.dom.prev[0].setAttribute('disabled', true)
+          } else {
+            this.dom.prev[0].removeAttribute('disabled')
+          }
+          if (this.state.gallery_last) {
+            this.dom.next[0].setAttribute('disabled', true)
+          } else {
+            this.dom.next[0].removeAttribute('disabled')
+          }
         }
       },
       _gallery_createRawItems: function () {

@@ -200,7 +200,6 @@ j.fn.undelegate = function (selector, type, fn) {
         fn = type;
         type = selector;
     }
-
     return this.each(function (i) {
         var events = this._events,
             types = this._events[type];

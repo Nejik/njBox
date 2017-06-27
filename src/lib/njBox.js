@@ -16,7 +16,7 @@ import {
 var njBox = (function(undefined, setTimeout, document) {
 
 class njBox {
-  constructor(el, options) {//el can be a string, selector/dom/j/jQuery element
+  constructor(el, options) {
     if (!arguments.length) {
       console.error('njBox, arguments not passed.');
       return;
@@ -36,7 +36,7 @@ class njBox {
     }
 
     opts = opts || {};
-    this.co = opts;//constructorOptions
+    that.co = opts;//constructorOptions
 
     //this allows users to listen init callbacks via .on() on modal instance
     setTimeout(function () {
@@ -45,6 +45,7 @@ class njBox {
   }
 
   _init() {
+    // debugger;
     //init only once
     if (this.state && this.state.inited) return;
 
@@ -78,13 +79,6 @@ class njBox {
       //... other will be added later
     }
 
-    // initializing addons
-    for (var key in njBox.addons) {
-      if (njBox.addons.hasOwnProperty(key)) {
-        this['_' + key + '_init']();
-      }
-    }
-
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
       this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
@@ -109,7 +103,13 @@ class njBox {
       //extend global options with gathered from dom element
       $.extend(true, this.o, this.data.optionsGathered)
     }
-    this._cb('options_setted', o);
+    
+    // initializing addons
+    for (var key in njBox.addons) {
+      if (njBox.addons.hasOwnProperty(key)) {
+        this['_' + key + '_init']();
+      }
+    }
 
     //create popup container dom elements
     this._createDom();
@@ -173,7 +173,7 @@ class njBox {
     this._addListeners();
 
     this._drawItem(this.items[this.state.active], false, containerToInsert);
-    this._cb('inserted')
+    this._cb('inserted');
 
     //draw modal on screen
 
@@ -862,7 +862,6 @@ class njBox {
       that.state.clickedEvent = e;
       that.state.clickedEl = el;
       that.state.focused = el;
-
       that.show();
     }
   }
@@ -1593,23 +1592,23 @@ class njBox {
 
   //event emitter
   on(event, fct) {
-    this._e = this._e || {};//._e - events
-    this._e[event] = this._e[event] || [];
-    this._e[event].push(fct);
+    this._events = this._events || {};//._events - events
+    this._events[event] = this._events[event] || [];
+    this._events[event].push(fct);
 
     return this;
   }
   off(event, fct) {
-    this._e = this._e || {};
-    if (event in this._e === false) return;
-    this._e[event].splice(this._e[event].indexOf(fct), 1);
+    this._events = this._events || {};
+    if (event in this._events === false) return;
+    this._events[event].splice(this._events[event].indexOf(fct), 1);
     return this;
   }
   trigger(event /* , args... */) {
-    this._e = this._e || {};
-    if (event in this._e === false) return;
-    for (var i = 0; i < this._e[event].length; i++) {
-      this._e[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+    this._events = this._events || {};
+    if (event in this._events === false) return;
+    for (var i = 0; i < this._events[event].length; i++) {
+      this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
     }
     return this;
   }

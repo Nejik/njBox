@@ -263,7 +263,7 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | **Advanced&nbsp;events** | | | **Events below basically used for creating addons enhancing functionality of plugin, but of course you can use it also.**
 | options_gathered | onoptions_gathered | dataObject, domEl | When options gathered from dom element. P.S. You can modify options in this object
 | options_setted | onoptions_setted | optionsObject | When all gather options steps complete, object with this options will be used in plugin
-| domready | ondomready | - | When all global dom elements needed for plugin is created P.S. Mainly els from this.dom object
+| domready | ondomready | domObject | When all global dom elements needed for plugin is created P.S. Mainly els from this.dom object
 | item_gathered | onitem_gathered | dataObject, domEl | **Gallery addon only.** Called for every item(slide). When options for each item(slide) gathered from dom element. P.S. You can modify options in this object
 | items_raw | onitems_raw | object | When plugin gather els and data for items. Item is a unit to show (for example in gallery each slide is item)
 | item_domready | onitem_domready | itemObject, index | Called for every item(slide). When dom created for each item. P.S. dom element you can find in item.dom object

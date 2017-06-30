@@ -31,21 +31,21 @@
           $ = this.$;
         
         if (o.gallery) {
-          that._globals.gallery = true;
+          that._g.gallery = true;
           if(o.layout === "popover") o.layout = "fixed";
         }
 
         if ($.isArray(o.content)) {
-          that._globals.gallery = true
+          that._g.gallery = true
         }
         
-        if(!that._globals.gallery) return;
+        if(!that._g.gallery) return;
 
         this.on('items_raw', function () {
-          this._gallery_createRawItems();
+          this._g_createRawItems();
         })
         this.on('domready', function () {
-          if (!this._globals.gallery) return;
+          if (!this._g.gallery) return;
 
           this.dom.ui_count = $(o.templates.count)
           this.dom.ui[0].appendChild(this.dom.ui_count[0])
@@ -60,7 +60,7 @@
           this.dom.next = $(o.templates.next)
           this.dom.next[0].setAttribute('title', o.text.next);
 
-          if (o.arrows && !this.state.arrowsInserted && this._globals.gallery) {
+          if (o.arrows && !this.state.arrowsInserted && this._g.gallery) {
             if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
             if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
 
@@ -68,16 +68,16 @@
           }
         })
         this.on('item_domready', function (item, index) {
-          if (this._globals.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
+          if (this._g.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
         })
         this.on('inserted', function () {
-          if (!that._globals.gallery) return
+          if (!that._g.gallery) return
 
           this._setQueue(this.state.active);
-          that._gallery__uiUpdate();
+          that._g__uiUpdate();
         })
         this.on('change', function () {
-          that._gallery__uiUpdate();
+          that._g__uiUpdate();
         })
         this.on('listeners_added', function () {
           var o = this.o,
@@ -100,14 +100,14 @@
         this.on('listeners_removed', function () {
           var h = this._handlers;
 
-          if (that._globals.gallery) {
+          if (that._g.gallery) {
             that.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev)
                          .undelegate('[data-njb-next]', 'click', h.wrap_next)
           }
         })
         this.on('position', function () {
           //we need autoheight for prev and next slide in gallery
-          if (!this._globals.gallery) return; 
+          if (!this._g.gallery) return; 
 
           if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
           if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
@@ -116,7 +116,7 @@
           this.state.active = this._detectIndexForOpen();
         })
         this.on('shown', function () {
-          if (!this._globals.gallery) return;
+          if (!this._g.gallery) return;
 
           this._drawItemSiblings();
           this._preload();
@@ -155,10 +155,10 @@
           return;
         }
 
-        if (this.state.state === 'inited' || this.state.state === 'show') {
+        if (this.state.status === 'inited' || this.state.status === 'show') {
           this.state.active = index;
           return;
-        } else if (this.state.state !== 'shown'
+        } else if (this.state.status !== 'shown'
           || index === this.state.active
           || index < 0
           || index > this.items.length - 1
@@ -244,7 +244,7 @@
         var o = this.o,
           that = this;
 
-        if (!o.preload || this.state.state !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
+        if (!o.preload || this.state.status !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
 
         var temp = o.preload.split(' '),
           prev = parseInt(temp[0]),
@@ -351,7 +351,7 @@
         }
 
         setTimeout(function () {
-          if (that.state.state !== 'shown') {
+          if (that.state.status !== 'shown') {
             that.state.itemChanging = false;
             return;//case when we hide modal when slide is changing
           }
@@ -378,12 +378,12 @@
         var o = this.o,
           that = this,
           index = this.state.active || 0;
-        if (this._globals.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
+        if (this._g.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
           index = o.start - 1;
         }
         //if we have clicked element, take index from it
-        if (this._globals.gallery && this._globals.els && this._globals.els.length && that.state.clickedEl && o.click) {
-          this._globals.els.each(function (i, el) {
+        if (this._g.gallery && this._g.els && this._g.els.length && that.state.clickedEl && o.click) {
+          this._g.els.each(function (i, el) {
             if (that.state.clickedEl === el) {
               index = i;
               return;
@@ -431,7 +431,7 @@
 
         return [prev, index, next];
       },
-      _gallery__uiUpdate: function (index) {
+      _g__uiUpdate: function (index) {
         index = index || this.state.active;
 
         var o = this.o,
@@ -490,23 +490,23 @@
           }
         }
       },
-      _gallery_createRawItems: function () {
+      _g_createRawItems: function () {
         var o = this.o;
 
-        if (!this._globals.gallery) return;
+        if (!this._g.gallery) return;
 
         if (this.$.isArray(o.content)) {
-          this._globals.items_raw = o.content;
+          this._g.items_raw = o.content;
         } else {
-          this._globals.els = this._gatherElements(o.gallery);
-          this._globals.items_raw = [];
+          this._g.els = this._gatherElements(o.gallery);
+          this._g.items_raw = [];
 
-          if (this._globals.els && this._globals.els.length) {
-            for (var index = 0; index < this._globals.els.length; index++) {
-              var element = this._globals.els[index],
+          if (this._g.els && this._g.els.length) {
+            for (var index = 0; index < this._g.els.length; index++) {
+              var element = this._g.els[index],
                 gathered_data = this._gatherData(element);
               this._cb('item_gathered', gathered_data, element);
-              this._globals.items_raw.push(gathered_data)
+              this._g.items_raw.push(gathered_data)
             }
           }
         }

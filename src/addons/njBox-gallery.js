@@ -66,7 +66,6 @@
 
             this.state.arrowsInserted = true;
           }
-          
         })
         this.on('item_domready', function (item, index) {
           if (this._globals.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);

@@ -30,8 +30,8 @@
               activeModal = that.items[that.state.active].dom.modal,
               coordinates = that.state.coordsFromPosition;
           
-          if(this.state.positionArgs.length) {
-            coordinates = this.state.coordsFromPosition = this.state.positionArgs[0];
+          if(this.state.arguments.position.length) {
+            coordinates = this.state.coordsFromPosition = this.state.arguments.position[0];
           }
           
           if (this._globals.popover) {

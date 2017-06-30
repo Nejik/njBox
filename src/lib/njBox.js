@@ -45,9 +45,7 @@ class njBox {
   }
 
   _init() {
-    // debugger;
-    //init only once
-    if (this.state && this.state.inited) return;
+    if (this.state && this.state.inited) return;//init only once
 
     var opts = this.co;//constructorOptions
     delete this.co;
@@ -57,15 +55,15 @@ class njBox {
 
     //inner options, current state of app, this.state clears after every hide
     this.state = {
-      active: 0
+      active: 0,
+      arguments: {}//here all arguments from public methods are saved (for using in callbacks/events)
     };
 
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
-    this._globals = {};
-    this._handlers = {};//all callback functions we used in event listeners lives here
-    this.data = {
+    this._globals = {
       optionsPassed: opts
     };
+    this._handlers = {};//all callback functions we used in event listeners lives here
 
     let o = this.o = $.extend({}, njBox.defaults, opts);
     if (o.jquery) $ = o.jquery;
@@ -97,11 +95,11 @@ class njBox {
       }
       $elem[0].njBox = this; //prevent multiple initialization on one element
 
-      this.data.optionsGathered = this._gatherData($elem);
-      this._cb('options_gathered', this.data.optionsGathered, $elem[0]);
+      this._globals.optionsGathered = this._gatherData($elem);
+      this._cb('options_gathered', this._globals.optionsGathered, $elem[0]);
 
       //extend global options with gathered from dom element
-      $.extend(true, this.o, this.data.optionsGathered)
+      $.extend(true, this.o, this._globals.optionsGathered)
     }
     
     // initializing addons
@@ -127,7 +125,7 @@ class njBox {
     this._cb('inited');
   }
   show(index) {
-    this.state.showArgs = arguments;
+    this.state.arguments.show = arguments;
     this._init();//try to init
     if (index !== undefined) this.state.active = index - 1;
 
@@ -190,7 +188,7 @@ class njBox {
     return this;
   }
   hide() {
-    this.state.hideArgs = arguments;
+    this.state.arguments.hide = arguments;
     if (this.state.state !== 'shown') {
       this._e('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
       return;
@@ -208,7 +206,7 @@ class njBox {
     return this;
   }
   position() {
-    this.state.positionArgs = arguments;
+    this.state.arguments.position = arguments;
 
     var that = this,
         o = this.o,
@@ -245,7 +243,7 @@ class njBox {
     return this;
   }
   destroy() {
-    this.state.destroyArgs = arguments;
+    this.state.arguments.destroy = arguments;
     if (!this.state.inited || this.state.state !== 'inited') {
       this._e('njBox, we can destroy only initialized && hidden modals.');
       return;
@@ -271,7 +269,7 @@ class njBox {
     return this;
   }
   update() {
-    this.state.updateArgs = arguments;
+    this.state.arguments.update = arguments;
     this.items = this._createItems();
 
     this._addClickHandlers();
@@ -279,10 +277,10 @@ class njBox {
     return this;
   }
   _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
-    if (this.data.optionsGathered[optionName] !== undefined) {
-      return this.data.optionsGathered[optionName]
-    } else if(this.data.optionsPassed[optionName] !== undefined) {
-      return this.data.optionsPassed[optionName]
+    if (this._globals.optionsGathered[optionName] !== undefined) {
+      return this._globals.optionsGathered[optionName]
+    } else if(this._globals.optionsPassed[optionName] !== undefined) {
+      return this._globals.optionsPassed[optionName]
     }
   }
   _getDimensions() {
@@ -470,18 +468,18 @@ class njBox {
   _createItems() {
     var o = this.o;
 
-    this.data.els = this.o.el;
-    this.data.items_raw = [this.o];
+    this._globals.els = this.o.el;
+    this._globals.items_raw = [this.o];
 
-    this._cb('items_raw', this.data);
+    this._cb('items_raw', this._globals);
 
-    if (o.buttonrole && this.data.els) {
-      this.data.els.attr('role', o.buttonrole);
+    if (o.buttonrole && this._globals.els) {
+      this._globals.els.attr('role', o.buttonrole);
     }
 
     let items = [];
-    for (let i = 0, l = this.data.items_raw.length; i < l; i++) {
-      items.push(this._createItem(this.data.items_raw[i], i))
+    for (let i = 0, l = this._globals.items_raw.length; i < l; i++) {
+      items.push(this._createItem(this._globals.items_raw[i], i))
     }
     return items;
   }
@@ -830,8 +828,8 @@ class njBox {
     this._handlers.elsClick = this._clickHandler();
 
     if (o.click) {
-      if (this.data.els && this.data.els.length) {
-        this.data.els.on('click', this._handlers.elsClick)
+      if (this._globals.els && this._globals.els.length) {
+        this._globals.els.on('click', this._handlers.elsClick)
       }
     }
 
@@ -868,8 +866,8 @@ class njBox {
   _removeClickHandlers() {
     var o = this.o;
 
-    if (this.data.els && this.data.els.length) {
-      this.data.els.off('click', this._handlers.elsClick)
+    if (this._globals.els && this._globals.els.length) {
+      this._globals.els.off('click', this._handlers.elsClick)
 
       if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
     }
@@ -1288,7 +1286,7 @@ class njBox {
         if (this.state.backdropVisible) return;
 
         if (o.backdrop === true) {
-          if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animShowDur + 'ms')
+          if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animation.showDur + 'ms')
 
           //insert backdrop div
           if (o.layout === 'absolute') this.dom.backdrop.addClass('njb-absolute');
@@ -1306,7 +1304,7 @@ class njBox {
 
       case 'hide':
         if (!this.state.backdropVisible) return;
-        if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animHideDur + 'ms')
+        if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animation.hideDur + 'ms')
 
         this.dom.backdrop.removeClass('njb-backdrop--visible');
 
@@ -1374,10 +1372,12 @@ class njBox {
 
     if (appended) document.body.removeChild(div);
 
-    this._globals.animShow = animShow;
-    this._globals.animHide = animHide;
-    this._globals.animShowDur = animShowDur;
-    this._globals.animHideDur = animHideDur;
+    this._globals.animation = {
+      show: animShow,
+      hide: animHide,
+      showDur: animShowDur,
+      hideDur: animHideDur
+    }
   }
   _getAnimTime(el, property) {//get max animation or transition time
     function _getMaxTransitionDuration(el, property) {//function also can get animation duration
@@ -1422,10 +1422,10 @@ class njBox {
     var o = this.o,
       that = this,
       modal = this.items[this.state.active].dom.modal,
-      animShow = this._globals.animShow,
-      animHide = this._globals.animHide,
-      animShowDur = this._globals.animShowDur,
-      animHideDur = this._globals.animHideDur;
+      animShow = this._globals.animation.show,
+      animHide = this._globals.animation.hide,
+      animShowDur = this._globals.animation.showDur,
+      animHideDur = this._globals.animation.hideDur;
 
 
     switch (type) {
@@ -1521,6 +1521,7 @@ class njBox {
     }
 
     this.state = {
+      arguments: {},
       inited: true,
       state: 'inited',
       active: 0

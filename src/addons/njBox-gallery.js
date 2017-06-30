@@ -382,8 +382,8 @@
           index = o.start - 1;
         }
         //if we have clicked element, take index from it
-        if (this._globals.gallery && this.data.els && this.data.els.length && that.state.clickedEl && o.click) {
-          this.data.els.each(function (i, el) {
+        if (this._globals.gallery && this._globals.els && this._globals.els.length && that.state.clickedEl && o.click) {
+          this._globals.els.each(function (i, el) {
             if (that.state.clickedEl === el) {
               index = i;
               return;
@@ -496,17 +496,17 @@
         if (!this._globals.gallery) return;
 
         if (this.$.isArray(o.content)) {
-          this.data.items_raw = o.content;
+          this._globals.items_raw = o.content;
         } else {
-          this.data.els = this._gatherElements(o.gallery);
-          this.data.items_raw = [];
+          this._globals.els = this._gatherElements(o.gallery);
+          this._globals.items_raw = [];
 
-          if (this.data.els && this.data.els.length) {
-            for (var index = 0; index < this.data.els.length; index++) {
-              var element = this.data.els[index],
+          if (this._globals.els && this._globals.els.length) {
+            for (var index = 0; index < this._globals.els.length; index++) {
+              var element = this._globals.els[index],
                 gathered_data = this._gatherData(element);
               this._cb('item_gathered', gathered_data, element);
-              this.data.items_raw.push(gathered_data)
+              this._globals.items_raw.push(gathered_data)
             }
           }
         }

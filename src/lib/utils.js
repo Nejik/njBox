@@ -162,7 +162,7 @@ export let defaults = {
 		header        : '<header class="njb__header" data-njb-header></header>',
 		footer        : '<footer class="njb__footer" data-njb-footer></footer>',
 		close         : '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',
-		focusCatcher  : '<i tabindex="0" class="njb-focus-catch" aria-hidden="true"></i>',
+		focusCatcher  : '<span tabindex="0" class="njb-focus-catch" aria-hidden="true"></span>',
 
 		preloader     : '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui            : '<div class="njb-ui"></div>',

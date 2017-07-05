@@ -45,8 +45,8 @@
     <a href="https://s-media-cache-ak0.pinimg.com/736x/66/a5/eb/66a5ebd96a859c119ce18260dd7a8ba5.jpg">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg">link</a>
   </div>
-  <!--<a href="#!" data-njb-content="test" data-toggle="modal">click1</a>-->
-  <!--<a href="#modal2" class="el">click2</a>-->
+  <!--<a href="#!" class="el" data-njb-content="test" data-toggle="modal">click1</a>-->
+  <a href="#modal2" class="el" data-njb-header="header">click2</a>
   
   <div id="modal1" class="njb-hidden">
     <h1 id="test">modal title</h1>
@@ -59,10 +59,10 @@
    </div>
   <script src="njBox.js"></script>
   <script src="njBox-gallery.js"></script>
-  <!--<script src="njBox-popover.js"></script>-->
+  <script src="njBox-popover.js"></script>
   <script>
     t = new njBox('.el').on('inited', function(event, arg1, arg2) {
-      // console.log(this);
+      console.log(this);
     })
     // console.log(document.activeElement)
     // var t = new njBox('.popover1', {

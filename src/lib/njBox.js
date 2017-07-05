@@ -70,14 +70,6 @@ class njBox {
     if (o.jquery) $ = o.jquery;
     that.$ = $;
 
-    that.dom = {
-      document: $(document),
-      window: $(window),
-      html: $(document.documentElement),
-      body: $(document.body)
-      //... other will be added later
-    }
-
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
       that._e('njBox, no elements (o.elem) or content (o.content) for modal.');
@@ -111,7 +103,7 @@ class njBox {
     }
 
     //create popup container dom elements
-    $.extend(that.dom, that._createDom());
+    that.dom = that._createDom();
     that._cb('domready', that.dom);
 
     var containerIsBody = that._g.containerIsBody = that.dom.container[0] === that.dom.body[0];
@@ -124,21 +116,19 @@ class njBox {
       o.layout = 'absolute';
       that.dom.wrap.addClass('njb-absolute');
     }
-
     
     that._g.els = that.o.el;
-    if (o.buttonrole && that._g.els) that._g.els.attr('role', o.buttonrole);
-
     that._g.items_raw = [that.o];
     that._cb('items_raw', that._g);
 
     that.items = that._createItems(that._g.items_raw);
  
-    //this method calculate show/hide animation durations, because native callbacks buggy
-    that._calculateAnimations();
+    //this method calculate show/hide animation durations, because native callbacks are buggy
+    that._g.animation = that._calculateAnimations();
 
     //add initial click handlers
-    that._addClickHandlers();
+    that._addClickHandler();
+    if (o.buttonrole && that._g.els) that._g.els.attr('role', o.buttonrole);
 
     that.state.inited = true;
     that._cb('inited');
@@ -268,7 +258,7 @@ class njBox {
       return;
     }
 
-    this._removeClickHandlers();
+    this._removeClickHandler();
 
 
     this.dom.container.removeClass('njb-relative');
@@ -291,9 +281,321 @@ class njBox {
     this.state.arguments.update = arguments;
     this.items = this._createItems();
 
-    this._addClickHandlers();
+    this._addClickHandler();
 
     return this;
+  }
+  _gatherData(el) {
+    let o = this.o,
+      $el = $(el),
+      dataO = $.extend(true, {}, $el.data()),//data original, copy options to separate object, because we want to delete some options during processing, if we do that on native domstrinmap, deleting will also touch html
+      dataProcessed = {};//data processed
+
+    if (!$el.length) {
+      return dataProcessed;
+    }
+
+    if (dataO.njbOptions) {
+      try {
+        dataProcessed = $.parseJSON(dataO.njbOptions);
+        delete dataO.njbOptions;
+      }
+      catch (e) {
+        this._e('njBox, fail to parse options from njb-options');
+        return;
+      }
+    }
+    if ($el.length) {
+      dataProcessed.el = $el
+    }
+
+    //try to get href from original attributes
+    if ($el[0].tagName.toLowerCase() === 'a') {
+      var href = $el.attr('href');
+      if (href && href !== '#' && href !== '#!' && !(/^(?:javascript)/i).test(href)) {//test href for real info, not placeholder
+        dataProcessed.content = href;
+      }
+    }
+
+    //get title
+    if (o.title_attr) {
+      var title_attr = $el.attr(o.title_attr);
+      if (title_attr) dataProcessed.title = title_attr;
+    }
+
+    $.extend(true, dataProcessed, choosePrefixedData(dataO))
+
+    function choosePrefixedData(data) {
+      var prefixedData = {};
+
+      for (var p in data) {//use only data properties with njb prefix
+        if (data.hasOwnProperty(p) && /^njb[A-Z]+/.test(p)) {
+          var shortName = p.match(/^njb(.*)/)[1],
+            shortNameLowerCase = shortName.charAt(0).toLowerCase() + shortName.slice(1);
+
+          prefixedData[shortNameLowerCase] = transformType(data[p]);
+        }
+      }
+
+      return prefixedData;
+    }
+
+
+    function transformType(val) {//transform string from data attributes to boolean and number
+      var hasWhitespace = /\s/.test(val),
+          parsedFloat = hasWhitespace ? val : parseFloat(val);
+
+      if (val === 'true') {
+        return true;
+      } else if (val === 'false') {
+        return false;
+      } else if (!isNaN(parsedFloat)) {
+        return parsedFloat;
+      } else {
+        return val;
+      }
+    }
+
+    // this._cb('data_gathered', dataProcessed, $el[0]);
+    return dataProcessed;
+  }
+  _createItems(itemsRaw) {
+    let items = [];
+    for (var i = 0, l = itemsRaw.length; i < l; i++) {
+      items.push(this._createItem(itemsRaw[i], i))
+    }
+    return items;
+  }
+  _createItem(item, index) {
+    var that = this,
+        normalizedItem = that._normalizeItem(item);
+
+    normalizedItem.dom = that._createDomForItem(normalizedItem);
+
+    normalizedItem.toInsert = normalizedItem.dom.modalOuter;
+
+    that._cb('item_created', normalizedItem, index);
+
+    return normalizedItem;
+  }
+  _normalizeItem(item, el) {
+    var that = this,
+        evaluatedContent;
+    
+    if (typeof item.content === 'function') {
+      evaluatedContent = item.content.call(that, item);
+    } else {
+      evaluatedContent = item.content;
+    }
+
+    var content = evaluatedContent || that.o.text._missedContent;
+
+    return {
+      content: content,
+      type: item.type || that._type(content),
+      header: item.header,
+      footer: item.footer,
+      title: item.title,
+      el: item.el || el,
+      o: {
+        status: 'inited'
+      },
+      raw: item
+    }
+  }
+  _createDomForItem(item) {
+    var that = this,
+        o = this.o,
+        dom = {},
+        modalOuter,
+        modal,
+        modalFragment = document.createDocumentFragment();
+
+    //main modal wrapper
+    dom.modal = modal = $(o.templates.modal);
+    modal[0].tabIndex = '-1'
+    modal[0].njBox = that;
+
+    dom.modalOuter = modalOuter = $(o.templates.modalOuter);
+
+    if (o.role) modal.attr('role', o.role)
+    if (o.label) modal.attr('aria-label', o.label)
+    if (o.labelledby) modal.attr('aria-labelledby', o.labelledby)
+    if (o.describedby) modal.attr('aria-describedby', o.describedby)
+
+    if (!modal.length) {
+      that._e('njBox, error in o.templates.modal');
+      return;
+    }
+
+    modalOuter[0].appendChild(modal[0]);
+
+    if (item.type === "template") {
+      modal.html(item.content)
+    } else {
+      //insert body
+      dom.body = $(o.templates.body);
+      if (!dom.body.length) {
+        that._e('njBox, error in o.templates.body');
+        return;
+      }
+      //find data-njb-body in item body element
+      dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
+
+      that._insertItemBodyContent(item, dom.bodyInput);
+
+      modalFragment.appendChild(dom.body[0])
+
+      //insert header
+      if (item.header) {
+        dom.header = $(o.templates.header);
+
+        if (!dom.header.length) {
+          that._e('njBox, error in o.templates.header');
+          return;
+        }
+        //insert header info
+        dom.headerInput = getItemFromDom(dom.header, 'data-njb-header').html(item.header)
+
+        modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
+      }
+
+      //insert footer
+      if (item.footer) {
+        dom.footer = $(o.templates.footer);
+
+        if (!dom.footer.length) {
+          that._e('njBox, error in njBox.templates.footer');
+          return;
+        }
+        //insert footer info
+        dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer').html(item.footer)
+
+        modalFragment.appendChild(dom.footer[0])
+      }
+
+      //insert close button
+      if (o.close === 'inside') {
+        dom.close = $(o.templates.close);
+        dom.close.attr('title', o.text.close);
+
+        modalFragment.appendChild(dom.close[0]);
+      }
+
+      modal[0].appendChild(modalFragment)
+    }
+
+    if (item.type === 'image') {
+      modal.addClass('njb--image');
+    } else {
+      modal.addClass('njb--content');
+    }
+
+    return dom;
+  }
+  _type(content) {//detect content type
+    var type = 'html';
+
+    if (typeof content === 'object') {
+      if ((window.jQuery && content instanceof window.jQuery) || (window.j && content instanceof window.j)) {
+        return 'selector';
+      }
+    } else
+      if (/^[#.]\w/.test(content)) {
+        return 'selector';
+      } else if (/\.(png|jpg|jpeg|gif|tiff|bmp|webp)(\?\S*)?$/i.test(content)) {
+        return 'image';
+      }
+
+
+    return type;
+  }
+  _insertItemBodyContent(item, bodyInput) {
+    var o = this.o;
+
+    switch (item.type) {
+      case 'text':
+        'textContent' in bodyInput[0] ? bodyInput[0].textContent = item.content : bodyInput[0].innerText = item.content;
+        item.o.status = 'loaded';
+        break;
+      case 'html':
+        bodyInput.html(item.content)
+        item.o.status = 'loaded';
+        break;
+      case 'selector':
+        this._getItemFromSelector(item);
+        item.o.status = 'loaded';
+        break;
+      case 'image':
+        if (o.imgload === 'init') this._insertImage(item);
+        break;
+      default:
+        this._e('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
+        item.o.status = 'loaded';
+        return;
+    }
+  }
+  _getItemFromSelector(item) {
+    item.o.contentEl = $(item.content);
+
+    if (!item.o.contentEl.length) {//if we don't find element with this selector
+      item.dom.bodyInput.html(item.content)
+    }
+  }
+  _createDom() {
+    var that = this,
+        o = this.o,
+        dom = {
+          document: $(document),
+          window: $(window),
+          html: $(document.documentElement),
+          body: $(document.body)
+        };
+
+    //find container
+    dom.container = $(o.container);
+    if (!dom.container.length) {
+      that._e('njBox, can\'t find container element. (we use body instead)');
+      dom.container = dom.body;//in case if we have no container element, or wrong selector for container element
+    }
+    
+    //create core elements
+    dom.wrap = $(o.templates.wrap);
+    if (!dom.wrap.length) {
+      that._e('njBox, smth wrong with o.templates.wrap.');
+      return;
+    }
+    if (o['class']) dom.wrap.addClass(o['class']);
+    dom.wrap[0].njBox = that;
+    if (o.zindex) dom.wrap.css('zIndex', o.zindex);
+
+    dom.items = dom.wrap.find('.njb-items');
+
+    //create ui layer
+    dom.ui = $(o.templates.ui)
+    dom.wrap[0].appendChild(dom.ui[0])
+
+    dom.title = $(o.templates.title)
+    dom.ui[0].appendChild(dom.title[0])
+
+    // insert outside close button
+    if (o.close === 'outside') {
+      dom.close = $(o.templates.close)
+      dom.close.attr('title', o.text.close).attr('aria-label', o.text.close)
+
+      dom.ui[0].appendChild(dom.close[0])
+    }
+
+    // insert invisible, focusable nodes.
+    // while this dialog is open, we use these to make sure that focus never
+    // leaves modal boundaries
+    dom.focusCatchBefore = $(o.templates.focusCatcher)
+    dom.wrap[0].insertBefore(dom.focusCatchBefore[0], dom.wrap[0].firstChild)
+
+    dom.focusCatchAfter = $(o.templates.focusCatcher)
+    dom.wrap[0].appendChild(dom.focusCatchAfter[0])
+
+    return dom;
   }
   _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
     if (this._g.optionsGathered[optionName] !== undefined) {
@@ -410,307 +712,6 @@ class njBox {
       v.body.css('maxHeight', height + 'px');
     }
   }
-  _gatherData(el) {
-    let o = this.o,
-      $el = $(el),
-      dataO = $.extend(true, {}, $el.data()),//data original, copy options to separate object, because we want to delete some options during processing, if we do that on native domstrinmap, deleting will also touch html
-      dataProcessed = {};//data processed
-
-    if (!$el.length) {
-      return dataProcessed;
-    }
-
-    if (dataO.njbOptions) {
-      try {
-        dataProcessed = $.parseJSON(dataO.njbOptions);
-        delete dataO.njbOptions;
-      }
-      catch (e) {
-        this._e('njBox, fail to parse options from njb-options');
-        return;
-      }
-    }
-    if ($el.length) {
-      dataProcessed.el = $el
-    }
-
-    //try to get href from original attributes
-    if ($el[0].tagName.toLowerCase() === 'a') {
-      var href = $el.attr('href');
-      if (href && href !== '#' && href !== '#!' && !(/^(?:javascript)/i).test(href)) {//test href for real info, not placeholder
-        dataProcessed.content = href;
-      }
-    }
-
-    //get title
-    if (o.title_attr) {
-      var title_attr = $el.attr(o.title_attr);
-      if (title_attr) dataProcessed.title = title_attr;
-    }
-
-    $.extend(true, dataProcessed, choosePrefixedData(dataO))
-
-    function choosePrefixedData(data) {
-      var prefixedData = {};
-
-      for (var p in data) {//use only data properties with njb prefix
-        if (data.hasOwnProperty(p) && /^njb[A-Z]+/.test(p)) {
-          var shortName = p.match(/^njb(.*)/)[1],
-            shortNameLowerCase = shortName.charAt(0).toLowerCase() + shortName.slice(1);
-
-          prefixedData[shortNameLowerCase] = transformType(data[p]);
-        }
-      }
-
-      return prefixedData;
-    }
-
-
-    function transformType(val) {//transform string from data attributes to boolean and number
-      var hasWhitespace = /\s/.test(val),
-          parsedFloat = hasWhitespace ? val : parseFloat(val);
-
-      if (val === 'true') {
-        return true;
-      } else if (val === 'false') {
-        return false;
-      } else if (!isNaN(parsedFloat)) {
-        return parsedFloat;
-      } else {
-        return val;
-      }
-    }
-
-    // this._cb('data_gathered', dataProcessed, $el[0]);
-    return dataProcessed;
-  }
-  _createItems(itemsRaw) {
-    let items = [];
-    for (var i = 0, l = itemsRaw.length; i < l; i++) {
-      items.push(this._createItem(itemsRaw[i], i))
-    }
-    return items;
-  }
-  _createItem(item, index) {
-    let normalizedItem = this._normalizeItem(item);
-
-    this._createDomForItem(normalizedItem, index);
-
-    return normalizedItem;
-  }
-  _normalizeItem(item, el) {
-    let evaluatedContent;
-    if (typeof item.content === 'function') {
-      evaluatedContent = item.content.call(this, item);
-    } else {
-      evaluatedContent = item.content;
-    }
-
-    var content = evaluatedContent || this.o.text._missedContent;
-
-    return {
-      content: content,
-      type: item.type || this._type(content),
-      header: item.header,
-      footer: item.footer,
-      title: item.title,
-      el: item.el || el,
-      o: {
-        status: 'inited'
-      },
-      raw: item
-    }
-  }
-  _type(content) {//detect content type
-    var type = 'html';
-
-    if (typeof content === 'object') {
-      if ((window.jQuery && content instanceof window.jQuery) || (window.j && content instanceof window.j)) {
-        return 'selector';
-      }
-    } else
-      if (/^[#.]\w/.test(content)) {
-        return 'selector';
-      } else if (/\.(png|jpg|jpeg|gif|tiff|bmp|webp)(\?\S*)?$/i.test(content)) {
-        return 'image';
-      }
-
-
-    return type;
-  }
-  _createDomForItem(item, index) {
-    var o = this.o,
-      dom = item.dom = {},
-      modalOuter,
-      modal,
-      modalFragment = document.createDocumentFragment();
-
-    //main modal wrapper
-    dom.modal = modal = $(o.templates.modal);
-    modal[0].tabIndex = '-1'
-    modal[0].njBox = this;
-
-    dom.modalOuter = modalOuter = $(o.templates.modalOuter);
-
-    if (o.role) modal.attr('role', o.role)
-    if (o.label) modal.attr('aria-label', o.label)
-    if (o.labelledby) modal.attr('aria-labelledby', o.labelledby)
-    if (o.describedby) modal.attr('aria-describedby', o.describedby)
-
-    if (!modal.length) {
-      this._e('njBox, error in o.templates.modal');
-      return;
-    }
-
-    modalOuter[0].appendChild(modal[0]);
-
-    if (item.type === "template") {
-      modal.html(item.content)
-    } else {
-      //insert body
-      dom.body = $(o.templates.body);
-      if (!dom.body.length) {
-        this._e('njBox, error in o.templates.body');
-        return;
-      }
-      //find data-njb-body in item body element
-      dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
-
-      this._insertItemBodyContent(item);
-
-      modalFragment.appendChild(dom.body[0])
-
-      //insert header
-      if (item.header) {
-        dom.header = $(o.templates.header);
-
-        if (!dom.header.length) {
-          this._e('njBox, error in o.templates.header');
-          return;
-        }
-        //insert header info
-        getItemFromDom(dom.header, 'data-njb-header').html(item.header)
-
-        modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
-      }
-
-      //insert footer
-      if (item.footer) {
-        dom.footer = $(o.templates.footer);
-
-        if (!dom.footer.length) {
-          this._e('njBox, error in njBox.templates.footer');
-          return;
-        }
-        //insert footer info
-        getItemFromDom(dom.footer, 'data-njb-footer').html(item.footer)
-
-        modalFragment.appendChild(dom.footer[0])
-      }
-
-      //insert close button
-      if (o.close === 'inside') {
-        dom.close = $(o.templates.close);
-        dom.close.attr('title', o.text.close);
-
-        modalFragment.appendChild(dom.close[0]);
-      }
-
-      modal[0].appendChild(modalFragment)
-    }
-    if (item.type === 'image') {
-      modal.addClass('njb--image');
-    } else {
-      modal.addClass('njb--content');
-    }
-
-    item.toInsert = modalOuter;
-
-    this._cb('item_domready', item, index);
-  }
-  _insertItemBodyContent(item) {
-    var o = this.o;
-
-    switch (item.type) {
-      case 'text':
-        'textContent' in item.dom.bodyInput[0] ? item.dom.bodyInput[0].textContent = item.content : item.dom.bodyInput[0].innerText = item.content;
-        item.o.status = 'loaded';
-        break;
-      case 'html':
-        item.dom.bodyInput.html(item.content)
-        item.o.status = 'loaded';
-        break;
-      case 'selector':
-        this._getItemFromSelector(item);
-        item.o.status = 'loaded';
-        break;
-      case 'image':
-        if (o.imgload === 'init') this._insertImage(item);
-        break;
-      default:
-        this._e('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
-        item.o.status = 'loaded';
-        return;
-        break;
-    }
-  }
-  _getItemFromSelector(item) {
-    item.o.contentEl = $(item.content);
-
-    if (!item.o.contentEl.length) {
-      item.dom.bodyInput.html(item.content)//if we don't find element with this selector
-    }
-  }
-  _createDom() {
-    var that = this,
-        o = this.o,
-        dom = {};
-
-    //find container
-    dom.container = $(o.container);
-    if (!dom.container.length) {
-      that._e('njBox, can\'t find container element. (we use body instead)');
-      dom.container = dom.body;//in case if we have no container element, or wrong selector for container element
-    }
-    
-    //create core elements
-    dom.wrap = $(o.templates.wrap);
-    if (!dom.wrap.length) {
-      that._e('njBox, smth wrong with o.templates.wrap.');
-      return;
-    }
-    if (o['class']) dom.wrap.addClass(o['class']);
-    dom.wrap[0].njBox = that;
-    if (o.zindex) dom.wrap.css('zIndex', o.zindex);
-
-    dom.items = dom.wrap.find('.njb-items');
-
-    //create ui layer
-    dom.ui = $(o.templates.ui)
-    dom.wrap[0].appendChild(dom.ui[0])
-
-    dom.title = $(o.templates.title)
-    dom.ui[0].appendChild(dom.title[0])
-
-    // insert outside close button
-    if (o.close === 'outside') {
-      dom.close = $(o.templates.close)
-      dom.close.attr('title', o.text.close).attr('aria-label', o.text.close)
-
-      dom.ui[0].appendChild(dom.close[0])
-    }
-
-    // insert invisible, focusable nodes.
-    // while this dialog is open, we use these to make sure that focus never
-    // leaves modal boundaries
-    dom.focusCatchFirst = $(o.templates.focusCatcher)
-    dom.wrap[0].insertBefore(dom.focusCatchFirst[0], dom.wrap[0].firstChild)
-
-    dom.focusCatchLast = $(o.templates.focusCatcher)
-    dom.wrap[0].appendChild(dom.focusCatchLast[0])
-
-    return dom;
-  }
   _drawItem(item, prepend, container) {
     var o = this.o,
         itemToInsert = item.toInsert[0];
@@ -754,7 +755,7 @@ class njBox {
         item.o.contentElDisplayNone = true;
         contentEl[0].style.display = 'block';
       }
-      item.dom.bodyInput.html('')//clear body for case when first time we can't find contentEl on page
+      item.dom.bodyInput.html('')//clear body for case when first time we can't find contentEl on page and error text already here
       item.dom.bodyInput[0].appendChild(contentEl[0])
       item.o.contentElInserted = true
     }
@@ -818,21 +819,23 @@ class njBox {
       item.dom.modal[0].focus();
     }
   }
-  _addClickHandlers() {//initial click handlers
-    var o = this.o;
+  _addClickHandler() {//initial click handlers
+    var that = this,
+        o = this.o,
+        handlers = that._handlers;
 
-    this._removeClickHandlers();
+    that._removeClickHandler();
 
-    this._handlers.elsClick = this._clickHandler();
+    handlers.elsClick = that._clickHandler();
 
     if (o.click) {
-      if (this._g.els && this._g.els.length) {
-        this._g.els.on('click', this._handlers.elsClick)
+      if (that._g.els && that._g.els.length) {
+        that._g.els.on('click', handlers.elsClick)
       }
     }
 
     if (o.clickels) {
-      $(o.clickels).on('click', this._handlers.elsClick);
+      $(o.clickels).on('click', handlers.elsClick);
     }
   }
   _clickHandler() {
@@ -861,7 +864,7 @@ class njBox {
       that.show();
     }
   }
-  _removeClickHandlers() {
+  _removeClickHandler() {
     var o = this.o;
 
     if (this._g.els && this._g.els.length) {
@@ -969,7 +972,7 @@ class njBox {
                     .on('scroll', h.window_scroll)
                     .on('orientationchange', h.window_orientation)
 
-    h.focusCatchFirst = function (e) {
+    h.focusCatchBefore = function (e) {
       var related = e.relatedTarget,
         fromUi;
 
@@ -984,12 +987,12 @@ class njBox {
         that._focus_set(that.items[that.state.active], true);
       }
     }
-    h.focusCatchLast = function (e) {
+    h.focusCatchAfter = function (e) {
       that._focus_set(that.items[that.state.active]);
     }
 
-    this.dom.focusCatchFirst.on('focus', h.focusCatchFirst)
-    this.dom.focusCatchLast.on('focus', h.focusCatchLast)
+    this.dom.focusCatchBefore.on('focus', h.focusCatchBefore)
+    this.dom.focusCatchAfter.on('focus', h.focusCatchAfter)
 
     this._cb('listeners_added');
   }
@@ -1022,8 +1025,8 @@ class njBox {
       elsClick: elsClick
     }
 
-    that.dom.focusCatchFirst.off('focus', h.focusCatchFirst)
-    that.dom.focusCatchLast.off('focus', h.focusCatchLast)
+    that.dom.focusCatchBefore.off('focus', h.focusCatchBefore)
+    that.dom.focusCatchAfter.off('focus', h.focusCatchAfter)
 
     this._cb('listeners_removed');
   }
@@ -1370,7 +1373,7 @@ class njBox {
 
     if (appended) document.body.removeChild(div);
 
-    this._g.animation = {
+    return {
       show: animShow,
       hide: animHide,
       showDur: animShowDur,

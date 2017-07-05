@@ -15,13 +15,13 @@
           $ = this.$;
         
         if(o.layout === 'popover') {
-          that._globals.popover = true
+          that._g.popover = true
           o.backdrop = that._getPassedOption('backdrop') || false;
           o.scrollbar = that._getPassedOption('scrollbar') || 'show';
           o.out = that._getPassedOption('out') || true;
           o.container = 'body';//you cant change container in popover mode
         }
-        if(!that._globals.popover) return;
+        if(!that._g.popover) return;
         
         that.on('position', function () {
           var that = this,
@@ -34,7 +34,7 @@
             coordinates = this.state.coordsFromPosition = this.state.arguments.position[0];
           }
           
-          if (this._globals.popover) {
+          if (this._g.popover) {
             if (coordinates) {
               coords = (typeof coordinates === 'function') ? coordinates() : coordinates;
             } else {
@@ -44,14 +44,14 @@
             coords = that._parseCoords(coords);
             this.state.coords = coords;
           
-            if(this._globals.popover && this.state.coords && this.state.coords.length === 2) {
+            if(this._g.popover && this.state.coords && this.state.coords.length === 2) {
               activeModal.css('left', this.state.coords[0] + "px")
                         .css('top', this.state.coords[1] + "px")
             }
           }
         })
-        that.on('item_domready', function(item) {
-          if(that._globals.popover) item.dom.modal.addClass('njb--popover');
+        that.on('item_created', function(item) {
+          if(that._g.popover) item.dom.modal.addClass('njb--popover');
           item.toInsert = item.dom.modal;
         })
         that.on('listeners_added', function() {

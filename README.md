@@ -266,7 +266,7 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | domready | ondomready | domObject | When all global dom elements needed for plugin is created P.S. Mainly els from this.dom object
 | item_gathered | onitem_gathered | dataObject, domEl | **Gallery addon only.** Called for every item(slide). When options for each item(slide) gathered from dom element. P.S. You can modify options in this object
 | items_raw | onitems_raw | object | When plugin gather els and data for items. Item is a unit to show (for example in gallery each slide is item)
-| item_domready | onitem_domready | itemObject, index | Called for every item(slide). When dom created for each item. P.S. dom element you can find in item.dom object
+| item_created | onitem_created | itemObject, index | Called for every item(slide). When dom created for each item. P.S. dom element you can find in item.dom object
 | data_gathered | ondata_gathered | dataObject, domEl | On gathering data from dom element (data-njb-* atrributes, title, content, etc.) <br /> P.S. In ondata_gathered callback you can modify dataObject if you need some custom logic on gathering data.
 | item_domready | onitem_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
 | events_setted | onevents_setted | - |When event handlers attached. <br />Mostly for making addons.

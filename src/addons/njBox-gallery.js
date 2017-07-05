@@ -67,7 +67,7 @@
             this.state.arrowsInserted = true;
           }
         })
-        this.on('item_domready', function (item, index) {
+        this.on('item_created', function (item, index) {
           if (this._g.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
         })
         this.on('inserted', function () {

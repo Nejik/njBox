@@ -368,9 +368,11 @@ class njBox {
   }
   _createItem(item, index) {
     var that = this,
+        o = that.o,
         normalizedItem = that._normalizeItem(item);
 
-    normalizedItem.dom = that._createDomForItem(normalizedItem);
+    normalizedItem.dom = that._createItemDom(normalizedItem);
+    that._insertItemContent(normalizedItem, {body:!o.delayed,header:1,footer:1});
 
     normalizedItem.toInsert = normalizedItem.dom.modalOuter;
 
@@ -403,7 +405,7 @@ class njBox {
       raw: item
     }
   }
-  _createDomForItem(item) {
+  _createItemDom(item) {
     var that = this,
         o = this.o,
         dom = {},
@@ -430,9 +432,7 @@ class njBox {
 
     modalOuter[0].appendChild(modal[0]);
 
-    if (item.type === "template") {
-      modal.html(item.content)
-    } else {
+    if (item.type !== "template") {
       //insert body
       dom.body = $(o.templates.body);
       if (!dom.body.length) {
@@ -441,8 +441,6 @@ class njBox {
       }
       //find data-njb-body in item body element
       dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
-
-      that._insertItemBodyContent(item, dom.bodyInput);
 
       modalFragment.appendChild(dom.body[0])
 
@@ -455,7 +453,7 @@ class njBox {
           return;
         }
         //insert header info
-        dom.headerInput = getItemFromDom(dom.header, 'data-njb-header').html(item.header)
+        dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
 
         modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
       }
@@ -469,7 +467,7 @@ class njBox {
           return;
         }
         //insert footer info
-        dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer').html(item.footer)
+        dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
 
         modalFragment.appendChild(dom.footer[0])
       }
@@ -493,6 +491,53 @@ class njBox {
 
     return dom;
   }
+  _insertItemContent(item, fillInstructions) {//fill instruction shows what part of modal we should insert
+    var that = this,
+        o = this.o,
+        dom = item.dom;
+    
+    if (item.type === "template") {
+      that._insertContent(dom.modal, 'html', item.content)
+    } else {
+      //insert body content
+      if(fillInstructions.body && dom.bodyInput) {
+
+        that._insertContent(dom.bodyInput, item.type, item.content)
+        item.o.status = 'loaded';
+      }
+      //insert header content
+      if (fillInstructions.header && dom.headerInput) {
+        that._insertContent(dom.headerInput, 'html', item.header)
+      }
+      //insert footer content
+      if (fillInstructions.footer && dom.footerInput) {
+        that._insertContent(dom.footerInput, 'html', item.footer)
+      }
+    }
+  }
+
+  _insertContent(domEl, type, content) {
+    var o = this.o,
+        el = $(domEl);
+
+    switch (type) {
+      case 'text':
+        'textContent' in el[0] ? el[0].textContent = content : el[0].innerText = content;
+        break;
+      case 'html':
+        el.html(content)
+        break;
+      case 'selector':
+        // this._getItemFromSelector(item);
+        break;
+      case 'image':
+        // if (o.imgload === 'init') this._insertImage(item);
+        break;
+      default:
+        return;
+    }
+  }
+
   _type(content) {//detect content type
     var type = 'html';
 
@@ -509,31 +554,6 @@ class njBox {
 
 
     return type;
-  }
-  _insertItemBodyContent(item, bodyInput) {
-    var o = this.o;
-
-    switch (item.type) {
-      case 'text':
-        'textContent' in bodyInput[0] ? bodyInput[0].textContent = item.content : bodyInput[0].innerText = item.content;
-        item.o.status = 'loaded';
-        break;
-      case 'html':
-        bodyInput.html(item.content)
-        item.o.status = 'loaded';
-        break;
-      case 'selector':
-        this._getItemFromSelector(item);
-        item.o.status = 'loaded';
-        break;
-      case 'image':
-        if (o.imgload === 'init') this._insertImage(item);
-        break;
-      default:
-        this._e('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
-        item.o.status = 'loaded';
-        return;
-    }
   }
   _getItemFromSelector(item) {
     item.o.contentEl = $(item.content);
@@ -719,7 +739,7 @@ class njBox {
     this._cb('item_prepare', item);
 
     //insert content in items, where inserting is delayed to show event
-    this._insertDelayedContent(item);
+    // this._insertDelayedContent(item);
 
     if (prepend) {
       container.insertBefore(itemToInsert, container.firstChild)

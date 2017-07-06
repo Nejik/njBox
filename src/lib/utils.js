@@ -101,10 +101,10 @@ export function getDefaultInfo() {
 export function getItemFromDom(dom, selector) {
 	return dom.attr(selector) !== null ? dom : dom.find(`[${selector}]`);
 }
-
 export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
+	delayed        : false,//(boolean) Should we take dom element from selector type on init method, or it will stay in dom until show, and returned in dom after show?
 	type           : '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag, directly to .njb
 	header         : undefined,//(html) html that will be added as modal header (for first slide)
 	footer         : undefined,//(html) html that will be added as modal footer (for first slide)

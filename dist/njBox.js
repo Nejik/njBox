@@ -114,7 +114,6 @@ var njBox = function (undefined, setTimeout, document) {
     function njBox(el, options) {
       _classCallCheck(this, njBox);
 
-      //el can be a string, selector/dom/j/jQuery element
       if (!arguments.length) {
         console.error('njBox, arguments not passed.');
         return;
@@ -138,7 +137,7 @@ var njBox = function (undefined, setTimeout, document) {
       }
 
       opts = opts || {};
-      this.co = opts; //constructorOptions
+      that.co = opts; //constructorOptions
 
       //this allows users to listen init callbacks via .on() on modal instance
       setTimeout(function () {
@@ -149,49 +148,34 @@ var njBox = function (undefined, setTimeout, document) {
     _createClass(njBox, [{
       key: '_init',
       value: function _init() {
-        //init only once
-        if (this.state && this.state.inited) return;
+        var that = this;
+        if (that.state && that.state.inited) return; //init only once
 
-        var opts = this.co; //constructorOptions
-        delete this.co;
+        var opts = that.co; //constructorOptions
+        delete that.co;
 
         //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
         if (!njBox.g) njBox.g = (0, _utils.getDefaultInfo)();
 
         //inner options, current state of app, this.state clears after every hide
-        this.state = {
-          active: 0
+        that.state = {
+          active: 0,
+          arguments: {} //here all arguments from public methods are saved (for using in callbacks/events)
         };
 
         //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
-        this._globals = {};
-        this._handlers = {}; //all callback functions we used in event listeners lives here
-        this.data = {
+        that._g = { //globals, state that not cleared after every hide
           optionsPassed: opts
         };
+        that._handlers = {}; //all callback functions we used in event listeners lives here
 
-        var o = this.o = $.extend({}, njBox.defaults, opts);
+        var o = that.o = $.extend({}, njBox.defaults, opts);
         if (o.jquery) $ = o.jquery;
-        this.$ = $;
-
-        this.dom = {
-          document: $(document),
-          window: $(window),
-          html: $(document.documentElement),
-          body: $(document.body)
-          //... other will be added later
-        };
-
-        // initializing addons
-        for (var key in njBox.addons) {
-          if (njBox.addons.hasOwnProperty(key)) {
-            this['_' + key + '_init']();
-          }
-        }
+        that.$ = $;
 
         //we should have dom element or at least content option for creating item
         if (!o.elem && !o.content) {
-          this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
+          that._e('njBox, no elements (o.elem) or content (o.content) for modal.');
           return;
         }
         if (o.elem) {
@@ -207,40 +191,62 @@ var njBox = function (undefined, setTimeout, document) {
           }
           $elem[0].njBox = this; //prevent multiple initialization on one element
 
-          this.data.optionsGathered = this._gatherData($elem);
-          this._cb('options_gathered', this.data.optionsGathered, $elem[0]);
+          var optionsGathered = this._g.optionsGathered = this._gatherData($elem);
+          this._cb('options_gathered', optionsGathered, $elem[0]);
 
           //extend global options with gathered from dom element
-          $.extend(true, this.o, this.data.optionsGathered);
+          $.extend(true, this.o, optionsGathered);
         }
-        this._cb('options_setted', o);
-        this._options_setted();
+
+        // initializing addons
+        for (var key in njBox.addons) {
+          if (njBox.addons.hasOwnProperty(key)) {
+            this['_' + key + '_init']();
+          }
+        }
 
         //create popup container dom elements
-        this._createDom();
+        that.dom = that._createDom();
+        that._cb('domready', that.dom);
 
-        //create items
-        this.items = this._createItems();
+        var containerIsBody = that._g.containerIsBody = that.dom.container[0] === that.dom.body[0];
+        //check if container not relative position
+        if (!containerIsBody && that.dom.container.css('position') === 'static') {
+          that.dom.container.addClass('njb-relative');
+        }
+        //if container custom element(not body), use forcely absolute position
+        if (!containerIsBody && o.layout === 'fixed') {
+          o.layout = 'absolute';
+          that.dom.wrap.addClass('njb-absolute');
+        }
 
-        //this method calculate show/hide animation durations, because native callbacks buggy
-        this._calculateAnimations();
+        that._g.els = that.o.el;
+        that._g.items_raw = [that.o];
+        that._cb('items_raw', that._g);
+
+        that.items = that._createItems(that._g.items_raw);
+
+        //this method calculate show/hide animation durations, because native callbacks are buggy
+        that._g.animation = that._calculateAnimations();
 
         //add initial click handlers
-        this._addClickHandlers();
+        that._addClickHandler();
+        if (o.buttonrole && that._g.els) that._g.els.attr('role', o.buttonrole);
 
-        this.state.inited = true;
-        this._cb('inited');
+        that.state.inited = true;
+        that._cb('inited');
       }
     }, {
       key: 'show',
       value: function show(index) {
+        this.state.arguments.show = arguments;
         this._init(); //try to init
         if (index !== undefined) this.state.active = index - 1;
 
         var o = this.o,
             that = this;
 
-        if (this.state.state !== 'inited') {
+        if (this.state.status !== 'inited') {
           this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
           return;
         }
@@ -250,14 +256,16 @@ var njBox = function (undefined, setTimeout, document) {
         }
 
         if (this._cb('show') === false) return; //callback show (we can cancel showing popup, if show callback will return false)
-        if (!this.state.focused) this.state.focused = document.activeElement; //for case when modal can be opened programmatically
+        if (!this.state.focused) this.state.focused = document.activeElement; //for case when modal can be opened programmatically, with this we can focus element after hiding
 
         this.returnValue = null;
 
-        if (!this.dom.container[0].njb_instances) {
-          this.dom.container[0].njb_instances = 1;
+        var container = this.dom.container[0];
+
+        if (!container.njb_instances) {
+          container.njb_instances = 1;
         } else {
-          this.dom.container[0].njb_instances++;
+          container.njb_instances++;
         }
         // this.dom.container.addClass('njb-open');
 
@@ -266,14 +274,14 @@ var njBox = function (undefined, setTimeout, document) {
         this._backdrop('show');
 
         var containerToInsert;
-
-        //insert wrap
-        if (!this._globals.popover) {
-          this.dom.container[0].appendChild(this.dom.wrap[0]);
-          containerToInsert = this.dom.items[0];
+        //insert modal to page
+        if (this._g.popover) {
+          containerToInsert = container;
         } else {
-          containerToInsert = this.dom.container[0];
+          container.appendChild(this.dom.wrap[0]);
+          containerToInsert = this.dom.items[0];
         }
+
         //set event handlers
         this._addListeners();
 
@@ -297,7 +305,8 @@ var njBox = function (undefined, setTimeout, document) {
     }, {
       key: 'hide',
       value: function hide() {
-        if (this.state.state !== 'shown') {
+        this.state.arguments.hide = arguments;
+        if (this.state.status !== 'shown') {
           this._e('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).');
           return;
         }
@@ -315,24 +324,26 @@ var njBox = function (undefined, setTimeout, document) {
       }
     }, {
       key: 'position',
-      value: function position(coordinates) {
-        if (!this.state || !this.state.inited) return;
-        var o = this.o,
-            activeModal = this.items[this.state.active].dom.modal,
-            coords,
-            state = this.state;
+      value: function position() {
+        this.state.arguments.position = arguments;
 
-        state.dimensions = this._getContainerSize();
-        state.dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
-        state.dimensions.clickedEl = this._getDomSize(this.state.clickedEl);
+        var that = this,
+            o = this.o,
+            state = that.state;
+
+        if (!state || !state.inited || state.status !== 'show' && state.status !== 'shown') return;
+
+        that.state.dimensions = that._getDimensions();
+
+        this._cb('position');
 
         //position of global wrapper
         if (o.layout === 'absolute') {
           //global wrap positioning
-          var scrollTop = this.state.dimensions.containerScrollTop,
-              scrollLeft = this.state.dimensions.containerScrollLeft;
+          var scrollTop = this.state.dimensions.container.scrollTop,
+              scrollLeft = this.state.dimensions.container.scrollLeft;
 
-          if (scrollTop <= this.state.dimensions.containerMaxScrollTop) {
+          if (scrollTop <= this.state.dimensions.container.scrollTopMax) {
             this.dom.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' });
           }
 
@@ -340,52 +351,32 @@ var njBox = function (undefined, setTimeout, document) {
           this.dom.backdrop.css({ 'width': 'auto', 'height': 'auto' });
           this.dom.backdrop[0].clientHeight;
           this.dom.backdrop.css({
-            'width': this.state.dimensions.containerScrollWidth + 'px',
-            'height': this.state.dimensions.containerScrollHeight + 'px'
+            'width': this.state.dimensions.container.scrollWidth + 'px',
+            'height': this.state.dimensions.container.scrollHeight + 'px'
           });
         }
 
-        if (!this._globals.popover) this._setMaxHeight(this.items[this.state.active]);
+        this._setMaxHeight(this.items[this.state.active]);
 
-        if (o.coords) coords = (0, _utils.getArray)(o.coords);
-        if (coordinates) coords = (0, _utils.getArray)(coordinates);
-
-        var positionCB = this._cb('position');
-        if (positionCB !== undefined) coords = (0, _utils.getArray)(positionCB);
-
-        //post process coordinates
-        if (coords[0] === 'center') {
-          //horizontal coordinate
-          coords[0] = (state.dimensions.containerWidth - state.dimensions.modal.width) / 2;
-        }
-        if (coords[1] === 'center') {
-          //vertical coordinate
-          coords[1] = (state.dimensions.containerHeight - state.dimensions.modal.height) / 2;
-        }
-
-        this.state.coords = coords;
-
-        if (this._globals.popover && this.state.coords.length === 2) {
-          activeModal.css('left', this.state.coords[0] + "px").css('top', this.state.coords[1] + "px");
-        }
-
+        this._cb('positioned');
         return this;
       }
     }, {
       key: 'destroy',
       value: function destroy() {
-        if (!this.state.inited || this.state.state !== 'inited') {
+        this.state.arguments.destroy = arguments;
+        if (!this.state.inited || this.state.status !== 'inited') {
           this._e('njBox, we can destroy only initialized && hidden modals.');
           return;
         }
 
-        this._removeClickHandlers();
+        this._removeClickHandler();
 
         this.dom.container.removeClass('njb-relative');
 
         this._cb('destroy');
 
-        this._events = this._globals = this._handlers = this.items = this.itemsRaw = this.dom = this.$ = undefined;
+        this._events = this._g = this._handlers = this.items = this.itemsRaw = this.dom = this.$ = undefined;
         this.o = {};
 
         return this;
@@ -393,126 +384,12 @@ var njBox = function (undefined, setTimeout, document) {
     }, {
       key: 'update',
       value: function update() {
+        this.state.arguments.update = arguments;
         this.items = this._createItems();
 
-        this._addClickHandlers();
+        this._addClickHandler();
 
         return this;
-      }
-    }, {
-      key: '_options_setted',
-      value: function _options_setted() {
-        var o = this.o,
-            that = this;
-
-        if (o.layout === 'popover') {
-          that._globals.popover = true;
-          o.backdrop = that._getPassedOption('backdrop') || false;
-          o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-          o.out = that._getPassedOption('out') || true;
-        }
-      }
-    }, {
-      key: '_getPassedOption',
-      value: function _getPassedOption(optionName) {
-        //this method needs to check if option was passed specifically by user or get from defaults
-        if (this.data.optionsGathered[optionName] !== undefined) {
-          return this.data.optionsGathered[optionName];
-        } else if (this.data.optionsPassed[optionName] !== undefined) {
-          return this.data.optionsPassed[optionName];
-        }
-      }
-    }, {
-      key: '_getContainerSize',
-      value: function _getContainerSize() {
-        var o = this.o,
-            documentElement = document.documentElement,
-            documentBody = document.body;
-
-        var d = {};
-
-        if (this._globals.containerIsBody) {
-          d.containerWidth = documentElement.clientWidth;
-          d.containerHeight = documentElement.clientHeight;
-          d.containerScrollWidth = Math.max(documentBody.scrollWidth, documentElement.scrollWidth, documentBody.offsetWidth, documentElement.offsetWidth, documentBody.clientWidth, documentElement.clientWidth);
-          d.containerScrollHeight = Math.max(documentBody.scrollHeight, documentElement.scrollHeight, documentBody.offsetHeight, documentElement.offsetHeight, documentBody.clientHeight, documentElement.clientHeight);
-          d.containerScrollTop = window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop;
-          d.containerScrollLeft = window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft;
-        } else {
-          d.containerWidth = this.dom.container[0].clientWidth;
-          d.containerHeight = this.dom.container[0].clientHeight;
-          d.containerScrollWidth = this.dom.container[0].scrollWidth;
-          d.containerScrollHeight = this.dom.container[0].scrollHeight;
-          d.containerScrollTop = this.dom.container[0].scrollTop;
-          d.containerScrollLeft = this.dom.container[0].scrollLeft;
-        }
-
-        d.containerMaxScrollTop = d.containerScrollHeight - d.containerHeight;
-
-        d.winWidth = window.innerWidth || documentElement.clientWidth || documentBody.clientWidth;
-        d.winHeight = window.innerHeight || documentElement.clientHeight || documentBody.clientHeight;
-
-        d.autoheight = this._globals.containerIsBody ? d.winHeight : d.containerHeight;
-        // if(this._o.scrollbarHidden) {
-        //  this._o.winWidth -= njBox.g.scrollbarSize;
-        // }
-        return d;
-      }
-    }, {
-      key: '_getDomSize',
-      value: function _getDomSize(domObject) {
-        var rectOriginal = domObject.getBoundingClientRect(),
-            rectComputed = this.$.extend({}, rectOriginal);
-
-        rectComputed.el = domObject;
-        rectComputed.width = rectComputed.right - rectComputed.left;
-        rectComputed.height = rectComputed.bottom - rectComputed.top;
-
-        return rectComputed;
-      }
-    }, {
-      key: '_setMaxHeight',
-      value: function _setMaxHeight(item) {
-        var o = this.o;
-
-        if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
-
-        if (!this.state.autoheightAdded) {
-          // this.dom.wrap.addClass('njb-wrap--autoheight');
-          o.autoheight === true ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image');
-          this.state.autoheightAdded = true;
-        }
-
-        var v = item.dom,
-            modalMargin = summ(v.modal, 'margin'),
-            modalPadding = summ(v.modal, 'padding') + parseInt(v.modal.css('borderTopWidth')) + parseInt(v.modal.css('borderBottomWidth')) || 0,
-            bodyMargin = summ(v.body, 'margin'),
-            bodyPadding = summ(v.body, 'padding') + parseInt(v.body.css('borderTopWidth')) + parseInt(v.body.css('borderBottomWidth')) || 0,
-            containerHeight = this.state.dimensions.autoheight,
-            height = containerHeight,
-            bodyBorderBox = v.body.css('boxSizing') === 'border-box';
-
-        function summ(el, prop) {
-          return parseInt(el.css(prop + 'Top')) + parseInt(el.css(prop + 'Bottom')) || 0;
-        }
-
-        var headerHeight = 0,
-            footerHeight = 0;
-
-        v.header && v.header.length ? headerHeight = v.header[0].scrollHeight + (parseInt(v.header.css('borderTopWidth')) + parseInt(v.header.css('borderBottomWidth'))) || 0 : 0;
-        v.footer && v.footer.length ? footerHeight = v.footer[0].scrollHeight + (parseInt(v.footer.css('borderTopWidth')) + parseInt(v.footer.css('borderBottomWidth'))) || 0 : 0;
-
-        height = containerHeight - modalMargin - modalPadding - bodyMargin - headerHeight - footerHeight;
-
-        if (!bodyBorderBox) height -= bodyPadding;
-
-        if (item.type === 'image') {
-          var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
-
-          if (v.img) v.img.css('maxHeight', autoheightImg + 'px');
-        } else {
-          v.body.css('maxHeight', height + 'px');
-        }
       }
     }, {
       key: '_gatherData',
@@ -594,48 +471,47 @@ var njBox = function (undefined, setTimeout, document) {
       }
     }, {
       key: '_createItems',
-      value: function _createItems() {
-        var o = this.o;
-
-        this.data.els = this.o.el;
-        this.data.items_raw = [this.o];
-
-        this._cb('items_raw', this.data);
-
-        if (o.buttonrole && this.data.els) {
-          this.data.els.attr('role', o.buttonrole);
-        }
-
+      value: function _createItems(itemsRaw) {
         var items = [];
-        for (var i = 0, l = this.data.items_raw.length; i < l; i++) {
-          items.push(this._createItem(this.data.items_raw[i], i));
+        for (var i = 0, l = itemsRaw.length; i < l; i++) {
+          items.push(this._createItem(itemsRaw[i], i));
         }
         return items;
       }
     }, {
       key: '_createItem',
       value: function _createItem(item, index) {
-        var normalizedItem = this._normalizeItem(item);
+        var that = this,
+            o = that.o,
+            normalizedItem = that._normalizeItem(item);
 
-        this._createDomForItem(normalizedItem, index);
+        normalizedItem.dom = that._createItemDom(normalizedItem);
+
+        that._insertItemContent({ item: normalizedItem, delayed: o.delayed });
+
+        normalizedItem.toInsert = normalizedItem.dom.modalOuter;
+
+        that._cb('item_created', normalizedItem, index);
 
         return normalizedItem;
       }
     }, {
       key: '_normalizeItem',
       value: function _normalizeItem(item, el) {
-        var evaluatedContent = void 0;
+        var that = this,
+            evaluatedContent;
+
         if (typeof item.content === 'function') {
-          evaluatedContent = item.content.call(this, item);
+          evaluatedContent = item.content.call(that, item);
         } else {
           evaluatedContent = item.content;
         }
 
-        var content = evaluatedContent || this.o.text._missedContent;
+        var content = evaluatedContent || that.o.text._missedContent;
 
         return {
           content: content,
-          type: item.type || this._type(content),
+          type: item.type || that._type(content),
           header: item.header,
           footer: item.footer,
           title: item.title,
@@ -665,10 +541,11 @@ var njBox = function (undefined, setTimeout, document) {
         return type;
       }
     }, {
-      key: '_createDomForItem',
-      value: function _createDomForItem(item, index) {
-        var o = this.o,
-            dom = item.dom = {},
+      key: '_createItemDom',
+      value: function _createItemDom(item) {
+        var that = this,
+            o = this.o,
+            dom = {},
             modalOuter,
             modal,
             modalFragment = document.createDocumentFragment();
@@ -676,7 +553,7 @@ var njBox = function (undefined, setTimeout, document) {
         //main modal wrapper
         dom.modal = modal = $(o.templates.modal);
         modal[0].tabIndex = '-1';
-        modal[0].njBox = this;
+        modal[0].njBox = that;
 
         dom.modalOuter = modalOuter = $(o.templates.modalOuter);
 
@@ -686,25 +563,19 @@ var njBox = function (undefined, setTimeout, document) {
         if (o.describedby) modal.attr('aria-describedby', o.describedby);
 
         if (!modal.length) {
-          this._e('njBox, error in o.templates.modal');
-          return;
+          that._e('njBox, error in o.templates.modal');
         }
 
         modalOuter[0].appendChild(modal[0]);
 
-        if (item.type === "template") {
-          modal.html(item.content);
-        } else {
+        if (item.type !== "template") {
           //insert body
           dom.body = $(o.templates.body);
           if (!dom.body.length) {
-            this._e('njBox, error in o.templates.body');
-            return;
+            that._e('njBox, error in o.templates.body');
           }
           //find data-njb-body in item body element
           dom.bodyInput = (0, _utils.getItemFromDom)(dom.body, 'data-njb-body');
-
-          this._insertItemBodyContent(item);
 
           modalFragment.appendChild(dom.body[0]);
 
@@ -712,28 +583,38 @@ var njBox = function (undefined, setTimeout, document) {
           if (item.header) {
             dom.header = $(o.templates.header);
 
-            if (!dom.header.length) {
-              this._e('njBox, error in o.templates.header');
-              return;
-            }
-            //insert header info
-            (0, _utils.getItemFromDom)(dom.header, 'data-njb-header').html(item.header);
+            var headerError = 'njBox, error in o.templates.header';
 
-            modalFragment.insertBefore(dom.header[0], modalFragment.firstChild);
+            if (!dom.header.length) {
+              that._e(headerError);
+            } else {
+              //insert header info
+              dom.headerInput = (0, _utils.getItemFromDom)(dom.header, 'data-njb-header');
+              if (!dom.headerInput.length) {
+                that._e(headerError);
+              } else {
+                modalFragment.insertBefore(dom.header[0], modalFragment.firstChild);
+              }
+            }
           }
 
           //insert footer
           if (item.footer) {
             dom.footer = $(o.templates.footer);
 
-            if (!dom.footer.length) {
-              this._e('njBox, error in njBox.templates.footer');
-              return;
-            }
-            //insert footer info
-            (0, _utils.getItemFromDom)(dom.footer, 'data-njb-footer').html(item.footer);
+            var footerError = 'njBox, error in njBox.templates.footer';
 
-            modalFragment.appendChild(dom.footer[0]);
+            if (!dom.footer.length) {
+              that._e(footerError);
+            } else {
+              //insert footer info
+              dom.footerInput = (0, _utils.getItemFromDom)(dom.footer, 'data-njb-footer');
+              if (!dom.footerInput.length) {
+                that._e(footerError);
+              } else {
+                modalFragment.appendChild(dom.footer[0]);
+              }
+            }
           }
 
           //insert close button
@@ -746,433 +627,93 @@ var njBox = function (undefined, setTimeout, document) {
 
           modal[0].appendChild(modalFragment);
         }
+
         if (item.type === 'image') {
           modal.addClass('njb--image');
         } else {
           modal.addClass('njb--content');
         }
-        if (this._globals.popover) modal.addClass('njb--popover');
 
-        this._cb('item_domready', item, index);
+        return dom;
       }
     }, {
-      key: '_insertItemBodyContent',
-      value: function _insertItemBodyContent(item) {
-        var o = this.o;
-
-        switch (item.type) {
-          case 'text':
-            'textContent' in item.dom.bodyInput[0] ? item.dom.bodyInput[0].textContent = item.content : item.dom.bodyInput[0].innerText = item.content;
-            item.o.status = 'loaded';
-            break;
-          case 'html':
-            item.dom.bodyInput.html(item.content);
-            item.o.status = 'loaded';
-            break;
-          case 'selector':
-            this._getItemFromSelector(item);
-            item.o.status = 'loaded';
-            break;
-          case 'image':
-            if (o.imgload === 'init') this._insertImage(item);
-            break;
-          default:
-            this._e('njBox, seems that you use wrong type(' + item.type + ') of item.', true);
-            item.o.status = 'loaded';
-            return;
-            break;
-        }
-      }
-    }, {
-      key: '_getItemFromSelector',
-      value: function _getItemFromSelector(item) {
-        item.o.contentEl = $(item.content);
-
-        if (!item.o.contentEl.length) {
-          item.dom.bodyInput.html(item.content); //if we don't find element with this selector
-        }
-      }
-    }, {
-      key: '_createDom',
-      value: function _createDom() {
-        var o = this.o;
-
-        //find container
-        this.dom.container = $(o.container);
-        if (!this.dom.container.length) {
-          this._e('njBox, can\'t find container element. (we use body instead)');
-          this.dom.container = this.dom.body; //in case if we have no container element, or wrong selector for container element
-        }
-        this._globals.containerIsBody = this.dom.container[0] === this.dom.body[0];
-
-        //check if container not relative position
-        if (!this._globals.containerIsBody && this.dom.container.css('position') === 'static') {
-          this.dom.container.addClass('njb-relative');
-        }
-
-        //create core elements
-        this.dom.wrap = $(o.templates.wrap);
-        if (!this.dom.wrap.length) {
-          this._e('njBox, smth wrong with o.templates.wrap.');
-          return;
-        }
-        if (o['class']) this.dom.wrap.addClass(o['class']);
-        this.dom.wrap[0].njBox = this;
-        if (o.zindex) this.dom.wrap.css('zIndex', o.zindex);
-
-        this.dom.items = this.dom.wrap.find('.njb-items');
-
-        //if container custom element(not body), use forcely absolute position
-        if (!this._globals.containerIsBody && o.layout !== 'popover') {
-          o.layout = 'absolute';
-          this.dom.wrap.addClass('njb-absolute');
-        }
-
-        //create ui layer
-        this.dom.ui = $(o.templates.ui);
-        this.dom.wrap[0].appendChild(this.dom.ui[0]);
-
-        this.dom.title = $(o.templates.title);
-        this.dom.ui[0].appendChild(this.dom.title[0]);
-
-        // insert outside close button
-        if (o.close === 'outside') {
-          this.dom.close = $(o.templates.close);
-          this.dom.close.attr('title', o.text.close).attr('aria-label', o.text.close);
-
-          this.dom.ui[0].appendChild(this.dom.close[0]);
-        }
-
-        // insert invisible, focusable nodes.
-        // while this dialog is open, we use these to make sure that focus never
-        // leaves modal boundaries
-        this.dom.focusCatchFirst = $(o.templates.focusCatcher);
-        this.dom.wrap[0].insertBefore(this.dom.focusCatchFirst[0], this.dom.wrap[0].firstChild);
-
-        this.dom.focusCatchLast = $(o.templates.focusCatcher);
-        this.dom.wrap[0].appendChild(this.dom.focusCatchLast[0]);
-
-        this._cb('domready');
-      }
-    }, {
-      key: '_drawItem',
-      value: function _drawItem(item, prepend, container) {
-        var o = this.o,
-            itemToInsert = this._globals.popover ? item.dom.modal[0] : item.dom.modalOuter[0];
-
-        this._cb('item_prepare', item);
-
-        //insert content in items, where inserting is delayed to show event
-        this._insertDelayedContent(item);
-
-        if (prepend) {
-          container.insertBefore(itemToInsert, container.firstChild);
-        } else {
-          container.appendChild(itemToInsert);
-        }
-
-        this._cb('item_inserted', item);
-      }
-    }, {
-      key: '_insertDelayedContent',
-      value: function _insertDelayedContent(item) {
+      key: '_insertItemContent',
+      value: function _insertItemContent(args) {
         var that = this,
-            o = this.o,
-            contentEl;
+            o = that.o,
+            item = args.item,
+            delayed = args.delayed,
+            dom = item.dom,
+            itemType = item.type,
+            itemContent = item.content,
+            bodyItemToInsert = dom.bodyInput;
 
-        if (item.type === 'image' && o.imgload === 'show' && !item.o.imageInserted) {
-          this._insertImage(item);
-        } else if (item.type === 'selector' && !item.o.contentElInserted) {
-          contentEl = item.o.contentEl;
 
-          //try to find element for popup again on every show
-          if (!contentEl || !contentEl.length) {
-            this._getItemFromSelector(item);
-            contentEl = item.o.contentEl;
+        function contentAddedCallback() {
+          //insert header content
+          if (dom.headerInput && item.header) {
+            dom.headerInput.html(item.header);
           }
-          if (!contentEl || !contentEl.length) return;
-
-          var style = contentEl[0].style.cssText;
-          if (style) item.o.contentElStyle = style;
-
-          var dn = contentEl.css('display') === 'none';
-          if (dn) {
-            item.o.contentElDisplayNone = true;
-            contentEl[0].style.display = 'block';
+          //insert footer content
+          if (dom.footerInput && item.footer) {
+            dom.footerInput.html(item.footer);
           }
-          item.dom.bodyInput.html(''); //clear body for case when first time we can't find contentEl on page
-          item.dom.bodyInput[0].appendChild(contentEl[0]);
-          item.o.contentElInserted = true;
-        }
-      }
-    }, {
-      key: '_removeSelectorItemsElement',
-      value: function _removeSelectorItemsElement() {
-        var items = this.items,
-            item,
-            contentEl;
 
-        for (var i = 0, l = items.length; i < l; i++) {
-          if (items[i].type === 'selector') {
-            item = items[i];
-            if (!item.o.contentElInserted) continue;
-
-            contentEl = item.o.contentEl;
-
-            if (item.o.contentElDisplayNone) {
-              contentEl[0].style.display = 'none';
-              item.o.contentElDisplayNone = undefined;
-            }
-            if (item.o.contentElStyle) {
-              contentEl[0].style.cssText = item.o.contentElStyle;
-              item.o.contentElStyle = undefined;
-            }
-            //return selector element to the dom
-            this.dom.body[0].appendChild(contentEl[0]);
-            item.o.contentElInserted = false;
-          }
-        }
-      }
-    }, {
-      key: '_focus_set',
-      value: function _focus_set(item, first) {
-        var o = this.o,
-            focusable,
-            focusEl;
-
-        if (first) {
-          focusable = this.dom.ui.find(this.o._focusable);
-          focusable[focusable.length - 1].focus();
-          return;
-        }
-        if (o.autofocus) {
-          focusEl = item.dom.modal.find(o.autofocus)[0];
-        }
-        if (!focusEl) {
-          focusEl = item.dom.modal.find('[autofocus]')[0];
-        }
-        if (!focusEl) {
-          focusable = item.dom.modal.find(this.o._focusable);
-          focusEl = focusable[0];
+          item.o.status = 'loaded';
+          if (that.state.status === 'shown') that._setMaxHeight(item);
         }
 
-        if (focusEl) {
-          focusEl.focus();
-        }
-        //  else if (o.close === "outside") {//then try to focus close buttons
-        //   this.dom.close[0].focus()
-        // } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
-        //   item.dom.close[0].focus();
-        // }
-        else {
-            //if no, focus popup itself
-            item.dom.modal[0].focus();
-          }
-      }
-    }, {
-      key: '_addClickHandlers',
-      value: function _addClickHandlers() {
-        //initial click handlers
-        var o = this.o;
+        if (itemType === 'template') {
+          dom.modal.html(itemContent);
+        } else {
+          switch (itemType) {
+            case 'html':
+              bodyItemToInsert.html(itemContent);
+              contentAddedCallback();
+              break;
+            case 'text':
+              'textContent' in bodyItemToInsert[0] ? bodyItemToInsert[0].textContent = itemContent : bodyItemToInsert[0].innerText = itemContent;
+              contentAddedCallback();
+              break;
+            case 'selector':
+              if (!delayed && !item.o.contentInserted) {
+                var contentEl = item.o.contentEl = $(item.content);
 
-        this._removeClickHandlers();
+                if (contentEl.length) {
 
-        this._handlers.elsClick = this._clickHandler();
+                  item.o.contentElStyle = contentEl[0].style.cssText;
 
-        if (o.click) {
-          if (this.data.els && this.data.els.length) {
-            this.data.els.on('click', this._handlers.elsClick);
-          }
-        }
+                  item.o.contentElDisplayNone = contentEl.css('display') === 'none';
+                  if (item.o.contentElDisplayNone) {
+                    contentEl[0].style.display = 'block';
+                  }
 
-        if (o.clickels) {
-          $(o.clickels).on('click', this._handlers.elsClick);
-        }
-      }
-    }, {
-      key: '_clickHandler',
-      value: function _clickHandler() {
-        //this method creates closure with modal instance
-        var o = this.o,
-            that = this;
+                  bodyItemToInsert.html(''); //clear element before inserting other dom element. (e.g. body for case when first time we can't find contentEl on page and error text already here)
+                  bodyItemToInsert[0].appendChild(contentEl[0]);
 
-        return function (e) {
-          var el = this;
+                  item.o.contentInserted = true;
+                } else {
+                  //if we don't find element with this selector
+                  bodyItemToInsert.html(item.content);
+                }
 
-          if (e.originalEvent) e = e.originalEvent; //work with original event
-
-          if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return; //handle only left button click without key modificators
-          e.preventDefault ? e.preventDefault() : e.returnValue = false;
-
-          if (that.state.state !== 'inited') {
-            that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
-            return;
-          }
-          if ($(el).closest('.njb-close-system, .njb-arrow').length) return; //don't remember why it here O_o
-
-
-          that.state.clickedEvent = e;
-          that.state.clickedEl = el;
-          that.state.focused = el;
-
-          that.show();
-        };
-      }
-    }, {
-      key: '_removeClickHandlers',
-      value: function _removeClickHandlers() {
-        var o = this.o;
-
-        if (this.data.els && this.data.els.length) {
-          this.data.els.off('click', this._handlers.elsClick);
-
-          if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
-        }
-      }
-    }, {
-      key: '_addListeners',
-      value: function _addListeners() {
-        //all other event handlers
-        var o = this.o,
-            that = this,
-            h = this._handlers,
-            popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
-
-        h.container_resize = function (e) {
-          that.position();
-        };
-        h.container_scroll = function (e) {
-          that.position();
-        };
-        h.container_out = function (e) {
-          if (that.state.clickedEl === e.target || that.state.state !== 'shown') return;
-          var $el = $(e.target),
-              prevent = $el.closest('.njb, .njb-ui').length;
-          if (prevent) return;
-
-          e.preventDefault ? e.preventDefault() : e.returnValue = false;
-
-          if (o.out) {
-            if (that._cb('cancel') === false) return;
-            that.hide();
-          } else {
-            that.items[that.state.active].dom.modal.addClass('njb--pulse');
-            that._focus_set(that.items[that.state.active]);
-
-            setTimeout(function () {
-              that.items[that.state.active].dom.modal.removeClass('njb--pulse');
-            }, that._getAnimTime(that.items[that.state.active].dom.modal[0]));
-          }
-        };
-        this.dom.container.on('resize', h.container_resize).on('scroll', h.container_scroll).on('click', h.container_out);
-
-        h.wrap_resize = function () {
-          that.position();
-        };
-        h.wrap_scroll = function (e) {
-          that.position();
-        };
-        h.wrap_keydown = function (e) {
-          that._cb('keydown', e);
-
-          switch (e.which) {
-            case 27:
-              //esc
-              if (o.esc) {
-                if (that._cb('cancel') === false) return;
-                that.hide();
+                contentAddedCallback();
               }
-
-              e.preventDefault ? e.preventDefault() : e.returnValue = false;
+              break;
+            case 'image':
+              if (!delayed && !item.o.contentInserted) {
+                this._insertImage(item, contentAddedCallback);
+              }
               break;
 
+            default:
+              break;
           }
-        };
-        h.wrap_close = function (e) {
-          e.preventDefault ? e.preventDefault() : e.returnValue = false;
-
-          if (that._cb('cancel') === false) return;
-          that.hide();
-        };
-        h.wrap_ok = function (e) {
-          e.preventDefault ? e.preventDefault() : e.returnValue = false;
-
-          if (that._cb('ok') === false) return;
-          that.hide();
-        };
-        h.wrap_cancel = function (e) {
-          e.preventDefault ? e.preventDefault() : e.returnValue = false;
-
-          if (that._cb('cancel') === false) return;
-          that.hide();
-        };
-
-        popWrap.on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel);
-
-        h.window_resize = function (e) {
-          that.position();
-        };
-        h.window_scroll = function (e) {
-          that.position();
-        };
-        h.window_orientation = function (e) {
-          that.position();
-        };
-
-        this.dom.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
-
-        h.focusCatchFirst = function (e) {
-          var related = e.relatedTarget,
-              fromUi;
-
-          if (related) {
-            //firefox have no related
-            fromUi = !!$(related).closest('.njb-ui').length;
-            if (fromUi) {
-              that._focus_set(that.items[that.state.active]);
-            } else {
-              that._focus_set(that.items[that.state.active], true);
-            }
-          } else {
-            that._focus_set(that.items[that.state.active], true);
-          }
-        };
-        h.focusCatchLast = function (e) {
-          that._focus_set(that.items[that.state.active]);
-        };
-
-        this.dom.focusCatchFirst.on('focus', h.focusCatchFirst);
-        this.dom.focusCatchLast.on('focus', h.focusCatchLast);
-
-        this._cb('listerens_added');
-      }
-    }, {
-      key: '_removeListeners',
-      value: function _removeListeners() {
-        var h = this._handlers,
-            that = this,
-            popWrap = that._globals.popover ? that.dom.container : that.dom.wrap;
-
-        this.dom.container.off('resize', h.container_resize).off('scroll', h.container_scroll).off('click', h.container_out);
-
-        popWrap.off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel);
-
-        this.dom.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
-
-        //remove link to all previous handlers
-        var elsClick = h.elsClick;
-        this._handlers = {
-          elsClick: elsClick
-        };
-
-        this.dom.focusCatchFirst.off('focus', h.focusCatchFirst);
-        this.dom.focusCatchLast.off('focus', h.focusCatchLast);
-
-        this._cb('listeners_removed');
+        }
       }
     }, {
       key: '_insertImage',
-      value: function _insertImage(item) {
+      value: function _insertImage(item, callback) {
         var that = this,
             o = this.o,
             img = document.createElement('img'),
@@ -1195,11 +736,10 @@ var njBox = function (undefined, setTimeout, document) {
           // rendered();
 
           item.o.status = 'error';
-          item.o.imageInserted = true;
+          item.o.contentInserted = true;
         };
         $img.on('error', item._handlerError).on('abort', item._handlerError);
 
-        // if (item.title) img.title = item.title;
         if (item.title) {
           $img.attr('aria-labelledby', 'njb-title');
         }
@@ -1213,10 +753,9 @@ var njBox = function (undefined, setTimeout, document) {
         } else {
           this._preloader('show', item);
 
-          item._handlerImgReady = function () {
+          findImgSize(img, function () {
             checkShow('ready');
-          };
-          findImgSize(img, item._handlerImgReady);
+          });
 
           item._handlerLoad = function () {
             $img.off('load', item._handlerLoad);
@@ -1237,7 +776,8 @@ var njBox = function (undefined, setTimeout, document) {
 
           //insert content
           item.dom.bodyInput[0].appendChild(img);
-          item.o.imageInserted = true;
+          item.o.contentInserted = true;
+          callback();
 
           //animation after image loading
           //todo add custom image animation, don't use global popup animation
@@ -1279,6 +819,461 @@ var njBox = function (undefined, setTimeout, document) {
         }
       }
     }, {
+      key: '_createDom',
+      value: function _createDom() {
+        var that = this,
+            o = this.o,
+            dom = {
+          document: $(document),
+          window: $(window),
+          html: $(document.documentElement),
+          body: $(document.body)
+        };
+
+        //find container
+        dom.container = $(o.container);
+        if (!dom.container.length) {
+          that._e('njBox, can\'t find container element. (we use body instead)');
+          dom.container = dom.body; //in case if we have no container element, or wrong selector for container element
+        }
+
+        //create core elements
+        dom.wrap = $(o.templates.wrap);
+        if (!dom.wrap.length) {
+          that._e('njBox, smth wrong with o.templates.wrap.');
+        }
+        if (o['class']) dom.wrap.addClass(o['class']);
+        dom.wrap[0].njBox = that;
+        if (o.zindex) dom.wrap.css('zIndex', o.zindex);
+
+        dom.items = dom.wrap.find('.njb-items');
+
+        //create ui layer
+        dom.ui = $(o.templates.ui);
+        dom.wrap[0].appendChild(dom.ui[0]);
+
+        dom.title = $(o.templates.title);
+        dom.ui[0].appendChild(dom.title[0]);
+
+        // insert outside close button
+        if (o.close === 'outside') {
+          dom.close = $(o.templates.close);
+          dom.close.attr('title', o.text.close).attr('aria-label', o.text.close);
+
+          dom.ui[0].appendChild(dom.close[0]);
+        }
+
+        // insert invisible, focusable nodes.
+        // while this dialog is open, we use these to make sure that focus never
+        // leaves modal boundaries
+        dom.focusCatchBefore = $(o.templates.focusCatcher);
+        dom.wrap[0].insertBefore(dom.focusCatchBefore[0], dom.wrap[0].firstChild);
+
+        dom.focusCatchAfter = $(o.templates.focusCatcher);
+        dom.wrap[0].appendChild(dom.focusCatchAfter[0]);
+
+        return dom;
+      }
+    }, {
+      key: '_getPassedOption',
+      value: function _getPassedOption(optionName) {
+        //this method needs to check if option was passed specifically by user or get from defaults
+        if (this._g.optionsGathered[optionName] !== undefined) {
+          return this._g.optionsGathered[optionName];
+        } else if (this._g.optionsPassed[optionName] !== undefined) {
+          return this._g.optionsPassed[optionName];
+        }
+      }
+    }, {
+      key: '_getDimensions',
+      value: function _getDimensions() {
+        var that = this,
+            o = that.o,
+            dimensions = {};
+
+        dimensions.window = that._getDomSize(that.dom.window[0]);
+        dimensions.container = that._getDomSize(this._g.containerIsBody ? that.dom.window[0] : this.dom.container[0]);
+        dimensions.modal = that._getDomSize(that.items[that.state.active].dom.modal[0]);
+        dimensions.clickedEl = that._getDomSize(that.state.clickedEl);
+
+        dimensions.autoheight = that._g.containerIsBody ? dimensions.window.height : dimensions.container.height;
+
+        return dimensions;
+      }
+    }, {
+      key: '_getDomSize',
+      value: function _getDomSize(domObject) {
+        var isWindow = $.isWindow(domObject),
+            rectOriginal,
+            rectComputed,
+            d = document,
+            documentElement = d.documentElement,
+            documentBody = d.body;
+
+        if (isWindow) {
+          rectComputed = {
+            el: domObject,
+            left: 0,
+            top: 0,
+            right: documentElement.clientWidth,
+            bottom: documentElement.clientHeight,
+            width: documentElement.clientWidth,
+            height: documentElement.clientHeight,
+            scrollWidth: Math.max(documentBody.scrollWidth, documentElement.scrollWidth, documentBody.offsetWidth, documentElement.offsetWidth, documentBody.clientWidth, documentElement.clientWidth),
+            scrollHeight: Math.max(documentBody.scrollHeight, documentElement.scrollHeight, documentBody.offsetHeight, documentElement.offsetHeight, documentBody.clientHeight, documentElement.clientHeight),
+            scrollLeft: window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft,
+            scrollTop: window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop
+          };
+        } else {
+          rectOriginal = domObject.getBoundingClientRect();
+          rectComputed = this.$.extend({}, rectOriginal);
+
+          rectComputed.el = domObject;
+          rectComputed.width = rectComputed.right - rectComputed.left;
+          rectComputed.height = rectComputed.bottom - rectComputed.top;
+          rectComputed.scrollWidth = domObject.scrollWidth;
+          rectComputed.scrollHeight = domObject.scrollHeight;
+          rectComputed.scrollLeft = domObject.scrollLeft;
+          rectComputed.scrollTop = domObject.scrollTop;
+        }
+        rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width < 0 ? 0 : rectComputed.scrollWidth - rectComputed.width;
+        rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height < 0 ? 0 : rectComputed.scrollHeight - rectComputed.height;
+
+        return rectComputed;
+      }
+    }, {
+      key: '_setMaxHeight',
+      value: function _setMaxHeight(item) {
+        var o = this.o;
+
+        if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image' || this._g.popover) return;
+
+        if (!this.state.autoheightAdded) {
+          // this.dom.wrap.addClass('njb-wrap--autoheight');
+          o.autoheight === true ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image');
+          this.state.autoheightAdded = true;
+        }
+
+        var v = item.dom,
+            modalMargin = summ(v.modal, 'margin'),
+            modalPadding = summ(v.modal, 'padding') + parseInt(v.modal.css('borderTopWidth')) + parseInt(v.modal.css('borderBottomWidth')) || 0,
+            bodyMargin = summ(v.body, 'margin'),
+            bodyPadding = summ(v.body, 'padding') + parseInt(v.body.css('borderTopWidth')) + parseInt(v.body.css('borderBottomWidth')) || 0,
+            containerHeight = this.state.dimensions.autoheight,
+            height = containerHeight,
+            bodyBorderBox = v.body.css('boxSizing') === 'border-box';
+
+        function summ(el, prop) {
+          return parseInt(el.css(prop + 'Top')) + parseInt(el.css(prop + 'Bottom')) || 0;
+        }
+
+        var headerHeight = 0,
+            footerHeight = 0;
+
+        v.header && v.header.length ? headerHeight = v.header[0].scrollHeight + (parseInt(v.header.css('borderTopWidth')) + parseInt(v.header.css('borderBottomWidth'))) || 0 : 0;
+        v.footer && v.footer.length ? footerHeight = v.footer[0].scrollHeight + (parseInt(v.footer.css('borderTopWidth')) + parseInt(v.footer.css('borderBottomWidth'))) || 0 : 0;
+
+        height = containerHeight - modalMargin - modalPadding - bodyMargin - headerHeight - footerHeight;
+
+        if (!bodyBorderBox) height -= bodyPadding;
+
+        if (item.type === 'image') {
+          var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
+
+          if (v.img) v.img.css('maxHeight', autoheightImg + 'px');
+        } else {
+          v.body.css('maxHeight', height + 'px');
+        }
+      }
+    }, {
+      key: '_drawItem',
+      value: function _drawItem(item, prepend, container) {
+        var that = this,
+            o = that.o,
+            itemToInsert = item.toInsert[0];
+
+        that._cb('item_prepare', item);
+
+        if (o.delayed && !item.o.contentInserted && (item.type === 'image' || item.type === 'selector')) {
+          that._insertItemContent({ item: item, delayed: false });
+        }
+
+        if (prepend) {
+          container.insertBefore(itemToInsert, container.firstChild);
+        } else {
+          container.appendChild(itemToInsert);
+        }
+
+        that._cb('item_inserted', item);
+      }
+    }, {
+      key: '_removeSelectorItemsElement',
+      value: function _removeSelectorItemsElement() {
+        var items = this.items,
+            item,
+            contentEl;
+
+        for (var i = 0, l = items.length; i < l; i++) {
+          if (items[i].type === 'selector' && this.o.delayed) {
+            item = items[i];
+            if (!item.o.contentInserted) continue;
+
+            contentEl = item.o.contentEl;
+
+            if (item.o.contentElDisplayNone) {
+              contentEl[0].style.display = 'none';
+              item.o.contentElDisplayNone = undefined;
+            }
+            if (item.o.contentElStyle) {
+              contentEl[0].style.cssText = item.o.contentElStyle;
+              item.o.contentElStyle = undefined;
+            }
+            //return selector element to the dom
+            this.dom.body[0].appendChild(contentEl[0]);
+            item.o.contentInserted = false;
+          }
+        }
+      }
+    }, {
+      key: '_focus_set',
+      value: function _focus_set(item, first) {
+        var o = this.o,
+            focusable,
+            focusEl;
+
+        if (first) {
+          focusable = this.dom.ui.find(this.o._focusable);
+          focusable[focusable.length - 1].focus();
+          return;
+        }
+        if (o.autofocus) {
+          focusEl = item.dom.modal.find(o.autofocus)[0];
+        }
+        if (!focusEl) {
+          focusEl = item.dom.modal.find('[autofocus]')[0];
+        }
+        if (!focusEl) {
+          focusable = item.dom.modal.find(this.o._focusable);
+          focusEl = focusable[0];
+        }
+
+        if (focusEl) {
+          focusEl.focus();
+        }
+        //  else if (o.close === "outside") {//then try to focus close buttons
+        //   this.dom.close[0].focus()
+        // } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
+        //   item.dom.close[0].focus();
+        // }
+        else {
+            //if no, focus popup itself
+            item.dom.modal[0].focus();
+          }
+      }
+    }, {
+      key: '_addClickHandler',
+      value: function _addClickHandler() {
+        //initial click handlers
+        var that = this,
+            o = this.o,
+            handlers = that._handlers;
+
+        that._removeClickHandler();
+
+        handlers.elsClick = that._clickHandler();
+
+        if (o.click) {
+          if (that._g.els && that._g.els.length) {
+            that._g.els.on('click', handlers.elsClick);
+          }
+        }
+
+        if (o.clickels) {
+          $(o.clickels).on('click', handlers.elsClick);
+        }
+      }
+    }, {
+      key: '_clickHandler',
+      value: function _clickHandler() {
+        //this method creates closure with modal instance
+        var o = this.o,
+            that = this;
+
+        return function (e) {
+          var el = this;
+
+          if (e.originalEvent) e = e.originalEvent; //work with original event
+
+          if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return; //handle only left button click without key modificators
+          e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+          if (that.state.status !== 'inited') {
+            that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+            return;
+          }
+          if ($(el).closest('.njb-close-system, .njb-arrow').length) return; //don't remember why it here O_o
+
+
+          that.state.clickedEvent = e;
+          that.state.clickedEl = el;
+          that.state.focused = el;
+          that.show();
+        };
+      }
+    }, {
+      key: '_removeClickHandler',
+      value: function _removeClickHandler() {
+        var o = this.o;
+
+        if (this._g.els && this._g.els.length) {
+          this._g.els.off('click', this._handlers.elsClick);
+
+          if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
+        }
+      }
+    }, {
+      key: '_addListeners',
+      value: function _addListeners() {
+        //all other event handlers
+        var o = this.o,
+            that = this,
+            h = this._handlers;
+
+        h.container_resize = function (e) {
+          that.position();
+        };
+        h.container_scroll = function (e) {
+          that.position();
+        };
+        h.container_out = function (e) {
+          if (that.state.clickedEl === e.target || that.state.status !== 'shown') return;
+          var $el = $(e.target),
+              prevent = $el.closest('.njb, .njb-ui').length;
+          if (prevent) return;
+
+          e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+          if (o.out) {
+            if (that._cb('cancel') === false) return;
+            that.hide();
+          } else {
+            that.items[that.state.active].dom.modal.addClass('njb--pulse');
+            that._focus_set(that.items[that.state.active]);
+
+            setTimeout(function () {
+              that.items[that.state.active].dom.modal.removeClass('njb--pulse');
+            }, that._getAnimTime(that.items[that.state.active].dom.modal[0]));
+          }
+        };
+
+        that.dom.container.on('resize', h.container_resize).on('scroll', h.container_scroll);
+
+        that.dom.container.on('click', h.container_out);
+
+        h.wrap_resize = function () {
+          that.position();
+        };
+        h.wrap_scroll = function () {
+          that.position();
+        };
+        h.wrap_keydown = function (e) {
+          that._cb('keydown', e);
+
+          switch (e.which) {
+            case 27:
+              //esc
+              if (o.esc) {
+                if (that._cb('cancel') === false) return;
+                that.hide();
+              }
+
+              e.preventDefault ? e.preventDefault() : e.returnValue = false;
+              break;
+
+          }
+        };
+        h.wrap_close = function (e) {
+          e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+          if (that._cb('cancel') === false) return;
+          that.hide();
+        };
+        h.wrap_ok = function (e) {
+          e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+          if (that._cb('ok') === false) return;
+          that.hide();
+        };
+        h.wrap_cancel = function (e) {
+          e.preventDefault ? e.preventDefault() : e.returnValue = false;
+
+          if (that._cb('cancel') === false) return;
+          that.hide();
+        };
+
+        that.dom.wrap.on('resize', h.wrap_resize).on('scroll', h.wrap_scroll).on('keydown', h.wrap_keydown).delegate('[data-njb-close]', 'click', h.wrap_close).delegate('[data-njb-ok]', 'click', h.wrap_ok).delegate('[data-njb-cancel]', 'click', h.wrap_cancel);
+
+        h.window_resize = function () {
+          that.position();
+        };
+        h.window_scroll = function () {
+          that.position();
+        };
+        h.window_orientation = function () {
+          that.position();
+        };
+
+        that.dom.window.on('resize', h.window_resize).on('scroll', h.window_scroll).on('orientationchange', h.window_orientation);
+
+        h.focusCatchBefore = function (e) {
+          var related = e.relatedTarget,
+              fromUi;
+
+          if (related) {
+            //firefox have no related
+            fromUi = !!$(related).closest('.njb-ui').length;
+            if (fromUi) {
+              that._focus_set(that.items[that.state.active]);
+            } else {
+              that._focus_set(that.items[that.state.active], true);
+            }
+          } else {
+            that._focus_set(that.items[that.state.active], true);
+          }
+        };
+        h.focusCatchAfter = function (e) {
+          that._focus_set(that.items[that.state.active]);
+        };
+
+        this.dom.focusCatchBefore.on('focus', h.focusCatchBefore);
+        this.dom.focusCatchAfter.on('focus', h.focusCatchAfter);
+
+        this._cb('listeners_added');
+      }
+    }, {
+      key: '_removeListeners',
+      value: function _removeListeners() {
+        var h = this._handlers,
+            that = this;
+
+        that.dom.container.off('resize', h.container_resize).off('scroll', h.container_scroll).off('click', h.container_out);
+
+        that.dom.wrap.off('resize', h.wrap_resize).off('scroll', h.wrap_scroll).off('keydown', h.wrap_keydown).undelegate('[data-njb-close]', 'click', h.wrap_close).undelegate('[data-njb-ok]', 'click', h.wrap_ok).undelegate('[data-njb-cancel]', 'click', h.wrap_cancel);
+
+        that.dom.window.off('resize', h.window_resize).off('scroll', h.window_scroll).off('orientationchange', h.window_orientation);
+
+        //remove link to all previous handlers
+        var elsClick = h.elsClick;
+        this._handlers = {
+          elsClick: elsClick
+        };
+
+        that.dom.focusCatchBefore.off('focus', h.focusCatchBefore);
+        that.dom.focusCatchAfter.off('focus', h.focusCatchAfter);
+
+        this._cb('listeners_removed');
+      }
+    }, {
       key: '_preloader',
       value: function _preloader(type, item) {
         var o = this.o,
@@ -1309,26 +1304,86 @@ var njBox = function (undefined, setTimeout, document) {
       value: function _uiUpdate(index) {
         index = index || this.state.active;
 
-        var o = this.o,
+        var that = this,
+            dom = that.dom,
+            o = this.o,
             item = this.items[index];
 
         if (!item) {
-          this._e('njBox, can\'t update ui info from item index - ' + index);
+          that._e('njBox, can\'t update ui info from item index - ' + index);
           return;
         }
 
         //set title
         if (item.title) {
-          this.dom.ui.addClass('njb-ui--title');
+          dom.ui.addClass('njb-ui--title');
         } else {
-          this.dom.ui.removeClass('njb-ui--title');
+          dom.ui.removeClass('njb-ui--title');
         }
-        this.dom.wrap.find('[data-njb-title]').html(item.title || '');
+        dom.wrap.find('[data-njb-title]').html(item.title || '');
 
         if (item.type === 'image') {
-          this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
+          dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
         } else {
-          this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
+          dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
+        }
+      }
+    }, {
+      key: '_anim',
+      value: function _anim(type) {
+        var o = this.o,
+            that = this,
+            modal = this.items[this.state.active].dom.modal,
+            animShow = this._g.animation.show,
+            animHide = this._g.animation.hide,
+            animShowDur = this._g.animation.showDur,
+            animHideDur = this._g.animation.hideDur;
+
+        switch (type) {
+          case 'show':
+            this.dom.wrap[0].clientHeight; //fore reflow before applying class
+            this.dom.wrap.addClass('njb-wrap--visible');
+
+            if (animShow) {
+              if (o.animclass) modal.addClass(o.animclass);
+
+              modal.attr('open', '');
+              modal.addClass(animShow);
+
+              setTimeout(shownCallback, animShowDur);
+            } else {
+              shownCallback();
+            }
+            break;
+          case 'hide':
+            modal[0].removeAttribute('open');
+            this.dom.wrap.removeClass('njb-wrap--visible');
+
+            if (animHide) {
+              if (o.animclass) modal.addClass(o.animclass);
+              if (animHide === animShow) modal.addClass('njb-anim-reverse');
+              modal.addClass(animHide);
+
+              setTimeout(hiddenCallback, animHideDur);
+            } else {
+              hiddenCallback();
+            }
+            break;
+        }
+        function shownCallback() {
+          if (o.animclass) modal.removeClass(o.animclass);
+          modal.removeClass(animShow);
+
+          that._cb('shown');
+          that._focus_set(that.items[that.state.active]);
+        }
+        function hiddenCallback() {
+          if (o.animclass) modal.removeClass(o.animclass);
+          if (animHide === animShow) modal.removeClass('njb-anim-reverse');
+          modal.removeClass(animHide);
+
+          that._clear();
+          that._cb('hidden');
         }
       }
     }, {
@@ -1340,7 +1395,7 @@ var njBox = function (undefined, setTimeout, document) {
             if (o.scrollbar === 'hide') {
               if (this.state.scrollbarHidden) return;
 
-              if (this._globals.containerIsBody) {
+              if (this._g.containerIsBody) {
                 //we can insert modal window in any custom element, that's why we need this if
                 var sb = (document.documentElement.scrollHeight || document.body.scrollHeight) > document.documentElement.clientHeight; //check for scrollbar existance (we can have no scrollbar on simple short pages)
 
@@ -1382,7 +1437,7 @@ var njBox = function (undefined, setTimeout, document) {
               this.dom.container[0].njb_scrollbar = undefined;
             }
 
-            if (this._globals.containerIsBody) {
+            if (this._g.containerIsBody) {
               this.dom.html.removeClass('njb-hideScrollbar');
               var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
 
@@ -1425,7 +1480,7 @@ var njBox = function (undefined, setTimeout, document) {
             if (this.state.backdropVisible) return;
 
             if (o.backdrop === true) {
-              if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animShowDur + 'ms');
+              if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._g.animation.showDur + 'ms');
 
               //insert backdrop div
               if (o.layout === 'absolute') this.dom.backdrop.addClass('njb-absolute');
@@ -1444,7 +1499,7 @@ var njBox = function (undefined, setTimeout, document) {
 
           case 'hide':
             if (!this.state.backdropVisible) return;
-            if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._globals.animHideDur + 'ms');
+            if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._g.animation.hideDur + 'ms');
 
             this.dom.backdrop.removeClass('njb-backdrop--visible');
 
@@ -1514,10 +1569,12 @@ var njBox = function (undefined, setTimeout, document) {
 
         if (appended) document.body.removeChild(div);
 
-        this._globals.animShow = animShow;
-        this._globals.animHide = animHide;
-        this._globals.animShowDur = animShowDur;
-        this._globals.animHideDur = animHideDur;
+        return {
+          show: animShow,
+          hide: animHide,
+          showDur: animShowDur,
+          hideDur: animHideDur
+        };
       }
     }, {
       key: '_getAnimTime',
@@ -1563,64 +1620,6 @@ var njBox = function (undefined, setTimeout, document) {
         return _getMaxTransitionDuration(el, 'animation') || _getMaxTransitionDuration(el, 'transition');
       }
     }, {
-      key: '_anim',
-      value: function _anim(type) {
-        var o = this.o,
-            that = this,
-            modal = this.items[this.state.active].dom.modal,
-            animShow = this._globals.animShow,
-            animHide = this._globals.animHide,
-            animShowDur = this._globals.animShowDur,
-            animHideDur = this._globals.animHideDur;
-
-        switch (type) {
-          case 'show':
-            this.dom.wrap[0].clientHeight; //fore reflow before applying class
-            this.dom.wrap.addClass('njb-wrap--visible');
-
-            if (animShow) {
-              if (o.animclass) modal.addClass(o.animclass);
-
-              modal.attr('open', '');
-              modal.addClass(animShow);
-
-              setTimeout(shownCallback, animShowDur);
-            } else {
-              shownCallback();
-            }
-            break;
-          case 'hide':
-            modal[0].removeAttribute('open');
-            this.dom.wrap.removeClass('njb-wrap--visible');
-
-            if (animHide) {
-              if (o.animclass) modal.addClass(o.animclass);
-              if (animHide === animShow) modal.addClass('njb-anim-reverse');
-              modal.addClass(animHide);
-
-              setTimeout(hiddenCallback, animHideDur);
-            } else {
-              hiddenCallback();
-            }
-            break;
-        }
-        function shownCallback() {
-          if (o.animclass) modal.removeClass(o.animclass);
-          modal.removeClass(animShow);
-
-          that._cb('shown');
-          that._focus_set(that.items[that.state.active]);
-        }
-        function hiddenCallback() {
-          if (o.animclass) modal.removeClass(o.animclass);
-          if (animHide === animShow) modal.removeClass('njb-anim-reverse');
-          modal.removeClass(animHide);
-
-          that._clear();
-          that._cb('hidden');
-        }
-      }
-    }, {
       key: '_focusPreviousModal',
       value: function _focusPreviousModal() {
         //because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
@@ -1646,8 +1645,9 @@ var njBox = function (undefined, setTimeout, document) {
 
         this._scrollbar('show');
 
-        if (this._globals.popover) {
+        if (this._g.popover) {
           modal[0].parentNode.removeChild(modal[0]);
+          modal.css('left', '0').css('top', '0');
         } else {
           if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
         }
@@ -1668,9 +1668,10 @@ var njBox = function (undefined, setTimeout, document) {
         }
 
         this.state = {
+          active: 0,
+          arguments: {},
           inited: true,
-          state: 'inited',
-          active: 0
+          state: 'inited'
         };
 
         this._cb('cleared');
@@ -1681,6 +1682,7 @@ var njBox = function (undefined, setTimeout, document) {
         //_e
         if (!msg) return;
 
+        console.error(msg);
         if (clear) this._clear();
       }
     }, {
@@ -1691,12 +1693,12 @@ var njBox = function (undefined, setTimeout, document) {
             callbackResult;
 
         if (type === 'inited' || type === 'show' || type === 'shown' || type === 'hide' || type === 'hidden' || type === 'destroy' || type === 'destroyed') {
-          this.state.state = type;
+          this.state.status = type;
         }
         //make some stuff on callbacks
         switch (type) {
           case 'hidden':
-            this.state.state = 'inited';
+            this.state.status = 'inited';
             if (o.focusprevious) this._focusPreviousModal();
             break;
         }
@@ -1773,7 +1775,6 @@ var njBox = function (undefined, setTimeout, document) {
   if (document.body && !njBox.g) njBox.g = (0, _utils.getDefaultInfo)();
 
   // njBox.prototype.showModal = njBox.prototype.show;
-  //global options
 
   //addons
   njBox.addons = {};
@@ -1803,13 +1804,6 @@ var njBox = function (undefined, setTimeout, document) {
     $(njBox.defaults.autobind).each(function () {
       new njBox({
         elem: $(this)
-      });
-    });
-    //autobind popover
-    $('[data-toggle~="popover"]').each(function () {
-      new njBox({
-        elem: $(this),
-        layout: 'popover'
       });
     });
   };
@@ -2112,7 +2106,6 @@ j.fn.undelegate = function (selector, type, fn) {
         fn = type;
         type = selector;
     }
-
     return this.each(function (i) {
         var events = this._events,
             types = this._events[type];
@@ -2233,12 +2226,8 @@ module.exports = exports['default'];
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 exports.getDefaultInfo = getDefaultInfo;
 exports.getItemFromDom = getItemFromDom;
-exports.getArray = getArray;
 function getDefaultInfo() {
 	var options = {};
 
@@ -2346,18 +2335,11 @@ function getDefaultInfo() {
 function getItemFromDom(dom, selector) {
 	return dom.attr(selector) !== null ? dom : dom.find('[' + selector + ']');
 }
-function getArray(stringOrArray) {
-	if (typeof stringOrArray === 'string') {
-		return stringOrArray.split(' ');
-	} else if ((typeof stringOrArray === 'undefined' ? 'undefined' : _typeof(stringOrArray)) === 'object') {
-		return stringOrArray;
-	}
-}
-
 var defaults = exports.defaults = {
 	elem: '', //(selector || dom\jQuery element) dom element for triggering modal
-	content: undefined, //(string) content for modal
-	type: '', //(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag, directly to .njb
+	content: undefined, //(string || function) content for modal
+	delayed: true, //(boolean) Interesting option, that works only for selector and image types. When its true with selector type, dom element will not be touched until show, and will be returned to dom after hiding modal. When its true and type image, images will not be loading on initialization.
+	type: '', //(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
 	header: undefined, //(html) html that will be added as modal header (for first slide)
 	footer: undefined, //(html) html that will be added as modal footer (for first slide)
 	// we need quotes here because of ie8..
@@ -2366,7 +2348,11 @@ var defaults = exports.defaults = {
 
 	container: 'body', //(selector) appends modal to specific element
 	layout: 'fixed', //(fixed || absolute || popover), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically, popover mode not modal at all, it is like tooltip)
-	coords: "center center", //(string || array) coordinates for positioning popover. String should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100])
+
+	placement: 'center', //(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second. The this context is set to the popover instance.
+	offset: '10 10', //(string or array) popover specific option. Offset of the popover relative to its target
+	boundary: true, //(boolean) popover specific option. Should popover stay in boundaries of window?
+
 	click: true, //(boolean) should we set click handler on element(o.elem)?
 	clickels: '', //(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 
@@ -2383,19 +2369,18 @@ var defaults = exports.defaults = {
 	title_attr: 'title', //(string || boolean false) attribute from which we gather title for slide (used basically in images)
 
 	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
-	imgload: 'show', //(init || show) should we load gallery images on init(before dialog open) or on open 
 	anim: 'scale', //(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 	animclass: 'animated', //(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration: 'auto', //(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)
 
 
-	jquery: undefined, //link to jquery (for modules without global scopr)
+	jquery: undefined, //link to jquery (for modules without global scope)
 	autobind: '[data-toggle~="box"], [data-toggle~="modal"]', //(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 
 	//accessibility options
 	_focusable: 'a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]', //(selector) this elements we will try to focus in popup shown after option o.autofocus
 	buttonrole: 'button', //(button || boolean false) this role will be set to elements, which opens modal window
-	role: 'dialog', //(dialog || alertdialog || boolean false)//role that will be set to modal dialog https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_alertdialog_role
+	role: 'dialog', //(dialog || alertdialog || boolean false) role that will be set to modal dialog https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_alertdialog_role
 	label: false, //(string) add aria-label attribute to support screenreaders
 	labelledby: false, //(id selector) add aria-labelledby attribute to support screenreaders
 	describedby: false, //(id selector) add aria-describedby attribute to support screenreaders
@@ -2409,7 +2394,7 @@ var defaults = exports.defaults = {
 		header: '<header class="njb__header" data-njb-header></header>',
 		footer: '<footer class="njb__footer" data-njb-footer></footer>',
 		close: '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',
-		focusCatcher: '<i tabindex="0" class="njb-focus-catch" aria-hidden="true"></i>',
+		focusCatcher: '<span tabindex="0" class="njb-focus-catch" aria-hidden="true"></span>',
 
 		preloader: '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
 		ui: '<div class="njb-ui"></div>',

@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -95,8 +95,8 @@
       text: {
         current: 'Current slide',
         total: 'Total slides',
-        prev: 'Previous dialog item', //prev slide button title
-        next: 'Next dialog item' //next slide button title
+        prev: 'Previous gallery item', //prev slide button title
+        next: 'Next gallery item' //next slide button title
       }
     },
     prototype: {
@@ -104,53 +104,64 @@
         var that = this,
             o = this.o,
             $ = this.$;
-        this.on('options_setted', function () {
-          var o = this.o;
-          if (o.gallery) this._globals.gallery = true;
 
-          if ($.isArray(o.content)) {
-            this._globals.gallery = true;
-          }
-        });
+        if (o.gallery) {
+          that._g.gallery = true;
+          if (o.layout === "popover") o.layout = "fixed";
+        }
+
+        if ($.isArray(o.content)) {
+          that._g.gallery = true;
+        }
+
+        if (!that._g.gallery) return;
+
         this.on('items_raw', function () {
-          this._gallery_createRawItems();
+          this._g_createRawItems();
         });
         this.on('domready', function () {
-          if (this._globals.gallery) {
-            this.dom.ui_count = $(o.templates.count);
-            this.dom.ui[0].appendChild(this.dom.ui_count[0]);
+          if (!this._g.gallery) return;
 
-            this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
-            this.dom.ui_current[0].setAttribute('title', o.text.current);
-            this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]');
-            this.dom.ui_total[0].setAttribute('title', o.text.total);
+          this.dom.ui_count = $(o.templates.count);
+          this.dom.ui[0].appendChild(this.dom.ui_count[0]);
 
-            this.dom.prev = $(o.templates.prev);
-            this.dom.prev[0].setAttribute('title', o.text.prev);
-            this.dom.next = $(o.templates.next);
-            this.dom.next[0].setAttribute('title', o.text.next);
+          this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
+          this.dom.ui_current[0].setAttribute('title', o.text.current);
+          this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]');
+          this.dom.ui_total[0].setAttribute('title', o.text.total);
 
-            if (o.arrows && !this.state.arrowsInserted && this._globals.gallery) {
-              if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-              if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+          this.dom.prev = $(o.templates.prev);
+          this.dom.prev[0].setAttribute('title', o.text.prev);
+          this.dom.next = $(o.templates.next);
+          this.dom.next[0].setAttribute('title', o.text.next);
 
-              this.state.arrowsInserted = true;
-            }
+          if (o.arrows && !this.state.arrowsInserted && this._g.gallery) {
+            if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
+            if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+
+            this.state.arrowsInserted = true;
           }
         });
-        this.on('item_domready', function (item, index) {
-          if (this._globals.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
+        this.on('item_created', function (item, index) {
+          if (this._g.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
         });
         this.on('inserted', function () {
-          if (that._globals.gallery) {
-            this._setQueue(this.state.active);
-            that._gallery__uiUpdate();
-          }
+          if (!that._g.gallery) return;
+
+          this._setQueue(this.state.active);
+          that._g__uiUpdate();
         });
+        // this.on('item_inserted', function (item) {
+        //   if (!this._g.gallery) return; 
+        //   // if(this.state.status === 'shown') that.position();
+        // })
         this.on('change', function () {
-          that._gallery__uiUpdate();
+          that._g__uiUpdate();
         });
-        this.on('listerens_added', function () {
+        this.on('changed', function () {
+          this._preload();
+        });
+        this.on('listeners_added', function () {
           var o = this.o,
               that = this,
               h = this._handlers;
@@ -169,11 +180,15 @@
         this.on('listeners_removed', function () {
           var h = this._handlers;
 
-          this.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
+          if (that._g.gallery) {
+            that.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev).undelegate('[data-njb-next]', 'click', h.wrap_next);
+          }
         });
-        this.on('position', function () {
+        this.on('positioned', function () {
           //we need autoheight for prev and next slide in gallery
-          if (this._globals.gallery) {
+          if (!this._g.gallery) return;
+
+          if (this.state.status === 'shown') {
             if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
             if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
           }
@@ -182,10 +197,10 @@
           this.state.active = this._detectIndexForOpen();
         });
         this.on('shown', function () {
-          if (this._globals.gallery) {
-            that._drawItemSiblings();
-            this._preload();
-          }
+          if (!this._g.gallery) return;
+
+          this._drawItemSiblings();
+          this._preload();
         });
         this.on('keydown', function (e) {
           var o = this.o;
@@ -223,10 +238,10 @@
           return;
         }
 
-        if (this.state.state === 'inited' || this.state.state === 'show') {
+        if (this.state.status === 'inited' || this.state.status === 'show') {
           this.state.active = index;
           return;
-        } else if (this.state.state !== 'shown' || index === this.state.active || index < 0 || index > this.items.length - 1) {
+        } else if (this.state.status !== 'shown' || index === this.state.active || index < 0 || index > this.items.length - 1) {
           this._error('njBox, wrong index in goTo method.');
           return this;
         }
@@ -296,7 +311,7 @@
             tabs = obj.tabs,
             dom;
 
-        tabs.forEach(function (tabObj) {
+        if (tabs) tabs.forEach(function (tabObj) {
           if (tabObj.tabindex !== null) {
             tabObj.el.setAttribute('tabindex', tabObj.tabindex);
           } else {
@@ -309,7 +324,7 @@
         var o = this.o,
             that = this;
 
-        if (!o.preload || this.state.state !== 'shown') return; //we should start preloading only after show animation is finished, because loading images makes animation glitchy
+        if (!o.preload || this.state.status !== 'shown') return; //we should start preloading only after show animation is finished, because loading images makes animation glitchy
 
         var temp = o.preload.split(' '),
             prev = parseInt(temp[0]),
@@ -340,19 +355,18 @@
       _drawItemSiblings: function _drawItemSiblings() {
         var o = this.o,
             that = this;
-
-        if (typeof this.queue.prev.index === 'number') {
-          this._moveItem(this.queue.prev.item, -110, '%');
-          this._drawItem(this.queue.prev.item, true, this.dom.items[0]);
-          this.queue.prev.tabs = this._makeUnfocusable(this.queue.prev.item.dom.modal, o._focusable);
+        if (typeof that.queue.prev.index === 'number') {
+          that._moveItem(that.queue.prev.item, -110, '%');
+          that._drawItem(that.queue.prev.item, true, that.dom.items[0]);
+          if (that.queue.prev.index !== null) that._setMaxHeight(that.items[that.queue.prev.index]);
+          that.queue.prev.tabs = that._makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable);
         }
-        if (typeof this.queue.next.index === 'number') {
-          this._moveItem(this.queue.next.item, 110, '%');
-          this._drawItem(this.queue.next.item, false, this.dom.items[0]);
-          this.queue.next.tabs = this._makeUnfocusable(this.queue.next.item.dom.modal, o._focusable);
+        if (typeof that.queue.next.index === 'number') {
+          that._moveItem(that.queue.next.item, 110, '%');
+          that._drawItem(that.queue.next.item, false, that.dom.items[0]);
+          if (that.queue.next.index !== null) that._setMaxHeight(that.items[that.queue.next.index]);
+          that.queue.next.tabs = that._makeUnfocusable(that.queue.next.item.dom.modal, o._focusable);
         }
-        this.position();
-        this._preload();
       },
       _moveItem: function _moveItem(item, value, unit) {
         unit = unit || 'px';
@@ -417,7 +431,7 @@
         }
 
         setTimeout(function () {
-          if (that.state.state !== 'shown') {
+          if (that.state.status !== 'shown') {
             that.state.itemChanging = false;
             return; //case when we hide modal when slide is changing
           }
@@ -442,14 +456,20 @@
       _detectIndexForOpen: function _detectIndexForOpen() {
         var o = this.o,
             that = this,
-            index = this.state.active || 0;
-        if (this._globals.gallery && o.start - 1 && this.items[o.start - 1]) {
+            index,
+            showArg = this.state.arguments.show.index;
+
+        if (showArg !== undefined) this.state.active = showArg - 1;
+
+        index = this.state.active || 0;
+
+        if (this._g.gallery && o.start - 1 && this.items[o.start - 1]) {
           //then we check o.start option
           index = o.start - 1;
         }
         //if we have clicked element, take index from it
-        if (this._globals.gallery && this.data.els && this.data.els.length && that.state.clickedEl && o.click) {
-          this.data.els.each(function (i, el) {
+        if (this._g.gallery && this._g.els && this._g.els.length && that.state.clickedEl && o.click) {
+          this._g.els.each(function (i, el) {
             if (that.state.clickedEl === el) {
               index = i;
               return;
@@ -468,6 +488,20 @@
           next: this._getQueueItem(order[2])
         };
       },
+      _getItemsOrder: function _getItemsOrder(index) {
+        var o = this.o,
+            prev = index - 1,
+            next = index + 1;
+
+        if (o.loop && this.items.length > 2) {
+          if (prev === -1) prev = this.items.length - 1;
+          if (next === this.items.length) next = 0;
+        }
+        if (!this.items[prev]) prev = null;
+        if (!this.items[next]) next = null;
+
+        return [prev, index, next];
+      },
       _getQueueItem: function _getQueueItem(index) {
         var item;
 
@@ -484,21 +518,7 @@
         };
       },
 
-      _getItemsOrder: function _getItemsOrder(index) {
-        var o = this.o,
-            prev = index - 1,
-            next = index + 1;
-
-        if (o.loop && this.items.length > 2) {
-          if (prev === -1) prev = this.items.length - 1;
-          if (next === this.items.length) next = 0;
-        }
-        if (!this.items[prev]) prev = null;
-        if (!this.items[next]) next = null;
-
-        return [prev, index, next];
-      },
-      _gallery__uiUpdate: function _gallery__uiUpdate(index) {
+      _g__uiUpdate: function _g__uiUpdate(index) {
         index = index || this.state.active;
 
         var o = this.o,
@@ -510,53 +530,70 @@
         this.dom.wrap.find('[data-njb-current]').html(index + 1 || ''); //+1 because indexes are zero-based
         this.dom.wrap.find('[data-njb-total]').html(this.items.length || '');
 
-        if (o.loop && this.items.length >= 3) {
-          this.dom.ui.removeClass('njb-ui--no-loop');
-          this.dom.prev[0].removeAttribute('disabled');
-          this.dom.next[0].removeAttribute('disabled');
-        } else {
-          this.dom.ui.addClass('njb-ui--no-loop');
-          this.dom.prev[0].setAttribute('disabled', true);
-          this.dom.next[0].setAttribute('disabled', true);
-        }
-
         //arrow classes
         if (index === 0) {
+          this.state.gallery_first = true;
           this.dom.ui.addClass('njb-ui--first');
         } else {
+          this.state.gallery_first = false;
           this.dom.ui.removeClass('njb-ui--first');
         }
 
         if (index === this.items.length - 1) {
+          this.state.gallery_last = true;
           this.dom.ui.addClass('njb-ui--last');
         } else {
+          this.state.gallery_last = false;
           this.dom.ui.removeClass('njb-ui--last');
         }
 
         //only one class
         if (this.items.length === 1) {
+          this.state.gallery_only = true;
           this.dom.ui.addClass('njb-ui--only');
         } else {
+          this.state.gallery_only = false;
           this.dom.ui.removeClass('njb-ui--only');
         }
+
+        if (o.loop && this.items.length >= 3) {
+          this.state.gallery_noloop = false;
+          this.dom.ui.removeClass('njb-ui--no-loop');
+        } else {
+          this.state.gallery_noloop = true;
+          this.dom.ui.addClass('njb-ui--no-loop');
+        }
+
+        if (this.state.gallery_noloop) {
+          if (this.state.gallery_first) {
+            this.dom.prev[0].setAttribute('disabled', true);
+          } else {
+            this.dom.prev[0].removeAttribute('disabled');
+          }
+          if (this.state.gallery_last) {
+            this.dom.next[0].setAttribute('disabled', true);
+          } else {
+            this.dom.next[0].removeAttribute('disabled');
+          }
+        }
       },
-      _gallery_createRawItems: function _gallery_createRawItems() {
+      _g_createRawItems: function _g_createRawItems() {
         var o = this.o;
 
-        if (!this._globals.gallery) return;
+        if (!this._g.gallery) return;
 
         if (this.$.isArray(o.content)) {
-          this.data.items_raw = o.content;
+          this._g.items_raw = o.content;
         } else {
-          this.data.els = this._gatherElements(o.gallery);
-          this.data.items_raw = [];
+          this._g.els = this._gatherElements(o.gallery);
+          this._g.items_raw = [];
 
-          if (this.data.els && this.data.els.length) {
-            for (var index = 0; index < this.data.els.length; index++) {
-              var element = this.data.els[index],
+          if (this._g.els && this._g.els.length) {
+            for (var index = 0; index < this._g.els.length; index++) {
+              var element = this._g.els[index],
                   gathered_data = this._gatherData(element);
               this._cb('item_gathered', gathered_data, element);
-              this.data.items_raw.push(gathered_data);
+              this._g.items_raw.push(gathered_data);
             }
           }
         }
@@ -573,7 +610,8 @@
 })();
 
 /***/ }),
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(0);

@@ -151,14 +151,16 @@ class njBox {
     }
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
-    if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically
+    if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
 
     this.returnValue = null;
 
-    if (!this.dom.container[0].njb_instances) {
-      this.dom.container[0].njb_instances = 1;
+    var container = this.dom.container[0];
+
+    if (!container.njb_instances) {
+      container.njb_instances = 1;
     } else {
-      this.dom.container[0].njb_instances++;
+      container.njb_instances++;
     }
     // this.dom.container.addClass('njb-open');
     
@@ -170,9 +172,9 @@ class njBox {
     var containerToInsert;
     //insert modal to page
     if (this._g.popover) {
-      containerToInsert = this.dom.container[0];
+      containerToInsert = container;
     } else {
-      this.dom.container[0].appendChild(this.dom.wrap[0]);
+      container.appendChild(this.dom.wrap[0]);
       containerToInsert = this.dom.items[0];
     }
 
@@ -445,7 +447,6 @@ class njBox {
 
     if (!modal.length) {
       that._e('njBox, error in o.templates.modal');
-      return;
     }
 
     modalOuter[0].appendChild(modal[0]);
@@ -455,7 +456,6 @@ class njBox {
       dom.body = $(o.templates.body);
       if (!dom.body.length) {
         that._e('njBox, error in o.templates.body');
-        return;
       }
       //find data-njb-body in item body element
       dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
@@ -466,28 +466,40 @@ class njBox {
       if (item.header) {
         dom.header = $(o.templates.header);
 
-        if (!dom.header.length) {
-          that._e('njBox, error in o.templates.header');
-          return;
-        }
-        //insert header info
-        dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
+        var headerError = 'njBox, error in o.templates.header';
 
-        modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
+        if (!dom.header.length) {
+          that._e(headerError);
+        } else {
+          //insert header info
+          dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
+          if (!dom.headerInput.length) {
+            that._e(headerError);
+          } else {
+            modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
+          }
+        }
+
       }
 
       //insert footer
       if (item.footer) {
         dom.footer = $(o.templates.footer);
 
-        if (!dom.footer.length) {
-          that._e('njBox, error in njBox.templates.footer');
-          return;
-        }
-        //insert footer info
-        dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
+        var footerError = 'njBox, error in njBox.templates.footer';
 
-        modalFragment.appendChild(dom.footer[0])
+        if (!dom.footer.length) {
+          that._e(footerError);
+        } else {
+          //insert footer info
+          dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
+          if (!dom.footerInput.length) {
+            that._e(footerError);
+          } else {
+            modalFragment.appendChild(dom.footer[0])
+          }
+        }
+
       }
 
       //insert close button
@@ -529,6 +541,7 @@ class njBox {
       }
 
       item.o.status = 'loaded';
+      if(that.state.status === 'shown') that._setMaxHeight(item)
     }
     
     if (itemType === 'template') {
@@ -705,7 +718,6 @@ class njBox {
     dom.wrap = $(o.templates.wrap);
     if (!dom.wrap.length) {
       that._e('njBox, smth wrong with o.templates.wrap.');
-      return;
     }
     if (o['class']) dom.wrap.addClass(o['class']);
     dom.wrap[0].njBox = that;
@@ -837,7 +849,7 @@ class njBox {
 
     let headerHeight = 0,
       footerHeight = 0;
-
+    
     (v.header && v.header.length) ? headerHeight = v.header[0].scrollHeight + (parseInt(v.header.css('borderTopWidth')) + parseInt(v.header.css('borderBottomWidth'))) || 0 : 0;
     (v.footer && v.footer.length) ? footerHeight = v.footer[0].scrollHeight + (parseInt(v.footer.css('borderTopWidth')) + parseInt(v.footer.css('borderBottomWidth'))) || 0 : 0;
 
@@ -861,7 +873,7 @@ class njBox {
     
     that._cb('item_prepare', item);
 
-    if (o.delayed) {
+    if (o.delayed && !item.o.contentInserted && (item.type === 'image' || item.type === 'selector')) {
       that._insertItemContent({item, delayed: false});
     }
 
@@ -1173,26 +1185,85 @@ class njBox {
   _uiUpdate(index) {
     index = index || this.state.active;
 
-    var o = this.o,
-      item = this.items[index];
+    var that = this,
+        dom = that.dom,
+        o = this.o,
+        item = this.items[index];
 
     if (!item) {
-      this._e('njBox, can\'t update ui info from item index - ' + index);
+      that._e('njBox, can\'t update ui info from item index - ' + index);
       return;
     }
 
     //set title
     if (item.title) {
-      this.dom.ui.addClass('njb-ui--title');
+      dom.ui.addClass('njb-ui--title');
     } else {
-      this.dom.ui.removeClass('njb-ui--title');
+      dom.ui.removeClass('njb-ui--title');
     }
-    this.dom.wrap.find('[data-njb-title]').html(item.title || '')
+    dom.wrap.find('[data-njb-title]').html(item.title || '')
 
     if (item.type === 'image') {
-      this.dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
+      dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
     } else {
-      this.dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
+      dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
+    }
+  }
+  _anim(type) {
+    var o = this.o,
+      that = this,
+      modal = this.items[this.state.active].dom.modal,
+      animShow = this._g.animation.show,
+      animHide = this._g.animation.hide,
+      animShowDur = this._g.animation.showDur,
+      animHideDur = this._g.animation.hideDur;
+
+
+    switch (type) {
+      case 'show':
+        this.dom.wrap[0].clientHeight;//fore reflow before applying class
+        this.dom.wrap.addClass('njb-wrap--visible');
+
+        if (animShow) {
+          if (o.animclass) modal.addClass(o.animclass);
+
+          modal.attr('open', '');
+          modal.addClass(animShow);
+
+          setTimeout(shownCallback, animShowDur);
+        } else {
+          shownCallback();
+        }
+        break;
+      case 'hide':
+        modal[0].removeAttribute('open');
+        this.dom.wrap.removeClass('njb-wrap--visible')
+
+        if (animHide) {
+          if (o.animclass) modal.addClass(o.animclass);
+          if (animHide === animShow) modal.addClass('njb-anim-reverse');
+          modal.addClass(animHide);
+
+          setTimeout(hiddenCallback, animHideDur)
+        } else {
+          hiddenCallback();
+        }
+        break;
+    }
+    function shownCallback() {
+      if (o.animclass) modal.removeClass(o.animclass);
+      modal.removeClass(animShow);
+
+      that._cb('shown');
+      that._focus_set(that.items[that.state.active]);
+    }
+    function hiddenCallback() {
+      if (o.animclass) modal.removeClass(o.animclass);
+      if (animHide === animShow) modal.removeClass('njb-anim-reverse');
+      modal.removeClass(animHide);
+
+      that._clear();
+      that._cb('hidden');
     }
   }
 
@@ -1428,63 +1499,7 @@ class njBox {
 
     return _getMaxTransitionDuration(el, 'animation') || _getMaxTransitionDuration(el, 'transition')
   }
-  _anim(type) {
-    var o = this.o,
-      that = this,
-      modal = this.items[this.state.active].dom.modal,
-      animShow = this._g.animation.show,
-      animHide = this._g.animation.hide,
-      animShowDur = this._g.animation.showDur,
-      animHideDur = this._g.animation.hideDur;
-
-
-    switch (type) {
-      case 'show':
-        this.dom.wrap[0].clientHeight;//fore reflow before applying class
-        this.dom.wrap.addClass('njb-wrap--visible');
-
-        if (animShow) {
-          if (o.animclass) modal.addClass(o.animclass);
-
-          modal.attr('open', '');
-          modal.addClass(animShow);
-
-          setTimeout(shownCallback, animShowDur);
-        } else {
-          shownCallback();
-        }
-        break;
-      case 'hide':
-        modal[0].removeAttribute('open');
-        this.dom.wrap.removeClass('njb-wrap--visible')
-
-        if (animHide) {
-          if (o.animclass) modal.addClass(o.animclass);
-          if (animHide === animShow) modal.addClass('njb-anim-reverse');
-          modal.addClass(animHide);
-
-          setTimeout(hiddenCallback, animHideDur)
-        } else {
-          hiddenCallback();
-        }
-        break;
-    }
-    function shownCallback() {
-      if (o.animclass) modal.removeClass(o.animclass);
-      modal.removeClass(animShow);
-
-      that._cb('shown');
-      that._focus_set(that.items[that.state.active]);
-    }
-    function hiddenCallback() {
-      if (o.animclass) modal.removeClass(o.animclass);
-      if (animHide === animShow) modal.removeClass('njb-anim-reverse');
-      modal.removeClass(animHide);
-
-      that._clear();
-      that._cb('hidden');
-    }
-  }
+  
   _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
     var openedBox = this.dom.body.find('.njb-wrap'),
       openedInstance;
@@ -1541,6 +1556,7 @@ class njBox {
   _e(msg, clear) {//_e
     if (!msg) return;
 
+    console.error(msg);
     if (clear) this._clear();
   }
   _cb(type) {//cb - callback
@@ -1627,7 +1643,6 @@ class njBox {
 if (document.body && !njBox.g) njBox.g = getDefaultInfo();
 
 // njBox.prototype.showModal = njBox.prototype.show;
-//global options
 
 //addons
 njBox.addons = {}

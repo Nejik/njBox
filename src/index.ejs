@@ -35,18 +35,20 @@
 </head>
 
 <body>
-  
-  
-  <div class="gallery" data-njb-gallery="a" data-njb-autofocus="false" data-toggle="modal" data-njb-delayed="true">
-    <a href="#modal2">modal1</a>
-    <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" class="link"  data-njb-title="title 2">link</a>
+  <!--<div class="gallery" data-njb-gallery="a" data-njb-autofocus="false">
+    <a href="1">link1</a>
+    <a href="2">link2</a>
+    <a href="3">link3</a>
+  </div>-->
+  <div class="gallery" data-njb-gallery="a" data-njb-autofocus="false">
+    <a href="#modal2" data-njb-header="lol">modal1</a>
     <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" data-njb-title="title 3">link</a>
     <a href="http://www.worldofowls.com/wp-content/uploads/2014/09/gallery-owls-1.jpg">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/736x/66/a5/eb/66a5ebd96a859c119ce18260dd7a8ba5.jpg">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg">link</a>
   </div>
   <!--<a href="#modal2" class="el" data-njb-header="header" data-njb-delayed="true">click2</a>-->
-  <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="el">click2</a>
+  <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="el" title="poil" data-toggle="modal"data-njb-header="lol" data-njb-img="load">click2</a>
   
   <div id="modal1" class="njb-hidden">
     <h1 id="test">modal title</h1>
@@ -59,9 +61,11 @@
    </div>
   <script src="njBox.js"></script>
   <script src="njBox-gallery.js"></script>
-  <script src="njBox-popover.js"></script>
+  <!--<script src="njBox-popover.js"></script>-->
   <script>
-    t = new njBox('.gallery').on('inited', function(event, arg1, arg2) {
+    t = new njBox('.gallery', {
+
+    }).on('inited', function(event, arg1, arg2) {
       console.log(this);
     })
     // console.log(document.activeElement)

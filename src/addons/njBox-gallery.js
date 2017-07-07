@@ -76,6 +76,10 @@
           this._setQueue(this.state.active);
           that._g__uiUpdate();
         })
+        // this.on('item_inserted', function (item) {
+        //   if (!this._g.gallery) return; 
+        //   // if(this.state.status === 'shown') that.position();
+        // })
         this.on('change', function () {
           that._g__uiUpdate();
         })
@@ -108,12 +112,15 @@
                          .undelegate('[data-njb-next]', 'click', h.wrap_next)
           }
         })
-        this.on('position', function () {
+        this.on('positioned', function () {
           //we need autoheight for prev and next slide in gallery
           if (!this._g.gallery) return; 
 
-          if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
-          if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
+          if (this.state.status === 'shown') {
+            if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
+            if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
+          }
+          
         })
         this.on('show', function () {
           this.state.active = this._detectIndexForOpen();
@@ -281,14 +288,15 @@
         if (typeof that.queue.prev.index === 'number') {
           that._moveItem(that.queue.prev.item, -110, '%');
           that._drawItem(that.queue.prev.item, true, that.dom.items[0]);
+          if (that.queue.prev.index !== null) that._setMaxHeight(that.items[that.queue.prev.index]);
           that.queue.prev.tabs = that._makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable)
         }
         if (typeof that.queue.next.index === 'number') {
           that._moveItem(that.queue.next.item, 110, '%');
           that._drawItem(that.queue.next.item, false, that.dom.items[0]);
+          if (that.queue.next.index !== null) that._setMaxHeight(that.items[that.queue.next.index]);
           that.queue.next.tabs = that._makeUnfocusable(that.queue.next.item.dom.modal, o._focusable)
         }
-        that.position()
       },
       _moveItem: function (item, value, unit) {
         unit = unit || 'px';
@@ -379,7 +387,13 @@
       _detectIndexForOpen: function () {
         var o = this.o,
           that = this,
-          index = this.state.active || 0;
+          index,
+          showArg = this.state.arguments.show.index;
+
+        if (showArg !== undefined) this.state.active = showArg - 1;
+
+        index = this.state.active || 0;
+
         if (this._g.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
           index = o.start - 1;
         }

@@ -104,7 +104,7 @@ export function getItemFromDom(dom, selector) {
 export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
-	delayed        : false,//(boolean) Should we take dom element from selector type on init method, or it will stay in dom until show, and returned in dom after show?
+	delayed        : true,//(boolean) Interesting option, that works only for selector and image types. When its true with selector type, dom element will not be touched until show, and will be returned to dom after hiding modal. When its true and type image, images will not be loading on initialization.
 	type           : '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
 	header         : undefined,//(html) html that will be added as modal header (for first slide)
 	footer         : undefined,//(html) html that will be added as modal footer (for first slide)

@@ -40,7 +40,7 @@
         }
         
         if(!that._g.gallery) return;
-
+        
         this.on('items_raw', function () {
           this._g_createRawItems();
         })
@@ -78,6 +78,9 @@
         })
         this.on('change', function () {
           that._g__uiUpdate();
+        })
+        this.on('changed', function () {
+          this._preload()
         })
         this.on('listeners_added', function () {
           var o = this.o,
@@ -118,8 +121,8 @@
         this.on('shown', function () {
           if (!this._g.gallery) return;
 
-          this._drawItemSiblings();
-          this._preload();
+          this._drawItemSiblings()
+          this._preload()
         })
         this.on('keydown', function (e) {
           var o = this.o;
@@ -275,18 +278,17 @@
       _drawItemSiblings: function () {
         var o = this.o,
           that = this;
-        if (typeof this.queue.prev.index === 'number') {
-          this._moveItem(this.queue.prev.item, -110, '%');
-          this._drawItem(this.queue.prev.item, true, this.dom.items[0]);
-          this.queue.prev.tabs = this._makeUnfocusable(this.queue.prev.item.dom.modal, o._focusable)
+        if (typeof that.queue.prev.index === 'number') {
+          that._moveItem(that.queue.prev.item, -110, '%');
+          that._drawItem(that.queue.prev.item, true, that.dom.items[0]);
+          that.queue.prev.tabs = that._makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable)
         }
-        if (typeof this.queue.next.index === 'number') {
-          this._moveItem(this.queue.next.item, 110, '%');
-          this._drawItem(this.queue.next.item, false, this.dom.items[0]);
-          this.queue.next.tabs = this._makeUnfocusable(this.queue.next.item.dom.modal, o._focusable)
+        if (typeof that.queue.next.index === 'number') {
+          that._moveItem(that.queue.next.item, 110, '%');
+          that._drawItem(that.queue.next.item, false, that.dom.items[0]);
+          that.queue.next.tabs = that._makeUnfocusable(that.queue.next.item.dom.modal, o._focusable)
         }
-        this.position()
-        this._preload()
+        that.position()
       },
       _moveItem: function (item, value, unit) {
         unit = unit || 'px';
@@ -402,6 +404,20 @@
           next: this._getQueueItem(order[2])
         };
       },
+      _getItemsOrder: function (index) {
+        var o = this.o,
+          prev = index - 1,
+          next = index + 1;
+
+        if (o.loop && this.items.length > 2) {
+          if (prev === -1) prev = this.items.length - 1;
+          if (next === this.items.length) next = 0;
+        }
+        if (!this.items[prev]) prev = null;
+        if (!this.items[next]) next = null;
+
+        return [prev, index, next];
+      },
       _getQueueItem(index) {
         var item;
         
@@ -416,20 +432,6 @@
           index: index,
           item: item
         }
-      },
-      _getItemsOrder: function (index) {
-        var o = this.o,
-          prev = index - 1,
-          next = index + 1;
-
-        if (o.loop && this.items.length > 2) {
-          if (prev === -1) prev = this.items.length - 1;
-          if (next === this.items.length) next = 0;
-        }
-        if (!this.items[prev]) prev = null;
-        if (!this.items[next]) next = null;
-
-        return [prev, index, next];
       },
       _g__uiUpdate: function (index) {
         index = index || this.state.active;

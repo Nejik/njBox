@@ -531,7 +531,6 @@ class njBox {
       item.o.status = 'loaded';
     }
     
-
     if (itemType === 'template') {
       dom.modal.html(itemContent);
     } else {
@@ -863,7 +862,7 @@ class njBox {
     that._cb('item_prepare', item);
 
     if (o.delayed) {
-      that._insertItemContent({item:that.items[that.state.active], delayed: false});
+      that._insertItemContent({item, delayed: false});
     }
 
     if (prepend) {

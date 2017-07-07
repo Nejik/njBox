@@ -372,7 +372,8 @@ class njBox {
         normalizedItem = that._normalizeItem(item);
 
     normalizedItem.dom = that._createItemDom(normalizedItem);
-    that._insertItemContent(normalizedItem, {body:!o.delayed,header:1,footer:1});
+
+    that._insertItemContent({item:normalizedItem, delayed: o.delayed});
 
     normalizedItem.toInsert = normalizedItem.dom.modalOuter;
 
@@ -404,6 +405,23 @@ class njBox {
       },
       raw: item
     }
+  }
+  _type(content) {//detect content type
+    var type = 'html';
+
+    if (typeof content === 'object') {
+      if ((window.jQuery && content instanceof window.jQuery) || (window.j && content instanceof window.j)) {
+        return 'selector';
+      }
+    } else
+      if (/^[#.]\w/.test(content)) {
+        return 'selector';
+      } else if (/\.(png|jpg|jpeg|gif|tiff|bmp|webp)(\?\S*)?$/i.test(content)) {
+        return 'image';
+      }
+
+
+    return type;
   }
   _createItemDom(item) {
     var that = this,
@@ -491,75 +509,180 @@ class njBox {
 
     return dom;
   }
-  _insertItemContent(item, fillInstructions) {//fill instruction shows what part of modal we should insert
+  _insertItemContent(args) {
     var that = this,
-        o = this.o,
-        dom = item.dom;
+        o = that.o,
+        {item, delayed} = args,
+        dom = item.dom,
+        itemType = item.type,
+        itemContent = item.content,
+        bodyItemToInsert = dom.bodyInput;
     
-    if (item.type === "template") {
-      that._insertContent(dom.modal, 'html', item.content)
-    } else {
-      //insert body content
-      if(fillInstructions.body && dom.bodyInput) {
-
-        that._insertContent(dom.bodyInput, item.type, item.content)
-        item.o.status = 'loaded';
-      }
+    function contentAddedCallback() {
       //insert header content
-      if (fillInstructions.header && dom.headerInput) {
-        that._insertContent(dom.headerInput, 'html', item.header)
+      if (dom.headerInput && item.header) {
+        dom.headerInput.html(item.header)
       }
       //insert footer content
-      if (fillInstructions.footer && dom.footerInput) {
-        that._insertContent(dom.footerInput, 'html', item.footer)
+      if (dom.footerInput && item.footer) {
+        dom.footerInput.html(item.footer)
+      }
+
+      item.o.status = 'loaded';
+    }
+    
+
+    if (itemType === 'template') {
+      dom.modal.html(itemContent);
+    } else {
+      switch (itemType) {
+        case 'html':
+          bodyItemToInsert.html(itemContent);
+          contentAddedCallback();
+          break;
+        case 'text':
+          'textContent' in bodyItemToInsert[0] ? bodyItemToInsert[0].textContent = itemContent : bodyItemToInsert[0].innerText = itemContent;
+          contentAddedCallback();
+          break;
+        case 'selector':
+          if (!delayed && !item.o.contentInserted) {
+            let contentEl = item.o.contentEl = $(item.content);
+
+            if (contentEl.length) {
+
+              item.o.contentElStyle = contentEl[0].style.cssText;
+
+              item.o.contentElDisplayNone = contentEl.css('display') === 'none';
+              if (item.o.contentElDisplayNone) {
+                contentEl[0].style.display = 'block';
+              }
+
+              bodyItemToInsert.html('')//clear element before inserting other dom element. (e.g. body for case when first time we can't find contentEl on page and error text already here)
+              bodyItemToInsert[0].appendChild(contentEl[0]);
+
+              item.o.contentInserted = true;
+            } else {//if we don't find element with this selector
+              bodyItemToInsert.html(item.content)
+            }
+
+            contentAddedCallback();
+          }
+          break;
+        case 'image':
+          if (!delayed && !item.o.contentInserted) {
+            this._insertImage(item, contentAddedCallback);
+          }
+          break;
+      
+        default:
+          break;
       }
     }
   }
+  _insertImage(item, callback) {
+    var that = this,
+      o = this.o,
+      img = document.createElement('img'),
+      $img = $(img),
+      ready,
+      loaded;
 
-  _insertContent(domEl, type, content) {
-    var o = this.o,
-        el = $(domEl);
+    item.o.status = 'loading';
+    item.dom.img = $img;
 
-    switch (type) {
-      case 'text':
-        'textContent' in el[0] ? el[0].textContent = content : el[0].innerText = content;
-        break;
-      case 'html':
-        el.html(content)
-        break;
-      case 'selector':
-        // this._getItemFromSelector(item);
-        break;
-      case 'image':
-        // if (o.imgload === 'init') this._insertImage(item);
-        break;
-      default:
-        return;
+    item._handlerError = function () {
+      $img.off('error', item._handlerError).off('abort', item._handlerError);
+      delete item._handlerError;
+
+      that._preloader('hide', item);
+
+      item.dom.bodyInput.html(o.text.imageError.replace('%url%', item.content));
+
+      that._cb('img_e', item);//img_ready, img_load callbacks
+      // rendered();
+
+      item.o.status = 'error';
+      item.o.contentInserted = true;
     }
-  }
+    $img.on('error', item._handlerError)
+        .on('abort', item._handlerError);
 
-  _type(content) {//detect content type
-    var type = 'html';
+    if (item.title) {
+      $img.attr('aria-labelledby', 'njb-title')
+    }
+    img.src = item.content;
 
-    if (typeof content === 'object') {
-      if ((window.jQuery && content instanceof window.jQuery) || (window.j && content instanceof window.j)) {
-        return 'selector';
+    ready = img.width + img.height > 0;
+    loaded = img.complete && img.width + img.height > 0;
+
+    if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
+      checkShow(true);
+    } else {
+      this._preloader('show', item);
+
+      findImgSize(img, function () {
+        checkShow('ready');
+      });
+
+      item._handlerLoad = function () {
+        $img.off('load', item._handlerLoad);
+        checkShow('load');
       }
-    } else
-      if (/^[#.]\w/.test(content)) {
-        return 'selector';
-      } else if (/\.(png|jpg|jpeg|gif|tiff|bmp|webp)(\?\S*)?$/i.test(content)) {
-        return 'image';
-      }
+      $img.on('load', item._handlerLoad)
+    }
 
+    function checkShow(ev) {
+      that._cb('item_img_' + ev, item);//img_ready, img_load callbacks
 
-    return type;
-  }
-  _getItemFromSelector(item) {
-    item.o.contentEl = $(item.content);
+      if (ev !== o.img && ev !== true) return;
 
-    if (!item.o.contentEl.length) {//if we don't find element with this selector
-      item.dom.bodyInput.html(item.content)
+      item.o.status = 'loaded';
+      that._preloader('hide', item);
+
+      $img.attr('width', 'auto')//for IE <= 10
+
+      //insert content
+      item.dom.bodyInput[0].appendChild(img);
+      item.o.contentInserted = true;
+      callback();
+
+      //animation after image loading
+      //todo add custom image animation, don't use global popup animation
+      // if(ev === 'load') that._anim('show', true)
+    }
+    //helper function for image type
+    function findImgSize(img, readyCallback) {
+      var counter = 0,
+        interval,
+        njbSetInterval = function (delay) {
+          if (interval) {
+            clearInterval(interval);
+          }
+
+          interval = setInterval(function () {
+            if (img.width > 0) {
+              readyCallback();
+
+              clearInterval(interval);
+              return;
+            }
+
+            if (counter > 200) {
+              clearInterval(interval);
+            }
+
+            counter++;
+            if (counter === 5) {
+              njbSetInterval(10);
+            } else if (counter === 40) {
+              njbSetInterval(50);
+            } else if (counter === 100) {
+              njbSetInterval(500);
+            }
+          }, delay);
+        };
+
+      njbSetInterval(1);
     }
   }
   _createDom() {
@@ -733,13 +856,15 @@ class njBox {
     }
   }
   _drawItem(item, prepend, container) {
-    var o = this.o,
+    var that = this,
+        o = that.o,
         itemToInsert = item.toInsert[0];
     
-    this._cb('item_prepare', item);
+    that._cb('item_prepare', item);
 
-    //insert content in items, where inserting is delayed to show event
-    // this._insertDelayedContent(item);
+    if (o.delayed) {
+      that._insertItemContent({item:that.items[that.state.active], delayed: false});
+    }
 
     if (prepend) {
       container.insertBefore(itemToInsert, container.firstChild)
@@ -747,48 +872,18 @@ class njBox {
       container.appendChild(itemToInsert);
     }
 
-    this._cb('item_inserted', item);
+    that._cb('item_inserted', item);
   }
-  _insertDelayedContent(item) {
-    var that = this,
-      o = this.o,
-      contentEl;
-
-    if (item.type === 'image' && o.imgload === 'show' && !item.o.imageInserted) {
-      this._insertImage(item);
-    } else if (item.type === 'selector' && !item.o.contentElInserted) {
-      contentEl = item.o.contentEl;
-
-      //try to find element for popup again on every show
-      if (!contentEl || !contentEl.length) {
-        this._getItemFromSelector(item);
-        contentEl = item.o.contentEl;
-      }
-      if (!contentEl || !contentEl.length) return;
-
-      var style = contentEl[0].style.cssText;
-      if (style) item.o.contentElStyle = style;
-
-
-      var dn = contentEl.css('display') === 'none';
-      if (dn) {
-        item.o.contentElDisplayNone = true;
-        contentEl[0].style.display = 'block';
-      }
-      item.dom.bodyInput.html('')//clear body for case when first time we can't find contentEl on page and error text already here
-      item.dom.bodyInput[0].appendChild(contentEl[0])
-      item.o.contentElInserted = true
-    }
-  }
+  
   _removeSelectorItemsElement() {
     var items = this.items,
       item,
       contentEl;
 
     for (var i = 0, l = items.length; i < l; i++) {
-      if (items[i].type === 'selector') {
+      if (items[i].type === 'selector' && this.o.delayed) {
         item = items[i];
-        if (!item.o.contentElInserted) continue;
+        if (!item.o.contentInserted) continue;
 
         contentEl = item.o.contentEl;
 
@@ -802,7 +897,7 @@ class njBox {
         }
         //return selector element to the dom
         this.dom.body[0].appendChild(contentEl[0])
-        item.o.contentElInserted = false;
+        item.o.contentInserted = false;
       }
     }
   }
@@ -1050,112 +1145,7 @@ class njBox {
 
     this._cb('listeners_removed');
   }
-  _insertImage(item) {
-    var that = this,
-      o = this.o,
-      img = document.createElement('img'),
-      $img = $(img),
-      ready,
-      loaded;
 
-    item.o.status = 'loading';
-    item.dom.img = $img;
-
-    item._handlerError = function () {
-      $img.off('error', item._handlerError).off('abort', item._handlerError);
-      delete item._handlerError;
-
-      that._preloader('hide', item);
-
-      item.dom.bodyInput.html(o.text.imageError.replace('%url%', item.content));
-
-      that._cb('img_e', item);//img_ready, img_load callbacks
-      // rendered();
-
-      item.o.status = 'error';
-      item.o.imageInserted = true;
-    }
-    $img.on('error', item._handlerError).on('abort', item._handlerError);
-
-    // if (item.title) img.title = item.title;
-    if (item.title) {
-      $img.attr('aria-labelledby', 'njb-title')
-    }
-    img.src = item.content;
-
-    ready = img.width + img.height > 0;
-    loaded = img.complete && img.width + img.height > 0;
-
-    if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
-      checkShow(true);
-    } else {
-      this._preloader('show', item);
-
-      item._handlerImgReady = function () {
-        checkShow('ready');
-      }
-      findImgSize(img, item._handlerImgReady);
-
-      item._handlerLoad = function () {
-        $img.off('load', item._handlerLoad);
-        checkShow('load');
-      }
-      $img.on('load', item._handlerLoad)
-    }
-
-    function checkShow(ev) {
-      that._cb('item_img_' + ev, item);//img_ready, img_load callbacks
-
-      if (ev !== o.img && ev !== true) return;
-
-      item.o.status = 'loaded';
-      that._preloader('hide', item);
-
-      $img.attr('width', 'auto')//for IE <= 10
-
-      //insert content
-      item.dom.bodyInput[0].appendChild(img);
-      item.o.imageInserted = true;
-
-      //animation after image loading
-      //todo add custom image animation, don't use global popup animation
-      // if(ev === 'load') that._anim('show', true)
-    }
-    //helper function for image type
-    function findImgSize(img, readyCallback) {
-      var counter = 0,
-        interval,
-        njbSetInterval = function (delay) {
-          if (interval) {
-            clearInterval(interval);
-          }
-
-          interval = setInterval(function () {
-            if (img.width > 0) {
-              readyCallback();
-
-              clearInterval(interval);
-              return;
-            }
-
-            if (counter > 200) {
-              clearInterval(interval);
-            }
-
-            counter++;
-            if (counter === 5) {
-              njbSetInterval(10);
-            } else if (counter === 40) {
-              njbSetInterval(50);
-            } else if (counter === 100) {
-              njbSetInterval(500);
-            }
-          }, delay);
-        };
-
-      njbSetInterval(1);
-    }
-  }
   _preloader(type, item) {
     var o = this.o,
       that = this;

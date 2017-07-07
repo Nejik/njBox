@@ -105,7 +105,7 @@ export let defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
 	delayed        : false,//(boolean) Should we take dom element from selector type on init method, or it will stay in dom until show, and returned in dom after show?
-	type           : '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag, directly to .njb
+	type           : '',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
 	header         : undefined,//(html) html that will be added as modal header (for first slide)
 	footer         : undefined,//(html) html that will be added as modal footer (for first slide)
 	// we need quotes here because of ie8..
@@ -135,7 +135,6 @@ export let defaults = {
 	title_attr     : 'title',//(string || boolean false) attribute from which we gather title for slide (used basically in images)
 
 	img            : 'ready',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
-	imgload        : 'show',//(init || show) should we load gallery images on init(before dialog open) or on open 
 	anim           : 'scale',//(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 	animclass      : 'animated',//(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration       : 'auto',//(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem ^^)

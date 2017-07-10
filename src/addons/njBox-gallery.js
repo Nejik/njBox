@@ -51,14 +51,14 @@
           this.dom.ui.append(this.dom.ui_count)
 
           this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
-          this.dom.ui_current[0].setAttribute('title', o.text.current)
+          this.dom.ui_current.attr('title', o.text.current)
           this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
-          this.dom.ui_total[0].setAttribute('title', o.text.total)
+          this.dom.ui_total.attr('title', o.text.total)
 
           this.dom.prev = $(o.templates.prev);
-          this.dom.prev[0].setAttribute('title', o.text.prev);
+          this.dom.prev.attr('title', o.text.prev);
           this.dom.next = $(o.templates.next)
-          this.dom.next[0].setAttribute('title', o.text.next);
+          this.dom.next.attr('title', o.text.next);
 
           if (o.arrows && this._g.gallery && !this._g.arrowsInserted) {
             if (this.dom.next[0]) this.dom.ui.append(this.dom.next);
@@ -68,7 +68,7 @@
           }
         })
         this.on('item_created', function (item, index) {
-          if (this._g.gallery) item.dom.modalOuter[0].setAttribute('data-njb-index', index);
+          if (this._g.gallery) item.dom.modalOuter.attr('data-njb-index', index);
         })
         this.on('inserted', function () {
           if (!that._g.gallery) return
@@ -221,20 +221,20 @@
         return this;
       },
       _makeUnfocusable(el, selector) {
-        var wrap = this.$(el),
-          focusable,
-          history = [];
+        var $ = this.$,
+            wrap = $(el),
+            focusable,
+            history = [];
         if (!wrap.length) return history;
 
         focusable = wrap.find(selector);
         focusable.each(function () {
           history.push({
-            el: this,
+            el: $(this),
             tabindex: this.tabIndex || null
           })
           this.tabIndex = '-1';
         })
-
         return history;
       },
       _restoreUnfocusable(obj) {
@@ -244,9 +244,9 @@
         
         if(tabs) tabs.forEach(function(tabObj) {
           if(tabObj.tabindex !== null) {
-            tabObj.el.setAttribute('tabindex', tabObj.tabindex)
+            tabObj.el.attr('tabindex', tabObj.tabindex)
           } else {
-            tabObj.el.removeAttribute('tabindex')
+            tabObj.el[0].removeAttribute('tabindex')
           }
         })
       },
@@ -494,12 +494,12 @@
 
         if (this.state.gallery_noloop) {
           if (this.state.gallery_first) {
-            this.dom.prev[0].setAttribute('disabled', true)
+            this.dom.prev.attr('disabled', true)
           } else {
             this.dom.prev[0].removeAttribute('disabled')
           }
           if (this.state.gallery_last) {
-            this.dom.next[0].setAttribute('disabled', true)
+            this.dom.next.attr('disabled', true)
           } else {
             this.dom.next[0].removeAttribute('disabled')
           }

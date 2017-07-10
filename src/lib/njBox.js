@@ -45,34 +45,33 @@ class njBox {
   }
 
   _init() {
-    var that = this;
-    if (that.state && that.state.inited) return;//init only once
+    if (this.state && this.state.inited) return;//init only once
 
-    var opts = that.co;//constructorOptions
-    delete that.co;
+    var opts = this.co;//constructorOptions
+    delete this.co;
 
     //getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it here again
     if (!njBox.g) njBox.g = getDefaultInfo();
 
     //inner options, current state of app, this.state clears after every hide
-    that.state = {
+    this.state = {
       active: 0,
       arguments: {}//here all arguments from public methods are saved (for using in callbacks/events)
     };
 
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
-    that._g = {//globals, state that not cleared after every hide
+    this._g = {//globals, state this not cleared after every hide
       optionsPassed: opts
     };
-    that._handlers = {};//all callback functions we used in event listeners lives here
+    this._handlers = {};//all callback functions we used in event listeners lives here
 
-    var o = that.o = $.extend({}, njBox.defaults, opts);
+    var o = this.o = $.extend({}, njBox.defaults, opts);
     if (o.jquery) $ = o.jquery;
-    that.$ = $;
+    this.$ = $;
 
     //we should have dom element or at least content option for creating item
     if (!o.elem && !o.content) {
-      that._e('njBox, no elements (o.elem) or content (o.content) for modal.');
+      this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
       return;
     }
     if (o.elem) {
@@ -103,43 +102,42 @@ class njBox {
     }
 
     //create popup container dom elements
-    that.dom = that._createDom();
-    that._cb('domready', that.dom);
+    this.dom = this._createDom();
+    this._cb('domready', this.dom);
 
-    var containerIsBody = that._g.containerIsBody = that.dom.container[0] === that.dom.body[0];
+    var containerIsBody = this._g.containerIsBody = this.dom.container[0] === this.dom.body[0];
     //check if container not relative position
-    if (!containerIsBody && that.dom.container.css('position') === 'static') {
-      that.dom.container.addClass('njb-relative');
+    if (!containerIsBody && this.dom.container.css('position') === 'static') {
+      this.dom.container.addClass('njb-relative');
     }
     //if container custom element(not body), use forcely absolute position
     if (!containerIsBody && o.layout === 'fixed') {
       o.layout = 'absolute';
-      that.dom.wrap.addClass('njb-absolute');
+      this.dom.wrap.addClass('njb-absolute');
     }
     
-    that._g.els = that.o.el;
-    that._g.items_raw = [that.o];
-    that._cb('items_raw', that._g);
+    this._g.els = this.o.el;
+    this._g.items_raw = [this.o];
+    this._cb('items_raw', this._g);
 
-    that.items = that._createItems(that._g.items_raw);
+    this.items = this._createItems(this._g.items_raw);
  
     //this method calculate show/hide animation durations, because native callbacks are buggy
-    that._g.animation = that._calculateAnimations();
+    this._g.animation = this._calculateAnimations();
 
     //add initial click handlers
-    that._addClickHandler();
-    if (o.buttonrole && that._g.els) that._g.els.attr('role', o.buttonrole);
+    this._addClickHandler();
+    if (o.buttonrole && this._g.els) this._g.els.attr('role', o.buttonrole);
 
-    that.state.inited = true;
-    that._cb('inited');
+    this.state.inited = true;
+    this._cb('inited');
   }
   show(index) {
     this.state.arguments.show = arguments;
     this._init();//try to init
     if (index !== undefined) this.state.active = index - 1;
 
-    var o = this.o,
-      that = this;
+    var o = this.o;
 
     if (this.state.status !== 'inited') {
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
@@ -220,13 +218,12 @@ class njBox {
   position() {
     this.state.arguments.position = arguments;
 
-    var that = this,
-        o = this.o,
-        state = that.state;
+    var o = this.o,
+        state = this.state;
 
     if (!state || !state.inited || (state.status !== 'show' && state.status !== 'shown')) return;
     
-    that.state.dimensions = that._getDimensions();
+    this.state.dimensions = this._getDimensions();
 
     this._cb('position');
 
@@ -378,35 +375,33 @@ class njBox {
     return items;
   }
   _createItem(item, index) {
-    var that = this,
-        o = that.o,
-        normalizedItem = that._normalizeItem(item);
+    var o = this.o,
+        normalizedItem = this._normalizeItem(item);
 
-    normalizedItem.dom = that._createItemDom(normalizedItem);
+    normalizedItem.dom = this._createItemDom(normalizedItem);
 
-    that._insertItemContent({item:normalizedItem, delayed: o.delayed});
+    this._insertItemContent({item:normalizedItem, delayed: o.delayed});
 
     normalizedItem.toInsert = normalizedItem.dom.modalOuter;
 
-    that._cb('item_created', normalizedItem, index);
+    this._cb('item_created', normalizedItem, index);
 
     return normalizedItem;
   }
   _normalizeItem(item, el) {
-    var that = this,
-        evaluatedContent;
+    var evaluatedContent;
     
     if (typeof item.content === 'function') {
-      evaluatedContent = item.content.call(that, item);
+      evaluatedContent = item.content.call(this, item);
     } else {
       evaluatedContent = item.content;
     }
 
-    var content = evaluatedContent || that.o.text._missedContent;
+    var content = evaluatedContent || this.o.text._missedContent;
 
     return {
       content: content,
-      type: item.type || that._type(content),
+      type: item.type || this._type(content),
       header: item.header,
       footer: item.footer,
       title: item.title,
@@ -435,8 +430,7 @@ class njBox {
     return type;
   }
   _createItemDom(item) {
-    var that = this,
-        o = this.o,
+    var o = this.o,
         dom = {},
         modalOuter,
         modal,
@@ -445,7 +439,7 @@ class njBox {
     //main modal wrapper
     dom.modal = modal = this._createEl('modal');
     modal[0].tabIndex = '-1'
-    modal[0].njBox = that;
+    modal[0].njBox = this;
 
     dom.modalOuter = modalOuter = this._createEl('modalOuter')
 
@@ -471,7 +465,7 @@ class njBox {
         //insert header info
         dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
         if (!dom.headerInput.length) {
-          that._e('njBox, error in o.templates.header');
+          this._e('njBox, error in o.templates.header');
         } else {
           modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
         }
@@ -484,7 +478,7 @@ class njBox {
         //insert footer info
         dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
         if (!dom.footerInput.length) {
-          that._e('njBox, error in njBox.templates.footer');
+          this._e('njBox, error in njBox.templates.footer');
         } else {
           modalFragment.appendChild(dom.footer[0])
         }
@@ -682,8 +676,7 @@ class njBox {
     }
   }
   _createDom() {
-    var that = this,
-        o = this.o,
+    var o = this.o,
         dom = {
           document: $(document),
           window: $(window),
@@ -694,14 +687,14 @@ class njBox {
     //find container
     dom.container = $(o.container);
     if (!dom.container.length) {
-      that._e('njBox, can\'t find container element. (we use body instead)');
+      this._e('njBox, can\'t find container element. (we use body instead)');
       dom.container = dom.body;//in case if we have no container element, or wrong selector for container element
     }
     
     //create core elements
     dom.wrap = this._createEl('wrap');
     if (o['class']) dom.wrap.addClass(o['class']);
-    dom.wrap[0].njBox = that;
+    dom.wrap[0].njBox = this;
     if (o.zindex) dom.wrap.css('zIndex', o.zindex);
 
     dom.items = dom.wrap.find('.njb-items');
@@ -740,16 +733,15 @@ class njBox {
     }
   }
   _getDimensions() {
-    var that = this,
-        o = that.o,
+    var o = this.o,
         dimensions = {};
     
-    dimensions.window = that._getDomSize(that.dom.window[0]);
-    dimensions.container = that._getDomSize(this._g.containerIsBody ? that.dom.window[0] : this.dom.container[0])
-    dimensions.modal = that._getDomSize(that.items[that.state.active].dom.modal[0]);
-    dimensions.clickedEl = that._getDomSize(that.state.clickedEl);
+    dimensions.window = this._getDomSize(this.dom.window[0]);
+    dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window[0] : this.dom.container[0])
+    dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
+    dimensions.clickedEl = this._getDomSize(this.state.clickedEl);
 
-    dimensions.autoheight = (that._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
+    dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 
     return dimensions;
   }
@@ -848,14 +840,13 @@ class njBox {
     }
   }
   _drawItem(item, prepend, container) {
-    var that = this,
-        o = that.o,
+    var o = this.o,
         itemToInsert = item.toInsert;
     
-    that._cb('item_prepare', item);
+    this._cb('item_prepare', item);
 
     if (o.delayed && !item.o.contentInserted && (item.type === 'image' || item.type === 'selector')) {
-      that._insertItemContent({item, delayed: false});
+      this._insertItemContent({item, delayed: false});
     }
 
     if (prepend) {
@@ -864,7 +855,7 @@ class njBox {
       container.append(itemToInsert);
     }
 
-    that._cb('item_inserted', item);
+    this._cb('item_inserted', item);
   }
   
   _removeSelectorItemsElement() {
@@ -927,17 +918,16 @@ class njBox {
     }
   }
   _addClickHandler() {//initial click handlers
-    var that = this,
-        o = this.o,
-        handlers = that._handlers;
+    var o = this.o,
+        handlers = this._handlers;
 
-    that._removeClickHandler();
+    this._removeClickHandler();
 
-    handlers.elsClick = that._clickHandler();
+    handlers.elsClick = this._clickHandler();
 
     if (o.click) {
-      if (that._g.els && that._g.els.length) {
-        that._g.els.on('click', handlers.elsClick)
+      if (this._g.els && this._g.els.length) {
+        this._g.els.on('click', handlers.elsClick)
       }
     }
 
@@ -1139,8 +1129,7 @@ class njBox {
   }
 
   _preloader(type, item) {
-    var o = this.o,
-      that = this;
+    var o = this.o;
 
     switch (type) {
       case 'show':
@@ -1166,13 +1155,12 @@ class njBox {
   _uiUpdate(index) {
     index = index || this.state.active;
 
-    var that = this,
-        dom = that.dom,
+    var dom = this.dom,
         o = this.o,
         item = this.items[index];
 
     if (!item) {
-      that._e('njBox, can\'t update ui info from item index - ' + index);
+      this._e('njBox, can\'t update ui info from item index - ' + index);
       return;
     }
 

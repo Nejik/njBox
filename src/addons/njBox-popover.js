@@ -38,10 +38,10 @@
             if (coordinates) {
               coords = (typeof coordinates === 'function') ? coordinates() : coordinates;
             } else {
-              coords = this._getCoordsFromPlacement(o.placement, this.state.dimensions);
+              coords = this._g_getCoordsFromPlacement(o.placement, this.state.dimensions);
             }
           
-            coords = that._parseCoords(coords);
+            coords = that._g_parseCoords(coords);
             this.state.coords = coords;
           
             if(this._g.popover && this.state.coords && this.state.coords.length === 2) {
@@ -73,7 +73,7 @@
                             .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
         })
       },
-      _getCoordsFromPlacement(value, dimensions) {
+      _g_getCoordsFromPlacement(value, dimensions) {
         var that = this,
             o = that.o,
             placement = value,
@@ -83,11 +83,11 @@
 
         if(typeof placement === 'function') placement = placement();
 
-        placement = that._parseCoords(placement);
+        placement = that._g_parseCoords(placement);
 
         var popoverWiderThanClicked = dimensions.modal.width > dimensions.clickedEl.width,
             popoverTallerThanClicked = dimensions.modal.height > dimensions.clickedEl.height,
-            offset = that._parseCoords(o.offset),
+            offset = that._g_parseCoords(o.offset),
             coords = [],
             leftForTopAndBottom,
             topForLeftAndRight;
@@ -137,13 +137,13 @@
           break
         }
         
-        return that._checkBounds(coords);
+        return that._g_checkBounds(coords);
       },
-      _checkBounds(currentcoords) {
+      _g_checkBounds(currentcoords) {
         var that = this,
             o = that.o,
             boundary = o.boundary,
-            offset = that._parseCoords(o.offset),
+            offset = that._g_parseCoords(o.offset),
             dimensions = that.state.dimensions,
             boundaryCoords = this._getDomSize(window),
             fixedCoords = currentcoords;
@@ -172,7 +172,7 @@
       
         return fixedCoords;
       },
-      _parseCoords(stringOrArray) {
+      _g_parseCoords(stringOrArray) {
       	if (typeof stringOrArray === 'string') {
       		if (/\s/.test(stringOrArray)) {
       			var arr = stringOrArray.split(' ')

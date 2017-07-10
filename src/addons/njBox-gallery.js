@@ -73,7 +73,7 @@
         this.on('inserted', function () {
           if (!that._g.gallery) return
 
-          this._setQueue(this.state.active);
+          this._g_setQueue(this.state.active);
           that._g__uiUpdate();
         })
         // this.on('item_inserted', function (item) {
@@ -84,7 +84,7 @@
           that._g__uiUpdate();
         })
         this.on('changed', function () {
-          this._preload()
+          this._g_preload()
         })
         this.on('listeners_added', function () {
           var o = this.o,
@@ -123,13 +123,13 @@
           
         })
         this.on('show', function () {
-          this.state.active = this._detectIndexForOpen();
+          this.state.active = this._g_detectIndexForOpen();
         })
         this.on('shown', function () {
           if (!this._g.gallery) return;
 
-          this._drawItemSiblings()
-          this._preload()
+          this._g_drawItemSiblings()
+          this._g_preload()
         })
         this.on('keydown', function (e) {
           var o = this.o;
@@ -147,13 +147,13 @@
       },
       prev: function () {
         // if (this.dom.prev[0]) this.dom.prev[0].focus();
-        this._changeItem(this.state.active - 1, 'prev');
+        this._g_changeItem(this.state.active - 1, 'prev');
 
         return this;
       },
       next: function () {
         // if (this.dom.next[0]) this.dom.next[0].focus();
-        this._changeItem(this.state.active + 1, 'next');
+        this._g_changeItem(this.state.active + 1, 'next');
 
         return this;
       },
@@ -197,30 +197,30 @@
           switch (dir) {
             case 'next':
               // set new state
-              this.queue.prev = this._getQueueItem(null);
-              this.queue.next = this._getQueueItem(index);
+              this.queue.prev = this._g_getQueueItem(null);
+              this.queue.next = this._g_getQueueItem(index);
 
               //draw new slides
-              this._drawItemSiblings();
+              this._g_drawItemSiblings();
 
-              this._changeItem(index, 'next')
+              this._g_changeItem(index, 'next')
               break;
             case 'prev':
               // set new state
-              this.queue.prev = this._getQueueItem(index);
-              this.queue.next = this._getQueueItem(null);
+              this.queue.prev = this._g_getQueueItem(index);
+              this.queue.next = this._g_getQueueItem(null);
 
               //draw new slides
-              this._drawItemSiblings();
+              this._g_drawItemSiblings();
 
               //animation to new slide
-              this._changeItem(index, 'prev')
+              this._g_changeItem(index, 'prev')
               break;
           }
         }
         return this;
       },
-      _makeUnfocusable(el, selector) {
+      _g_makeUnfocusable(el, selector) {
         var $ = this.$,
             wrap = $(el),
             focusable,
@@ -237,7 +237,7 @@
         })
         return history;
       },
-      _restoreUnfocusable(obj) {
+      _g_restoreUnfocusable(obj) {
         var item = obj.item,
             tabs = obj.tabs,
             dom;
@@ -250,7 +250,7 @@
           }
         })
       },
-      _preload: function () {
+      _g_preload: function () {
         var o = this.o,
           that = this;
 
@@ -258,20 +258,20 @@
 
         var temp = o.preload.split(' '),
           prev = parseInt(temp[0]),
-          prevState = this._getItemsOrder(this.queue.prev.index)[0],
+          prevState = this._g_getItemsOrder(this.queue.prev.index)[0],
           next = parseInt(temp[1]),
-          nextState = this._getItemsOrder(this.queue.next.index)[2];
+          nextState = this._g_getItemsOrder(this.queue.next.index)[2];
 
         //load next
         while (next--) {
           preload.call(this, nextState);
-          nextState = this._getItemsOrder(nextState)[2];
+          nextState = this._g_getItemsOrder(nextState)[2];
         }
 
         //load previous
         while (prev--) {
           preload.call(this, prevState);
-          prevState = this._getItemsOrder(prevState)[0]
+          prevState = this._g_getItemsOrder(prevState)[0]
         }
 
         function preload(index) {
@@ -282,22 +282,22 @@
           if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
         }
       },
-      _drawItemSiblings: function () {
+      _g_drawItemSiblings: function () {
         var o = this.o,
           that = this;
         if (typeof that.queue.prev.index === 'number') {
-          that._moveItem(that.queue.prev.item, -110, '%');
+          that._g_moveItem(that.queue.prev.item, -110, '%');
           that._drawItem(that.queue.prev.item, true, that.dom.items);
-          that.queue.prev.tabs = that._makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable)
+          that.queue.prev.tabs = that._g_makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable)
         }
         if (typeof that.queue.next.index === 'number') {
-          that._moveItem(that.queue.next.item, 110, '%');
+          that._g_moveItem(that.queue.next.item, 110, '%');
           that._drawItem(that.queue.next.item, false, that.dom.items);
-          that.queue.next.tabs = that._makeUnfocusable(that.queue.next.item.dom.modal, o._focusable)
+          that.queue.next.tabs = that._g_makeUnfocusable(that.queue.next.item.dom.modal, o._focusable)
         }
         that.position();
       },
-      _moveItem: function (item, value, unit) {
+      _g_moveItem: function (item, value, unit) {
         unit = unit || 'px';
 
         //detect translate property
@@ -309,7 +309,7 @@
           item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
         }
       },
-      _changeItem: function (nextIndex, dir) {
+      _g_changeItem: function (nextIndex, dir) {
         if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
 
         var o = this.o,
@@ -338,24 +338,24 @@
         this._cb('change', nextIndex);
         this._uiUpdate();
 
-        this._setQueue(nextIndex);
+        this._g_setQueue(nextIndex);
 
         //restore tabindexes of focusable elements
-        this._restoreUnfocusable(queueBackup.prev);
-        this._restoreUnfocusable(queueBackup.next);
+        this._g_restoreUnfocusable(queueBackup.prev);
+        this._g_restoreUnfocusable(queueBackup.next);
         
         switch (dir) {
           case 'prev':
             queueBackup.prev.item.dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
 
-            this._moveItem(queueBackup.current.item, 110, '%');
-            this._moveItem(queueBackup.prev.item, 0, '%');
+            this._g_moveItem(queueBackup.current.item, 110, '%');
+            this._g_moveItem(queueBackup.prev.item, 0, '%');
             break;
           case 'next':
             queueBackup.next.item.dom.body[0].style.verticalAlign = 'middle';//hack for FireFox at least 42.0. When we changing max-height on image it not trigger changing width on parent inline-block element, this hack triggers it
 
-            this._moveItem(queueBackup.current.item, -110, '%');
-            this._moveItem(queueBackup.next.item, 0, '%');
+            this._g_moveItem(queueBackup.current.item, -110, '%');
+            this._g_moveItem(queueBackup.next.item, 0, '%');
             break;
         }
 
@@ -371,7 +371,7 @@
           var thirdItem = (dir === 'prev') ? queueBackup.next.index : queueBackup.prev.index;
           if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
 
-          that._drawItemSiblings();
+          that._g_drawItemSiblings();
           that._focus_set(that.items[that.state.active]);
           that.state.itemChanging = false;
           that._cb('changed', that.state.active);
@@ -383,7 +383,7 @@
           item.dom.modalOuter[0].style.cssText = '';
         }
       },
-      _detectIndexForOpen: function () {
+      _g_detectIndexForOpen: function () {
         var o = this.o,
           that = this,
           index,
@@ -408,16 +408,16 @@
 
         return index;
       },
-      _setQueue: function (currentIndex) {
-        var order = this._getItemsOrder(currentIndex);
+      _g_setQueue: function (currentIndex) {
+        var order = this._g_getItemsOrder(currentIndex);
 
         this.queue = {
-          prev: this._getQueueItem(order[0]),
-          current: this._getQueueItem(order[1]),
-          next: this._getQueueItem(order[2])
+          prev: this._g_getQueueItem(order[0]),
+          current: this._g_getQueueItem(order[1]),
+          next: this._g_getQueueItem(order[2])
         };
       },
-      _getItemsOrder: function (index) {
+      _g_getItemsOrder: function (index) {
         var o = this.o,
           prev = index - 1,
           next = index + 1;
@@ -431,7 +431,7 @@
 
         return [prev, index, next];
       },
-      _getQueueItem(index) {
+      _g_getQueueItem(index) {
         var item;
         
         if (index === null) {
@@ -513,7 +513,7 @@
         if (this.$.isArray(o.content)) {
           this._g.items_raw = o.content;
         } else {
-          this._g.els = this._gatherElements(o.gallery);
+          this._g.els = this._g_g_gatherElements(o.gallery);
           this._g.items_raw = [];
 
           if (this._g.els && this._g.els.length) {
@@ -526,7 +526,7 @@
           }
         }
       },
-      _gatherElements: function (selector) {
+      _g_g_gatherElements: function (selector) {
         if (selector) {
           return this.o.el.find(selector);
         } else {

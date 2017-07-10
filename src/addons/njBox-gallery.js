@@ -288,15 +288,14 @@
         if (typeof that.queue.prev.index === 'number') {
           that._moveItem(that.queue.prev.item, -110, '%');
           that._drawItem(that.queue.prev.item, true, that.dom.items);
-          if (that.queue.prev.index !== null) that._setMaxHeight(that.items[that.queue.prev.index]);
           that.queue.prev.tabs = that._makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable)
         }
         if (typeof that.queue.next.index === 'number') {
           that._moveItem(that.queue.next.item, 110, '%');
           that._drawItem(that.queue.next.item, false, that.dom.items);
-          if (that.queue.next.index !== null) that._setMaxHeight(that.items[that.queue.next.index]);
           that.queue.next.tabs = that._makeUnfocusable(that.queue.next.item.dom.modal, o._focusable)
         }
+        that.position();
       },
       _moveItem: function (item, value, unit) {
         unit = unit || 'px';

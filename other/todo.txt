@@ -1,10 +1,5 @@
-*autoheight неправильно работает, все равно не учитывает header
-*проверить например что будет когда ошибка в темплейте хедера
-*сократить немного j.fn.init
-
 * проверить arrowsinserted т.к. state сбрасывается при хайде
 * выкосить глобальный неймспейс и аддоны из него
-* role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутов
 * заменить все this на that для уменьшния размеров мин файла
 * перевести все setAttribute и removeAttribute в .attr т.к. стрелок то может быть несколько
 * переименовать parseCoords во что-то и использовать везде для парсинга строки с пробелом
@@ -16,6 +11,7 @@
 * disable autofocus on popovers
 * добавить возможность для поповера делать зеркальное отображение а не прилипание к краю
 * переименовать все методы gallery/popover аддона, добавив префикс названия аддона
+* role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутов
 
 
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.

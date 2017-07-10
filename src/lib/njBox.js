@@ -182,6 +182,7 @@ class njBox {
     this._addListeners();
 
     this._drawItem(this.items[this.state.active], false, containerToInsert);
+    
     this._cb('inserted');
 
     //draw modal on screen
@@ -519,16 +520,12 @@ class njBox {
     
     function contentAddedCallback() {
       //insert header content
-      if (dom.headerInput && item.header) {
-        dom.headerInput.html(item.header)
-      }
+      if (dom.headerInput) dom.headerInput.html(item.header)
       //insert footer content
-      if (dom.footerInput && item.footer) {
-        dom.footerInput.html(item.footer)
-      }
+      if (dom.footerInput) dom.footerInput.html(item.footer)
 
       item.o.status = 'loaded';
-      if(that.state.status === 'shown') that._setMaxHeight(item)
+      if(that.items[that.state.active] === item) that.position();//need it for autoheight
     }
     
     if (itemType === 'template') {
@@ -635,7 +632,6 @@ class njBox {
 
       if (ev !== o.img && ev !== true) return;
 
-      item.o.status = 'loaded';
       that._preloader('hide', item);
 
       $img.attr('width', 'auto')//for IE <= 10
@@ -644,6 +640,7 @@ class njBox {
       item.dom.bodyInput.append(img);
       item.o.contentInserted = true;
       callback();
+      item.o.status = 'loaded';
 
       //animation after image loading
       //todo add custom image animation, don't use global popup animation

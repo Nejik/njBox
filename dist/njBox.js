@@ -260,12 +260,12 @@ var njBox = function (undefined, setTimeout, document) {
 
         this.returnValue = null;
 
-        var container = this.dom.container[0];
+        var container = this.dom.container;
 
-        if (!container.njb_instances) {
-          container.njb_instances = 1;
+        if (!container[0].njb_instances) {
+          container[0].njb_instances = 1;
         } else {
-          container.njb_instances++;
+          container[0].njb_instances++;
         }
         // this.dom.container.addClass('njb-open');
 
@@ -278,14 +278,15 @@ var njBox = function (undefined, setTimeout, document) {
         if (this._g.popover) {
           containerToInsert = container;
         } else {
-          container.appendChild(this.dom.wrap[0]);
-          containerToInsert = this.dom.items[0];
+          container.append(this.dom.wrap);
+          containerToInsert = this.dom.items;
         }
 
         //set event handlers
         this._addListeners();
 
         this._drawItem(this.items[this.state.active], false, containerToInsert);
+
         this._cb('inserted');
 
         //draw modal on screen
@@ -390,6 +391,16 @@ var njBox = function (undefined, setTimeout, document) {
         this._addClickHandler();
 
         return this;
+      }
+    }, {
+      key: '_createEl',
+      value: function _createEl(templateName) {
+        var template = this.o.templates[templateName],
+            el = $(template);
+
+        if (!el.length) console.warn('njBox, smth wrong with template - ' + templateName + '.');
+
+        return el;
       }
     }, {
       key: '_gatherData',
@@ -551,29 +562,22 @@ var njBox = function (undefined, setTimeout, document) {
             modalFragment = document.createDocumentFragment();
 
         //main modal wrapper
-        dom.modal = modal = $(o.templates.modal);
+        dom.modal = modal = this._createEl('modal');
         modal[0].tabIndex = '-1';
         modal[0].njBox = that;
 
-        dom.modalOuter = modalOuter = $(o.templates.modalOuter);
+        dom.modalOuter = modalOuter = this._createEl('modalOuter');
 
         if (o.role) modal.attr('role', o.role);
         if (o.label) modal.attr('aria-label', o.label);
         if (o.labelledby) modal.attr('aria-labelledby', o.labelledby);
         if (o.describedby) modal.attr('aria-describedby', o.describedby);
 
-        if (!modal.length) {
-          that._e('njBox, error in o.templates.modal');
-        }
-
-        modalOuter[0].appendChild(modal[0]);
+        modalOuter.append(modal);
 
         if (item.type !== "template") {
           //insert body
-          dom.body = $(o.templates.body);
-          if (!dom.body.length) {
-            that._e('njBox, error in o.templates.body');
-          }
+          dom.body = this._createEl('body');
           //find data-njb-body in item body element
           dom.bodyInput = (0, _utils.getItemFromDom)(dom.body, 'data-njb-body');
 
@@ -581,51 +585,39 @@ var njBox = function (undefined, setTimeout, document) {
 
           //insert header
           if (item.header) {
-            dom.header = $(o.templates.header);
+            dom.header = this._createEl('header');
 
-            var headerError = 'njBox, error in o.templates.header';
-
-            if (!dom.header.length) {
-              that._e(headerError);
+            //insert header info
+            dom.headerInput = (0, _utils.getItemFromDom)(dom.header, 'data-njb-header');
+            if (!dom.headerInput.length) {
+              that._e('njBox, error in o.templates.header');
             } else {
-              //insert header info
-              dom.headerInput = (0, _utils.getItemFromDom)(dom.header, 'data-njb-header');
-              if (!dom.headerInput.length) {
-                that._e(headerError);
-              } else {
-                modalFragment.insertBefore(dom.header[0], modalFragment.firstChild);
-              }
+              modalFragment.insertBefore(dom.header[0], modalFragment.firstChild);
             }
           }
 
           //insert footer
           if (item.footer) {
-            dom.footer = $(o.templates.footer);
+            dom.footer = this._createEl('footer');
 
-            var footerError = 'njBox, error in njBox.templates.footer';
-
-            if (!dom.footer.length) {
-              that._e(footerError);
+            //insert footer info
+            dom.footerInput = (0, _utils.getItemFromDom)(dom.footer, 'data-njb-footer');
+            if (!dom.footerInput.length) {
+              that._e('njBox, error in njBox.templates.footer');
             } else {
-              //insert footer info
-              dom.footerInput = (0, _utils.getItemFromDom)(dom.footer, 'data-njb-footer');
-              if (!dom.footerInput.length) {
-                that._e(footerError);
-              } else {
-                modalFragment.appendChild(dom.footer[0]);
-              }
+              modalFragment.appendChild(dom.footer[0]);
             }
           }
 
           //insert close button
           if (o.close === 'inside') {
-            dom.close = $(o.templates.close);
+            dom.close = this._createEl('close');
             dom.close.attr('title', o.text.close);
 
             modalFragment.appendChild(dom.close[0]);
           }
 
-          modal[0].appendChild(modalFragment);
+          modal.append(modalFragment);
         }
 
         if (item.type === 'image') {
@@ -651,16 +643,12 @@ var njBox = function (undefined, setTimeout, document) {
 
         function contentAddedCallback() {
           //insert header content
-          if (dom.headerInput && item.header) {
-            dom.headerInput.html(item.header);
-          }
+          if (dom.headerInput) dom.headerInput.html(item.header);
           //insert footer content
-          if (dom.footerInput && item.footer) {
-            dom.footerInput.html(item.footer);
-          }
+          if (dom.footerInput) dom.footerInput.html(item.footer);
 
           item.o.status = 'loaded';
-          if (that.state.status === 'shown') that._setMaxHeight(item);
+          if (that.items[that.state.active] === item) that.position(); //need it for autoheight
         }
 
         if (itemType === 'template') {
@@ -689,7 +677,7 @@ var njBox = function (undefined, setTimeout, document) {
                   }
 
                   bodyItemToInsert.html(''); //clear element before inserting other dom element. (e.g. body for case when first time we can't find contentEl on page and error text already here)
-                  bodyItemToInsert[0].appendChild(contentEl[0]);
+                  bodyItemToInsert.append(contentEl);
 
                   item.o.contentInserted = true;
                 } else {
@@ -769,15 +757,15 @@ var njBox = function (undefined, setTimeout, document) {
 
           if (ev !== o.img && ev !== true) return;
 
-          item.o.status = 'loaded';
           that._preloader('hide', item);
 
           $img.attr('width', 'auto'); //for IE <= 10
 
           //insert content
-          item.dom.bodyInput[0].appendChild(img);
+          item.dom.bodyInput.append(img);
           item.o.contentInserted = true;
           callback();
+          item.o.status = 'loaded';
 
           //animation after image loading
           //todo add custom image animation, don't use global popup animation
@@ -838,10 +826,7 @@ var njBox = function (undefined, setTimeout, document) {
         }
 
         //create core elements
-        dom.wrap = $(o.templates.wrap);
-        if (!dom.wrap.length) {
-          that._e('njBox, smth wrong with o.templates.wrap.');
-        }
+        dom.wrap = this._createEl('wrap');
         if (o['class']) dom.wrap.addClass(o['class']);
         dom.wrap[0].njBox = that;
         if (o.zindex) dom.wrap.css('zIndex', o.zindex);
@@ -849,28 +834,28 @@ var njBox = function (undefined, setTimeout, document) {
         dom.items = dom.wrap.find('.njb-items');
 
         //create ui layer
-        dom.ui = $(o.templates.ui);
-        dom.wrap[0].appendChild(dom.ui[0]);
+        dom.ui = this._createEl('ui');
+        dom.wrap.append(dom.ui);
 
-        dom.title = $(o.templates.title);
-        dom.ui[0].appendChild(dom.title[0]);
+        dom.title = this._createEl('title');
+        dom.ui.append(dom.title);
 
         // insert outside close button
         if (o.close === 'outside') {
-          dom.close = $(o.templates.close);
+          dom.close = this._createEl('close');
           dom.close.attr('title', o.text.close).attr('aria-label', o.text.close);
 
-          dom.ui[0].appendChild(dom.close[0]);
+          dom.ui.append(dom.close);
         }
 
         // insert invisible, focusable nodes.
         // while this dialog is open, we use these to make sure that focus never
         // leaves modal boundaries
-        dom.focusCatchBefore = $(o.templates.focusCatcher);
-        dom.wrap[0].insertBefore(dom.focusCatchBefore[0], dom.wrap[0].firstChild);
+        dom.focusCatchBefore = this._createEl('focusCatcher');
+        dom.wrap.prepend(dom.focusCatchBefore);
 
-        dom.focusCatchAfter = $(o.templates.focusCatcher);
-        dom.wrap[0].appendChild(dom.focusCatchAfter[0]);
+        dom.focusCatchAfter = this._createEl('focusCatcher');
+        dom.wrap.append(dom.focusCatchAfter);
 
         return dom;
       }
@@ -990,7 +975,7 @@ var njBox = function (undefined, setTimeout, document) {
       value: function _drawItem(item, prepend, container) {
         var that = this,
             o = that.o,
-            itemToInsert = item.toInsert[0];
+            itemToInsert = item.toInsert;
 
         that._cb('item_prepare', item);
 
@@ -999,9 +984,9 @@ var njBox = function (undefined, setTimeout, document) {
         }
 
         if (prepend) {
-          container.insertBefore(itemToInsert, container.firstChild);
+          container.prepend(itemToInsert);
         } else {
-          container.appendChild(itemToInsert);
+          container.append(itemToInsert);
         }
 
         that._cb('item_inserted', item);
@@ -1029,7 +1014,7 @@ var njBox = function (undefined, setTimeout, document) {
               item.o.contentElStyle = undefined;
             }
             //return selector element to the dom
-            this.dom.body[0].appendChild(contentEl[0]);
+            this.dom.body.append(contentEl);
             item.o.contentInserted = false;
           }
         }
@@ -1282,10 +1267,10 @@ var njBox = function (undefined, setTimeout, document) {
         switch (type) {
           case 'show':
             item.o.preloader = true;
-            item.dom.preloader = $(o.templates.preloader).attr('title', o.text.preloader);
+            item.dom.preloader = this._createEl('preloader').attr('title', o.text.preloader);
 
             item.dom.modal.addClass('njb--loading');
-            item.dom.bodyInput[0].appendChild(item.dom.preloader[0]);
+            item.dom.bodyInput.append(item.dom.preloader);
             break;
 
           case 'hide':
@@ -1475,7 +1460,7 @@ var njBox = function (undefined, setTimeout, document) {
 
         switch (type) {
           case 'show':
-            this.dom.backdrop = $(o.templates.backdrop);
+            this.dom.backdrop = this._createEl('backdrop');
 
             if (this.state.backdropVisible) return;
 
@@ -1484,7 +1469,7 @@ var njBox = function (undefined, setTimeout, document) {
 
               //insert backdrop div
               if (o.layout === 'absolute') this.dom.backdrop.addClass('njb-absolute');
-              this.dom.container[0].appendChild(this.dom.backdrop[0]);
+              this.dom.container.append(this.dom.backdrop);
 
               // this.dom.backdrop[0].clientHeight;
 
@@ -2212,6 +2197,53 @@ j.fn.html = function (html) {
         this.innerHTML = html;
     });
 };
+// j.fn.append = function(content) {
+//     var els = j(content),
+//         frag = document.createDocumentFragment();
+
+//     //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+//     els.each(function () {
+//         frag.appendChild( this );
+//     });
+
+//     return this.each(function () {
+//         this.appendChild(frag)
+//     });
+// }
+// j.fn.prepend = function(content) {
+//     var els = j(content),
+//         frag = document.createDocumentFragment();
+
+//     //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+//     els.each(function () {
+//         frag.appendChild( this );
+//     });
+//     return this.each(function () {
+//         this.insertBefore(frag, this.firstChild)
+//     });
+// }
+j.fn.append = function (content) {
+    return insert.call(this, content, 'append');
+};
+j.fn.prepend = function (content) {
+    return insert.call(this, content, 'prepend');
+};
+function insert(content, type) {
+    var els = j(content),
+        frag = document.createDocumentFragment();
+
+    //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+    els.each(function () {
+        frag.appendChild(this);
+    });
+    return this.each(function () {
+        if (type === 'append') {
+            this.appendChild(frag);
+        } else {
+            this.insertBefore(frag, this.firstChild);
+        }
+    });
+}
 
 exports.default = j;
 module.exports = exports['default'];

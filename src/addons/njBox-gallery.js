@@ -60,11 +60,11 @@
           this.dom.next = $(o.templates.next)
           this.dom.next[0].setAttribute('title', o.text.next);
 
-          if (o.arrows && !this.state.arrowsInserted && this._g.gallery) {
+          if (o.arrows && this._g.gallery && !this._g.arrowsInserted) {
             if (this.dom.next[0]) this.dom.ui.append(this.dom.next);
             if (this.dom.prev[0]) this.dom.ui.append(this.dom.prev);
 
-            this.state.arrowsInserted = true;
+            this._g.arrowsInserted = true;
           }
         })
         this.on('item_created', function (item, index) {

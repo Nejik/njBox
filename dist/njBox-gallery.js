@@ -123,7 +123,7 @@
           if (!this._g.gallery) return;
 
           this.dom.ui_count = $(o.templates.count);
-          this.dom.ui[0].appendChild(this.dom.ui_count[0]);
+          this.dom.ui.append(this.dom.ui_count);
 
           this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]');
           this.dom.ui_current[0].setAttribute('title', o.text.current);
@@ -135,11 +135,11 @@
           this.dom.next = $(o.templates.next);
           this.dom.next[0].setAttribute('title', o.text.next);
 
-          if (o.arrows && !this.state.arrowsInserted && this._g.gallery) {
-            if (this.dom.next[0]) this.dom.ui[0].appendChild(this.dom.next[0]);
-            if (this.dom.prev[0]) this.dom.ui[0].appendChild(this.dom.prev[0]);
+          if (o.arrows && this._g.gallery && !this._g.arrowsInserted) {
+            if (this.dom.next[0]) this.dom.ui.append(this.dom.next);
+            if (this.dom.prev[0]) this.dom.ui.append(this.dom.prev);
 
-            this.state.arrowsInserted = true;
+            this._g.arrowsInserted = true;
           }
         });
         this.on('item_created', function (item, index) {
@@ -357,16 +357,15 @@
             that = this;
         if (typeof that.queue.prev.index === 'number') {
           that._moveItem(that.queue.prev.item, -110, '%');
-          that._drawItem(that.queue.prev.item, true, that.dom.items[0]);
-          if (that.queue.prev.index !== null) that._setMaxHeight(that.items[that.queue.prev.index]);
+          that._drawItem(that.queue.prev.item, true, that.dom.items);
           that.queue.prev.tabs = that._makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable);
         }
         if (typeof that.queue.next.index === 'number') {
           that._moveItem(that.queue.next.item, 110, '%');
-          that._drawItem(that.queue.next.item, false, that.dom.items[0]);
-          if (that.queue.next.index !== null) that._setMaxHeight(that.items[that.queue.next.index]);
+          that._drawItem(that.queue.next.item, false, that.dom.items);
           that.queue.next.tabs = that._makeUnfocusable(that.queue.next.item.dom.modal, o._focusable);
         }
+        that.position();
       },
       _moveItem: function _moveItem(item, value, unit) {
         unit = unit || 'px';

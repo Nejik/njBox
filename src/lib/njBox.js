@@ -155,12 +155,12 @@ class njBox {
 
     this.returnValue = null;
 
-    var container = this.dom.container[0];
+    var container = this.dom.container;
 
-    if (!container.njb_instances) {
-      container.njb_instances = 1;
+    if (!container[0].njb_instances) {
+      container[0].njb_instances = 1;
     } else {
-      container.njb_instances++;
+      container[0].njb_instances++;
     }
     // this.dom.container.addClass('njb-open');
     
@@ -174,8 +174,8 @@ class njBox {
     if (this._g.popover) {
       containerToInsert = container;
     } else {
-      container.appendChild(this.dom.wrap[0]);
-      containerToInsert = this.dom.items[0];
+      container.append(this.dom.wrap);
+      containerToInsert = this.dom.items;
     }
 
     //set event handlers
@@ -286,6 +286,14 @@ class njBox {
     this._addClickHandler();
 
     return this;
+  }
+  _createEl(templateName) {
+    var template = this.o.templates[templateName],
+      el = $(template);
+    
+    if(!el.length) console.warn(`njBox, smth wrong with template - ${templateName}.`)
+    
+    return el;
   }
   _gatherData(el) {
     let o = this.o,
@@ -434,29 +442,22 @@ class njBox {
         modalFragment = document.createDocumentFragment();
 
     //main modal wrapper
-    dom.modal = modal = $(o.templates.modal);
+    dom.modal = modal = this._createEl('modal');
     modal[0].tabIndex = '-1'
     modal[0].njBox = that;
 
-    dom.modalOuter = modalOuter = $(o.templates.modalOuter);
+    dom.modalOuter = modalOuter = this._createEl('modalOuter')
 
     if (o.role) modal.attr('role', o.role)
     if (o.label) modal.attr('aria-label', o.label)
     if (o.labelledby) modal.attr('aria-labelledby', o.labelledby)
     if (o.describedby) modal.attr('aria-describedby', o.describedby)
 
-    if (!modal.length) {
-      that._e('njBox, error in o.templates.modal');
-    }
-
-    modalOuter[0].appendChild(modal[0]);
+    modalOuter.append(modal);
 
     if (item.type !== "template") {
       //insert body
-      dom.body = $(o.templates.body);
-      if (!dom.body.length) {
-        that._e('njBox, error in o.templates.body');
-      }
+      dom.body = this._createEl('body');
       //find data-njb-body in item body element
       dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
 
@@ -464,53 +465,39 @@ class njBox {
 
       //insert header
       if (item.header) {
-        dom.header = $(o.templates.header);
+        dom.header = this._createEl('header');
 
-        var headerError = 'njBox, error in o.templates.header';
-
-        if (!dom.header.length) {
-          that._e(headerError);
+        //insert header info
+        dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
+        if (!dom.headerInput.length) {
+          that._e('njBox, error in o.templates.header');
         } else {
-          //insert header info
-          dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
-          if (!dom.headerInput.length) {
-            that._e(headerError);
-          } else {
-            modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
-          }
+          modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
         }
-
       }
 
       //insert footer
       if (item.footer) {
-        dom.footer = $(o.templates.footer);
+        dom.footer = this._createEl('footer');
 
-        var footerError = 'njBox, error in njBox.templates.footer';
-
-        if (!dom.footer.length) {
-          that._e(footerError);
+        //insert footer info
+        dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
+        if (!dom.footerInput.length) {
+          that._e('njBox, error in njBox.templates.footer');
         } else {
-          //insert footer info
-          dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
-          if (!dom.footerInput.length) {
-            that._e(footerError);
-          } else {
-            modalFragment.appendChild(dom.footer[0])
-          }
+          modalFragment.appendChild(dom.footer[0])
         }
-
       }
 
       //insert close button
       if (o.close === 'inside') {
-        dom.close = $(o.templates.close);
+        dom.close = this._createEl('close');
         dom.close.attr('title', o.text.close);
 
         modalFragment.appendChild(dom.close[0]);
       }
 
-      modal[0].appendChild(modalFragment)
+      modal.append(modalFragment)
     }
 
     if (item.type === 'image') {
@@ -570,7 +557,7 @@ class njBox {
               }
 
               bodyItemToInsert.html('')//clear element before inserting other dom element. (e.g. body for case when first time we can't find contentEl on page and error text already here)
-              bodyItemToInsert[0].appendChild(contentEl[0]);
+              bodyItemToInsert.append(contentEl);
 
               item.o.contentInserted = true;
             } else {//if we don't find element with this selector
@@ -654,7 +641,7 @@ class njBox {
       $img.attr('width', 'auto')//for IE <= 10
 
       //insert content
-      item.dom.bodyInput[0].appendChild(img);
+      item.dom.bodyInput.append(img);
       item.o.contentInserted = true;
       callback();
 
@@ -715,10 +702,7 @@ class njBox {
     }
     
     //create core elements
-    dom.wrap = $(o.templates.wrap);
-    if (!dom.wrap.length) {
-      that._e('njBox, smth wrong with o.templates.wrap.');
-    }
+    dom.wrap = this._createEl('wrap');
     if (o['class']) dom.wrap.addClass(o['class']);
     dom.wrap[0].njBox = that;
     if (o.zindex) dom.wrap.css('zIndex', o.zindex);
@@ -726,28 +710,28 @@ class njBox {
     dom.items = dom.wrap.find('.njb-items');
 
     //create ui layer
-    dom.ui = $(o.templates.ui)
-    dom.wrap[0].appendChild(dom.ui[0])
+    dom.ui = this._createEl('ui')
+    dom.wrap.append(dom.ui)
 
-    dom.title = $(o.templates.title)
-    dom.ui[0].appendChild(dom.title[0])
+    dom.title = this._createEl('title')
+    dom.ui.append(dom.title)
 
     // insert outside close button
     if (o.close === 'outside') {
-      dom.close = $(o.templates.close)
+      dom.close = this._createEl('close')
       dom.close.attr('title', o.text.close).attr('aria-label', o.text.close)
 
-      dom.ui[0].appendChild(dom.close[0])
+      dom.ui.append(dom.close)
     }
 
     // insert invisible, focusable nodes.
     // while this dialog is open, we use these to make sure that focus never
     // leaves modal boundaries
-    dom.focusCatchBefore = $(o.templates.focusCatcher)
-    dom.wrap[0].insertBefore(dom.focusCatchBefore[0], dom.wrap[0].firstChild)
+    dom.focusCatchBefore = this._createEl('focusCatcher')
+    dom.wrap.prepend(dom.focusCatchBefore)
 
-    dom.focusCatchAfter = $(o.templates.focusCatcher)
-    dom.wrap[0].appendChild(dom.focusCatchAfter[0])
+    dom.focusCatchAfter = this._createEl('focusCatcher')
+    dom.wrap.append(dom.focusCatchAfter)
 
     return dom;
   }
@@ -869,7 +853,7 @@ class njBox {
   _drawItem(item, prepend, container) {
     var that = this,
         o = that.o,
-        itemToInsert = item.toInsert[0];
+        itemToInsert = item.toInsert;
     
     that._cb('item_prepare', item);
 
@@ -878,9 +862,9 @@ class njBox {
     }
 
     if (prepend) {
-      container.insertBefore(itemToInsert, container.firstChild)
+      container.prepend(itemToInsert)
     } else {
-      container.appendChild(itemToInsert);
+      container.append(itemToInsert);
     }
 
     that._cb('item_inserted', item);
@@ -907,7 +891,7 @@ class njBox {
           item.o.contentElStyle = undefined;
         }
         //return selector element to the dom
-        this.dom.body[0].appendChild(contentEl[0])
+        this.dom.body.append(contentEl)
         item.o.contentInserted = false;
       }
     }
@@ -1164,11 +1148,11 @@ class njBox {
     switch (type) {
       case 'show':
         item.o.preloader = true;
-        item.dom.preloader = $(o.templates.preloader)
+        item.dom.preloader = this._createEl('preloader')
                               .attr('title', o.text.preloader);
 
         item.dom.modal.addClass('njb--loading');
-        item.dom.bodyInput[0].appendChild(item.dom.preloader[0])
+        item.dom.bodyInput.append(item.dom.preloader)
         break;
 
       case 'hide':
@@ -1362,7 +1346,7 @@ class njBox {
 
     switch (type) {
       case 'show':
-        this.dom.backdrop = $(o.templates.backdrop);
+        this.dom.backdrop = this._createEl('backdrop');
 
         if (this.state.backdropVisible) return;
 
@@ -1371,7 +1355,7 @@ class njBox {
 
           //insert backdrop div
           if (o.layout === 'absolute') this.dom.backdrop.addClass('njb-absolute');
-          this.dom.container[0].appendChild(this.dom.backdrop[0]);
+          this.dom.container.append(this.dom.backdrop);
 
           // this.dom.backdrop[0].clientHeight;
 

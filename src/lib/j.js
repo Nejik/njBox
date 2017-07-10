@@ -307,6 +307,53 @@ j.fn.html = function (html) {
         this.innerHTML = html;
     });
 }
+// j.fn.append = function(content) {
+//     var els = j(content),
+//         frag = document.createDocumentFragment();
+    
+//     //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+//     els.each(function () {
+//         frag.appendChild( this );
+//     });
+    
+//     return this.each(function () {
+//         this.appendChild(frag)
+//     });
+// }
+// j.fn.prepend = function(content) {
+//     var els = j(content),
+//         frag = document.createDocumentFragment();
+    
+//     //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+//     els.each(function () {
+//         frag.appendChild( this );
+//     });
+//     return this.each(function () {
+//         this.insertBefore(frag, this.firstChild)
+//     });
+// }
+j.fn.append = function(content) {
+    return insert.call(this, content, 'append');
+}
+j.fn.prepend = function(content) {
+    return insert.call(this, content, 'prepend');
+}
+function insert(content, type) {
+    var els = j(content),
+        frag = document.createDocumentFragment();
+    
+    //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+    els.each(function () {
+        frag.appendChild( this );
+    });
+    return this.each(function () {
+        if (type === 'append') {
+            this.appendChild(frag)
+        } else  {
+            this.insertBefore(frag, this.firstChild)
+        }
+    });
+}
 
 
 

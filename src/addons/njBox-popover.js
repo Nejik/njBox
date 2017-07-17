@@ -6,7 +6,11 @@
 (function () {
   if (window.njBox) njBox.addAddon('popover', {
     options: {
-      placement: 'bottom'//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second. The this context is set to the popover instance.
+      layout         :'fixed',//(fixed || absolute || popover), how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. popover mode works only with popover addon)
+      placement      :'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second, this context is set to the popover instance.
+      reverse        : true,//(boolean) should we reverse direction left/right top/bottom if no space for popover
+      offset         : '10 10',//(string or array) popover specific option. Offset of the popover relative to its target
+	    boundary       : true//(boolean) popover specific option. Should popover stay in window boundaries?
     },
     prototype: {
       _popover_init: function () {
@@ -20,34 +24,39 @@
           o.scrollbar = that._getPassedOption('scrollbar') || 'show';
           o.out = that._getPassedOption('out') || true;
           o.container = 'body';//you cant change container in popover mode
+          o.focusprevious = false;
+          o.autofocus = false;
         }
         if(!that._g.popover) return;
         
         that.on('position', function () {
           var that = this,
               o = this.o,
-              coords,
-              activeModal = that.items[that.state.active].dom.modal,
-              coordinates = that.state.coordsFromPosition;
+              state = this.state,
+              coords = o.placement,
+              activeModal = that.items[that.state.active].dom.modal;
           
-          if(this.state.arguments.position.length) {
-            coordinates = this.state.coordsFromPosition = this.state.arguments.position[0];
+          if (!this._g.popover) return;
+
+          if(state.arguments.position.length) {
+            coords = state.arguments.position[0];
           }
-          
-          if (this._g.popover) {
-            if (coordinates) {
-              coords = (typeof coordinates === 'function') ? coordinates() : coordinates;
-            } else {
-              coords = this._g_getCoordsFromPlacement(o.placement, this.state.dimensions);
-            }
-          
-            coords = that._g_parseCoords(coords);
-            this.state.coords = coords;
-          
-            if(this._g.popover && this.state.coords && this.state.coords.length === 2) {
-              activeModal.css('left', this.state.coords[0] + "px")
-                        .css('top', this.state.coords[1] + "px")
-            }
+
+          coords = (typeof coords === 'function') ? coords.call(this, this.items[this.state.active].dom.modal[0]) : coords;
+          coords = that._p_parseCoords(coords);
+
+          if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
+            coords = this._p_checkBounds(
+              this._p_getCoordsFromPlacement(o.placement, state.dimensions)
+            );
+          }
+
+          state.coords = coords;//computed
+        
+          if(coords && coords.length === 2) {
+            activeModal .css('width', state.dimensions.modal.width + "px")
+                        .css('left', coords[0] + "px")
+                        .css('top', coords[1] + "px")
           }
         })
         that.on('item_created', function(item) {
@@ -66,28 +75,19 @@
         that.on('listeners_removed', function() {
           var that = this,
               h = this._handlers;
-          
-          that.dom.container.on('keydown', h.wrap_keydown)
+          that.dom.container.off('keydown', h.wrap_keydown)
                             .undelegate('[data-njb-close]', 'click', h.wrap_close)
                             .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
                             .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
         })
       },
-      _g_getCoordsFromPlacement(value, dimensions) {
+      _p_getCoordsFromPlacement(placement, dimensions) {
         var that = this,
-            o = that.o,
-            placement = value,
-            cbPlacement = that._cb('placement', dimensions.modal.el, dimensions.clickedEl.el);
+            o = that.o;
         
-        if (cbPlacement !== undefined) placement = cbPlacement;
-
-        if(typeof placement === 'function') placement = placement();
-
-        placement = that._g_parseCoords(placement);
-
         var popoverWiderThanClicked = dimensions.modal.width > dimensions.clickedEl.width,
             popoverTallerThanClicked = dimensions.modal.height > dimensions.clickedEl.height,
-            offset = that._g_parseCoords(o.offset),
+            offset = that._p_parseCoords(o.offset),
             coords = [],
             leftForTopAndBottom,
             topForLeftAndRight;
@@ -101,6 +101,8 @@
           leftForTopAndBottom += dimensions.container.scrollLeft;
         }
 
+        
+
         if (popoverTallerThanClicked) {
           topForLeftAndRight = dimensions.clickedEl.top - ((dimensions.modal.height - dimensions.clickedEl.height) / 2)
         } else {
@@ -112,18 +114,18 @@
 
         switch (placement) {
           case 'center':
-            coords[0] = ((dimensions.container.width - dimensions.modal.width) / 2) + dimensions.window.scrollLeft;
-            coords[1] = ((dimensions.container.height - dimensions.modal.height) / 2) + dimensions.window.scrollTop
+            coords[0] = ((dimensions.container.width - dimensions.modal.width) / 2) + dimensions.container.scrollLeft;
+            coords[1] = ((dimensions.container.height - dimensions.modal.height) / 2) + dimensions.container.scrollTop
           break;
           
           case 'bottom':
             coords[0] = leftForTopAndBottom;
-            coords[1] = dimensions.clickedEl.bottom + offset[1];
+            coords[1] = (dimensions.clickedEl.bottom + offset[1]) + dimensions.container.scrollTop;
           break;
 
           case 'top':
             coords[0] = leftForTopAndBottom;
-            coords[1] = dimensions.clickedEl.top - dimensions.modal.height - offset[1];
+            coords[1] = (dimensions.clickedEl.top - dimensions.modal.height - offset[1]) + dimensions.container.scrollTop;
           break;
 
           case 'left':
@@ -137,42 +139,81 @@
           break
         }
         
-        return that._g_checkBounds(coords);
+        return coords;
       },
-      _g_checkBounds(currentcoords) {
+      _p_getDirtyStatus(currentCoords, dimensions) {
+        var d = dimensions,
+            boundaryCoords = d.container,
+            modalCoords = d.modal;
+
+        return {
+          left: currentCoords[0] < boundaryCoords.left,
+          top: currentCoords[1] < boundaryCoords.top,
+          right: currentCoords[0] + modalCoords.width > boundaryCoords.scrollWidth,
+          bottom: currentCoords[1] + modalCoords.height > boundaryCoords.scrollHeight
+        }
+      },
+      _p_getOppositeDirection(direction) {
+        switch (direction) {
+          case 'left':
+            return 'right'
+          case 'right':
+            return 'left'
+          case 'top':
+            return 'bottom'
+          case 'bottom':
+            return 'top'
+        }
+      },
+      _p_checkBounds(currentcoords) {
         var that = this,
             o = that.o,
-            boundary = o.boundary,
-            offset = that._g_parseCoords(o.offset),
-            dimensions = that.state.dimensions,
-            boundaryCoords = this._getDomSize(window),
-            fixedCoords = currentcoords;
-          
+            boundary = o.boundary;
         if(!boundary) return currentcoords;
 
-        //fix negative left position
-        if (currentcoords[0] < boundaryCoords.left) {
-          fixedCoords[0] = boundaryCoords.left;
+        var offset = that._p_parseCoords(o.offset),
+            dimensions = that.state.dimensions,
+            boundaryCoords = dimensions.window,
+            fixedCoords = currentcoords,
+            dirty = this._p_getDirtyStatus(currentcoords, dimensions);
+        
+        if (dirty[o.placement] && o.reverse) {
+          fixedCoords = this._p_getCoordsFromPlacement(this._p_getOppositeDirection(o.placement), this.state.dimensions)
+          dirty = this._p_getDirtyStatus(fixedCoords, dimensions);
         }
 
-        //fix negative top position
-        if (currentcoords[1] < boundaryCoords.top) {
-          fixedCoords[1] = boundaryCoords.top;
+        if (boundary) {
+          fixedCoords = makeSticky(dirty, fixedCoords);
         }
-      
-        //fix negative right position
-        if(currentcoords[0] + dimensions.modal.width > boundaryCoords.scrollWidth) {
-          fixedCoords[0] = (boundaryCoords.scrollWidth - dimensions.modal.width)
-        }
+        
+        
+        function makeSticky(dirty, coordsToFix) {
+          var coords = coordsToFix.slice();
 
-        //fix negative bottom position
-        if (currentcoords[1] + dimensions.modal.height > boundaryCoords.scrollHeight) {
-          fixedCoords[1] = (boundaryCoords.scrollHeight - dimensions.modal.height);
+          //fix negative left position
+          if (dirty.left) {
+            coords[0] = boundaryCoords.left;
+          }
+        
+          //fix negative top position
+          if (dirty.top) {
+            coords[1] = boundaryCoords.top;
+          }
+        
+          //fix negative right position
+          if(dirty.right) {
+            coords[0] = (boundaryCoords.scrollWidth - dimensions.modal.width)
+          }
+        
+          //fix negative bottom position
+          if (dirty.bottom) {
+            coords[1] = (boundaryCoords.scrollHeight - dimensions.modal.height);
+          }
+          return coords;
         }
-      
         return fixedCoords;
       },
-      _g_parseCoords(stringOrArray) {
+      _p_parseCoords(stringOrArray) {
       	if (typeof stringOrArray === 'string') {
       		if (/\s/.test(stringOrArray)) {
       			var arr = stringOrArray.split(' ')

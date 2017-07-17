@@ -3,8 +3,6 @@
 let j = function (selector) {
     return new j.fn.init(selector || '');
 };
-//autobinding
-// if(!window.$) window.$ = window.j;
 
 j.match = function (el, selector) {
     if (el === document) el = document.documentElement;
@@ -307,31 +305,6 @@ j.fn.html = function (html) {
         this.innerHTML = html;
     });
 }
-// j.fn.append = function(content) {
-//     var els = j(content),
-//         frag = document.createDocumentFragment();
-    
-//     //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
-//     els.each(function () {
-//         frag.appendChild( this );
-//     });
-    
-//     return this.each(function () {
-//         this.appendChild(frag)
-//     });
-// }
-// j.fn.prepend = function(content) {
-//     var els = j(content),
-//         frag = document.createDocumentFragment();
-    
-//     //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
-//     els.each(function () {
-//         frag.appendChild( this );
-//     });
-//     return this.each(function () {
-//         this.insertBefore(frag, this.firstChild)
-//     });
-// }
 j.fn.append = function(content) {
     return insert.call(this, content, 'append');
 }

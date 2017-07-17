@@ -219,21 +219,22 @@ class njBox {
     this.state.arguments.position = arguments;
 
     var o = this.o,
-        state = this.state;
+        state = this.state,
+        dimensions;
 
     if (!state || !state.inited || (state.status !== 'show' && state.status !== 'shown')) return;
     
-    this.state.dimensions = this._getDimensions();
+    dimensions = this.state.dimensions = this._getDimensions();
 
     this._cb('position');
 
     //position of global wrapper
     if (o.layout === 'absolute') {
       //global wrap positioning
-      var scrollTop = this.state.dimensions.container.scrollTop,
-        scrollLeft = this.state.dimensions.container.scrollLeft;
+      var scrollTop = dimensions.container.scrollTop,
+        scrollLeft = dimensions.container.scrollLeft;
 
-      if (scrollTop <= this.state.dimensions.container.scrollTopMax) {
+      if (scrollTop <= dimensions.container.scrollTopMax) {
         this.dom.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' })
       }
 
@@ -241,8 +242,8 @@ class njBox {
       this.dom.backdrop.css({ 'width': 'auto', 'height': 'auto' });
       this.dom.backdrop[0].clientHeight;
       this.dom.backdrop.css({
-        'width': this.state.dimensions.container.scrollWidth + 'px',
-        'height': this.state.dimensions.container.scrollHeight + 'px'
+        'width': dimensions.container.scrollWidth + 'px',
+        'height': dimensions.container.scrollHeight + 'px'
       });
     }
     
@@ -519,7 +520,7 @@ class njBox {
       if (dom.footerInput) dom.footerInput.html(item.footer)
 
       item.o.status = 'loaded';
-      if(that.items[that.state.active] === item) that.position();//need it for autoheight
+      if(that.state.status !== 'inited' && that.items && that.items[that.state.active] === item) that.position();//need it for delayed items autoheight
     }
     
     if (itemType === 'template') {
@@ -694,6 +695,7 @@ class njBox {
     //create core elements
     dom.wrap = this._createEl('wrap');
     if (o['class']) dom.wrap.addClass(o['class']);
+    dom.wrap[0].tabIndex = -1;
     dom.wrap[0].njBox = this;
     if (o.zindex) dom.wrap.css('zIndex', o.zindex);
 
@@ -736,10 +738,10 @@ class njBox {
     var o = this.o,
         dimensions = {};
     
-    dimensions.window = this._getDomSize(this.dom.window[0]);
+    dimensions.window = this._getDomSize(this.dom.window[0])
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window[0] : this.dom.container[0])
-    dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0]);
-    dimensions.clickedEl = this._getDomSize(this.state.clickedEl);
+    dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0])
+    dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
 
     dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 
@@ -772,8 +774,8 @@ class njBox {
           documentBody.offsetHeight, documentElement.offsetHeight,
           documentBody.clientHeight, documentElement.clientHeight
         ),
-        scrollLeft: window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft,
-        scrollTop: window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop
+        scrollLeft: window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft || 0,
+        scrollTop: window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop || 0
       }
     } else {
       rectOriginal = domObject.getBoundingClientRect()
@@ -784,8 +786,8 @@ class njBox {
       rectComputed.height = rectComputed.bottom - rectComputed.top;
       rectComputed.scrollWidth = domObject.scrollWidth;
       rectComputed.scrollHeight = domObject.scrollHeight;
-      rectComputed.scrollLeft = domObject.scrollLeft;
-      rectComputed.scrollTop = domObject.scrollTop;
+      rectComputed.scrollLeft = domObject.scrollLeft || 0;
+      rectComputed.scrollTop = domObject.scrollTop || 0;
     }
     rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width < 0 ? 0 : rectComputed.scrollWidth - rectComputed.width;
     rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height < 0 ? 0 : rectComputed.scrollHeight - rectComputed.height;
@@ -888,6 +890,11 @@ class njBox {
     var o = this.o,
       focusable,
       focusEl;
+    
+    if(!o.autofocus) {
+      this.dom.wrap[0].focus();
+      return;
+    }
 
     if (first) {
       focusable = this.dom.ui.find(this.o._focusable)
@@ -1116,16 +1123,16 @@ class njBox {
       .off('orientationchange', h.window_orientation)
 
 
-    //remove link to all previous handlers
-    var elsClick = h.elsClick;
-    this._handlers = {
-      elsClick: elsClick
-    }
-
     that.dom.focusCatchBefore.off('focus', h.focusCatchBefore)
     that.dom.focusCatchAfter.off('focus', h.focusCatchAfter)
 
     this._cb('listeners_removed');
+
+    //remove links to all previous handlers
+    var elsClick = h.elsClick;
+    this._handlers = {
+      elsClick: elsClick
+    }
   }
 
   _preloader(type, item) {

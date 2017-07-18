@@ -6,8 +6,9 @@
 (function () {
   if (window.njBox) njBox.addAddon('popover', {
     options: {
-      layout         :'fixed',//(fixed || absolute || popover), how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. popover mode works only with popover addon)
-      placement      :'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second, this context is set to the popover instance.
+      layout         : 'fixed',//(fixed || absolute || popover) how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. popover mode works only with popover addon)
+      trigger        : 'click',//(click || hover || focus || follow) how popover is triggered
+      placement      : 'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second, this context is set to the popover instance.
       reverse        : true,//(boolean) should we reverse direction left/right top/bottom if no space for popover
       offset         : '10 10',//(string or array) popover specific option. Offset of the popover relative to its target
 	    boundary       : true//(boolean) popover specific option. Should popover stay in window boundaries?
@@ -27,9 +28,119 @@
           o.autofocus = that._getPassedOption('autofocus') || false;
           o.container = 'body';//you cant change container in popover mode
           o.focusprevious = false;
+          o.click = false;
+          o.clickels = false;
         }
         if(!that._g.popover) return;
         
+        that.on('inited', function() {
+          var that = this,
+              o = that.o,
+              h = this._handlers;
+          
+          switch (o.trigger) {
+            case 'click':
+              h.trigger_click = function(e) {
+                var el = this;
+                if (e.originalEvent) e = e.originalEvent;//work with original event
+              
+                if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
+                (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+              
+                if (that.state.status !== 'inited') {
+                  that.hide();
+                  return;
+                }
+                that.state.clickedEvent = e;
+                that.state.clickedEl = el;
+                that.state.focused = el;
+                that.show();
+              }
+              that._g.els.on('click', h.trigger_click)
+              break;
+            case 'hover': 
+              h.trigger_mouseenter = function(e) {
+                var el = this;
+                if (e.originalEvent) e = e.originalEvent;//work with original event
+
+                that.state.clickedEvent = e;
+                that.state.clickedEl = el;
+                that.state.focused = document.activeElement;
+                that.show();
+              }
+              h.trigger_mouseleave = function(e) {
+                that.hide();
+              }
+              that._g.els .on('mouseenter', h.trigger_mouseenter)
+                          .on('mouseleave', h.trigger_mouseleave)
+              break;
+            case 'focus':
+              h.trigger_focus_click = function(e) {
+                if (e.originalEvent) e = e.originalEvent;//work with original event
+                (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+              }
+              h.trigger_focus = function(e) {
+                var el = this;
+                if (e.originalEvent) e = e.originalEvent;//work with original event
+
+                that.state.clickedEvent = e;
+                that.state.clickedEl = el;
+                that.state.focused = el;
+                that.show()
+              }
+              h.trigger_blur = function(e) {
+                that.hide()
+              }
+              that._g.els .on('click', h.trigger_focus_click)
+                          .on('focus', h.trigger_focus)
+                          .on('blur', h.trigger_blur)
+              break;
+            case 'follow':
+              h.trigger_follow_enter = function(e) {
+                 if (e.originalEvent) e = e.originalEvent;//work with original event
+
+                o.placement = [e.pageX + 3, e.pageY + 3];
+
+                that._g.els .on('mousemove', h.trigger_follow_move)
+
+                that.show();
+              }
+              h.trigger_follow_move = function(e) {
+                if (e.originalEvent) e = e.originalEvent;//work with original event
+                that.position(that._p_checkBounds([e.pageX + 3, e.pageY + 3]))
+              }
+              
+
+              that._g.els .on('mouseenter', h.trigger_follow_enter)
+              break;
+          }
+        })
+        that.on('hide', function() {
+          if(this.o.trigger = 'focus') delete that.state.focused;
+        })
+        that.on('destroy', function() {
+          switch (o.trigger) {
+            case 'click':
+              that._g.els.off('click', trigger_click)
+              break;
+            case 'hover': 
+              that._g.els .off('mouseenter', h.trigger_mouseenter)
+                          .off('mouseleave', h.trigger_mouseleave)
+              break;
+            case 'focus':
+              that._g.els .on('click', h.trigger_focus_click)
+                          .on('focus', h.trigger_focus)
+                          .on('blur', h.trigger_blur)
+              break;
+            case 'follow':
+              console.log(this);
+              break;
+          }
+        })
+        that.on('item_inserted', function(item) {
+          if (!that._g.popover) return;
+          item.dom.modal.css('width', item.dom.modal.css('width'));
+        })
         that.on('position', function () {
           var that = this,
               o = this.o,
@@ -55,8 +166,7 @@
           state.coords = coords;//computed
         
           if(coords && coords.length === 2) {
-            activeModal .css('width', state.dimensions.modal.width + "px")
-                        .css('left', coords[0] + "px")
+            activeModal .css('left', coords[0] + "px")
                         .css('top', coords[1] + "px")
           }
         })
@@ -72,6 +182,7 @@
                             .delegate('[data-njb-close]', 'click', h.wrap_close)
                             .delegate('[data-njb-ok]', 'click', h.wrap_ok)
                             .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+          
         })
         that.on('listeners_removed', function() {
           var that = this,
@@ -83,6 +194,7 @@
         })
       },
       _p_getCoordsFromPlacement(placement, dimensions) {
+        if(!dimensions.clickedEl) return placement;
         var that = this,
             o = that.o;
         

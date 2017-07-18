@@ -87,7 +87,7 @@ class njBox {
       }
       $elem[0].njBox = this; //prevent multiple initialization on one element
 
-      var optionsGathered = this._g.optionsGathered = this._gatherData($elem);
+      var optionsGathered = this._g.optionsGathered = this._gatherData($elem) || {};
       this._cb('options_gathered', optionsGathered, $elem[0]);
 
       //extend global options with gathered from dom element
@@ -116,7 +116,7 @@ class njBox {
       this.dom.wrap.addClass('njb-absolute');
     }
     
-    this._g.els = this.o.el;
+    this._g.els = $(this.o.el);
     this._g.items_raw = [this.o];
     this._cb('items_raw', this._g);
 
@@ -133,8 +133,8 @@ class njBox {
     this._cb('inited');
   }
   show(index) {
-    this.state.arguments.show = arguments;
     this._init();//try to init
+    this.state.arguments.show = arguments;
     if (index !== undefined) this.state.active = index - 1;
 
     var o = this.o;
@@ -728,9 +728,9 @@ class njBox {
     return dom;
   }
   _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
-    if (this._g.optionsGathered[optionName] !== undefined) {
+    if (this._g.optionsGathered && this._g.optionsGathered[optionName] !== undefined) {
       return this._g.optionsGathered[optionName]
-    } else if(this._g.optionsPassed[optionName] !== undefined) {
+    } else if(this._g.optionsPassed[optionName] && this._g.optionsPassed[optionName] !== undefined) {
       return this._g.optionsPassed[optionName]
     }
   }
@@ -741,7 +741,7 @@ class njBox {
     dimensions.window = this._getDomSize(this.dom.window[0])
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window[0] : this.dom.container[0])
     dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0])
-    dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
+    if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
 
     dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 
@@ -955,11 +955,7 @@ class njBox {
       if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      if (that.state.status !== 'inited') {
-        that._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
-        return;
-      }
-      if ($(el).closest('.njb-close-system, .njb-arrow').length) return;//don't remember why it here O_o
+      if ($(el).closest('.njb-close-system, .njb-arrow').length) return;
 
 
       that.state.clickedEvent = e;
@@ -989,7 +985,7 @@ class njBox {
       that.position();
     }
     h.container_out = function (e) {
-      if(that.state.clickedEl === e.target || that.state.status !== 'shown') return;
+      if(that.state.clickedEl && that.state.clickedEl === e.target || that.state.status !== 'shown') return;
       var $el = $(e.target),
         prevent = $el.closest('.njb, .njb-ui').length;
       if (prevent) return;

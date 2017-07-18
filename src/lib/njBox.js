@@ -197,9 +197,11 @@ class njBox {
     
     return this;
   }
-  hide() {
+  hide(force) {
     this.state.arguments.hide = arguments;
-    if (this.state.status !== 'shown') {
+    this.state.forceHide = force;
+
+    if (this.state.status !== 'shown' && !force) {
       this._e('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
       return;
     }
@@ -740,7 +742,7 @@ class njBox {
     
     dimensions.window = this._getDomSize(this.dom.window[0])
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window[0] : this.dom.container[0])
-    dimensions.modal = this._getDomSize(this.items[this.state.active].dom.modal[0])
+    dimensions.modal = this._getDomSize(this._getActive())
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
 
     dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
@@ -748,6 +750,7 @@ class njBox {
     return dimensions;
   }
   _getDomSize(domObject) {
+    domObject = $(domObject)[0]
     var isWindow = $.isWindow(domObject),
         rectOriginal,
         rectComputed,
@@ -997,12 +1000,12 @@ class njBox {
         if (that._cb('cancel') === false) return;
         that.hide();
       } else {
-        that.items[that.state.active].dom.modal.addClass('njb--pulse');
+        that._getActive().addClass('njb--pulse');
         that._focus_set(that.items[that.state.active]);
 
         setTimeout(function () {
-          that.items[that.state.active].dom.modal.removeClass('njb--pulse');
-        }, that._getAnimTime(that.items[that.state.active].dom.modal[0]))
+          that._getActive().removeClass('njb--pulse');
+        }, that._getAnimTime(this._getActive()))
       }
     }
 
@@ -1181,10 +1184,13 @@ class njBox {
       dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
     }
   }
+  _getActive() {
+    return this.items[this.state.active].dom.modal;
+  }
   _anim(type) {
     var o = this.o,
       that = this,
-      modal = this.items[this.state.active].dom.modal,
+      modal = that._getActive(),
       animShow = this._g.animation.show,
       animHide = this._g.animation.hide,
       animShowDur = this._g.animation.showDur,
@@ -1202,9 +1208,9 @@ class njBox {
           modal.attr('open', '');
           modal.addClass(animShow);
 
-          setTimeout(shownCallback, animShowDur);
+          setTimeout(() => {that._shownCb()}, animShowDur);
         } else {
-          shownCallback();
+          that._shownCb();
         }
         break;
       case 'hide':
@@ -1216,27 +1222,37 @@ class njBox {
           if (animHide === animShow) modal.addClass('njb-anim-reverse');
           modal.addClass(animHide);
 
-          setTimeout(hiddenCallback, animHideDur)
+          setTimeout(() => {that._hiddenCb()}, animHideDur)
         } else {
-          hiddenCallback();
+          that._hiddenCb();
         }
         break;
     }
-    function shownCallback() {
-      if (o.animclass) modal.removeClass(o.animclass);
-      modal.removeClass(animShow);
+  }
+  _shownCb() {
+    console.log('shown');
+    var o = this.o,
+        modal = this._getActive();
+    
+    if (o.animclass) modal.removeClass(o.animclass);
+    modal.removeClass(this._g.animation.show);
+    
+    this._cb('shown');
+    this._focus_set(this.items[this.state.active]);
+  }
+  _hiddenCb() {
+    console.log('hidden');
+    var o = this.o,
+        modal = this._getActive(),
+        animShow = this._g.animation.show,
+        animHide = this._g.animation.hide;
+    
+    if (o.animclass) modal.removeClass(o.animclass);
+    if (animHide === animShow) modal.removeClass('njb-anim-reverse');
+    modal.removeClass(animHide);
 
-      that._cb('shown');
-      that._focus_set(that.items[that.state.active]);
-    }
-    function hiddenCallback() {
-      if (o.animclass) modal.removeClass(o.animclass);
-      if (animHide === animShow) modal.removeClass('njb-anim-reverse');
-      modal.removeClass(animHide);
-
-      that._clear();
-      that._cb('hidden');
-    }
+    this._clear();
+    this._cb('hidden');
   }
 
 
@@ -1435,6 +1451,7 @@ class njBox {
   _getAnimTime(el, property) {//get max animation or transition time
     function _getMaxTransitionDuration(el, property) {//function also can get animation duration
       var $el = $(el),
+        el = $el[0],
         dur,
         durArr,
         del,
@@ -1482,7 +1499,7 @@ class njBox {
   }
   _clear() {
     var o = this.o,
-        modal = this.items[this.state.active].dom.modal;
+        modal = this._getActive();
 
     this._cb('clear');
 
@@ -1573,7 +1590,7 @@ class njBox {
     var clearArgs = Array.prototype.slice.call(arguments, 1);
 
     if (type === 'ok' || type === 'cancel') {
-      let modal = this.items[this.state.active].dom.modal,
+      let modal = this._getActive(),
         prompt_input = modal.find('[data-njb-return]'),
         prompt_value;
       if (prompt_input.length) prompt_value = prompt_input[0].value || null;

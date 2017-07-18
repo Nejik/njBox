@@ -101,17 +101,23 @@
 
                 o.placement = [e.pageX + 3, e.pageY + 3];
 
-                that._g.els .on('mousemove', h.trigger_follow_move)
+                that.dom.document.on('mousemove', h.trigger_follow_move)
 
                 that.show();
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
-                that.position(that._p_checkBounds([e.pageX + 3, e.pageY + 3]))
+                that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
+              }
+              h.trigger_follow_leave = function(e) {
+                if (e.originalEvent) e = e.originalEvent;//work with original event
+                that.dom.document.off('mousemove', h.trigger_follow_move)
+                that.hide(true);
               }
               
 
               that._g.els .on('mouseenter', h.trigger_follow_enter)
+              that._g.els .on('mouseleave', h.trigger_follow_leave)
               break;
           }
         })
@@ -146,7 +152,7 @@
               o = this.o,
               state = this.state,
               coords = o.placement,
-              activeModal = that.items[that.state.active].dom.modal;
+              activeModal = that._getActive();
           
           if (!this._g.popover) return;
 
@@ -154,7 +160,7 @@
             coords = state.arguments.position[0];
           }
 
-          coords = (typeof coords === 'function') ? coords.call(this, this.items[this.state.active].dom.modal[0]) : coords;
+          coords = (typeof coords === 'function') ? coords.call(this, this._getActive()[0]) : coords;
           coords = that._p_parseCoords(coords);
 
           if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position

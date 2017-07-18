@@ -149,6 +149,7 @@ class njBox {
     }
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
+
     if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
 
     this.returnValue = null;
@@ -197,12 +198,12 @@ class njBox {
     
     return this;
   }
-  hide(force) {
+  hide() {
     this.state.arguments.hide = arguments;
-    this.state.forceHide = force;
+    var that = this;
 
-    if (this.state.status !== 'shown' && !force) {
-      this._e('njBox, hide, we can hide only showed modal (probably animation is still running or plugin destroyed).')
+    if (this.state.status !== 'shown') {
+      this._e('njBox, hide, we can hide only shown modal (probably animation is still running or plugin destroyed).')
       return;
     }
 
@@ -1208,7 +1209,10 @@ class njBox {
           modal.attr('open', '');
           modal.addClass(animShow);
 
-          setTimeout(() => {that._shownCb()}, animShowDur);
+          setTimeout(() => {
+            //check if hiding not initialized
+            if(that.state.status === 'show') that._shownCb();
+          }, animShowDur);
         } else {
           that._shownCb();
         }
@@ -1237,8 +1241,9 @@ class njBox {
     if (o.animclass) modal.removeClass(o.animclass);
     modal.removeClass(this._g.animation.show);
     
-    this._cb('shown');
     this._focus_set(this.items[this.state.active]);
+    modal[0].clientHeight;//reflow
+    this._cb('shown');
   }
   _hiddenCb() {
     console.log('hidden');

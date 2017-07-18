@@ -107,12 +107,14 @@
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
-                that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
+                if (that.state.status === 'show' || that.state.status === 'shown') {
+                  that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
+                }
               }
               h.trigger_follow_leave = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
                 that.dom.document.off('mousemove', h.trigger_follow_move)
-                that.hide(true);
+                that.hide();
               }
               
 

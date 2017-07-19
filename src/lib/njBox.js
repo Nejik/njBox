@@ -745,7 +745,7 @@ class njBox {
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
     dimensions.modal = this._getDomSize(this._getActive())
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
-    if(this._g.els && this._g.els.length === 1) dimensions.els = this._getDomSize(this._g.els)
+    if(o.el && o.el.length === 1) dimensions.el = this._getDomSize(o.el)
 
     dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 

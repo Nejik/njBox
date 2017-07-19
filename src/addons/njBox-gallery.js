@@ -25,7 +25,7 @@
       }
     },
     prototype: {
-      _gallery_init: function () {
+      _gallery_init() {
         var that = this,
           o = this.o,
           $ = this.$;
@@ -145,19 +145,19 @@
           }
         })
       },
-      prev: function () {
+      prev() {
         // if (this.dom.prev[0]) this.dom.prev[0].focus();
         this._g_changeItem(this.state.active - 1, 'prev');
 
         return this;
       },
-      next: function () {
+      next() {
         // if (this.dom.next[0]) this.dom.next[0].focus();
         this._g_changeItem(this.state.active + 1, 'next');
 
         return this;
       },
-      goTo: function (index) {
+      goTo(index) {
         index = index - 1;//inside gallery we have index -1, because slides starts from 0
 
         if (typeof index !== 'number') {
@@ -250,7 +250,7 @@
           }
         })
       },
-      _g_preload: function () {
+      _g_preload() {
         var o = this.o,
           that = this;
 
@@ -282,7 +282,7 @@
           if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
         }
       },
-      _g_drawItemSiblings: function () {
+      _g_drawItemSiblings() {
         var o = this.o,
           that = this;
         if (typeof that.queue.prev.index === 'number') {
@@ -297,7 +297,7 @@
         }
         that.position();
       },
-      _g_moveItem: function (item, value, unit) {
+      _g_moveItem(item, value, unit) {
         unit = unit || 'px';
 
         //detect translate property
@@ -309,7 +309,7 @@
           item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
         }
       },
-      _g_changeItem: function (nextIndex, dir) {
+      _g_changeItem(nextIndex, dir) {
         if (this.items.length === 1 || nextIndex === this.state.active || this.state.itemChanging) return;
 
         var o = this.o,
@@ -383,7 +383,7 @@
           item.dom.modalOuter[0].style.cssText = '';
         }
       },
-      _g_detectIndexForOpen: function () {
+      _g_detectIndexForOpen() {
         var o = this.o,
           that = this,
           index,
@@ -408,7 +408,7 @@
 
         return index;
       },
-      _g_setQueue: function (currentIndex) {
+      _g_setQueue(currentIndex) {
         var order = this._g_getItemsOrder(currentIndex);
 
         this.queue = {
@@ -417,7 +417,7 @@
           next: this._g_getQueueItem(order[2])
         };
       },
-      _g_getItemsOrder: function (index) {
+      _g_getItemsOrder(index) {
         var o = this.o,
           prev = index - 1,
           next = index + 1;
@@ -446,7 +446,7 @@
           item: item
         }
       },
-      _g__uiUpdate: function (index) {
+      _g__uiUpdate(index) {
         index = index || this.state.active;
 
         var o = this.o,
@@ -505,7 +505,7 @@
           }
         }
       },
-      _g_createRawItems: function () {
+      _g_createRawItems() {
         var o = this.o;
 
         if (!this._g.gallery) return;
@@ -526,7 +526,7 @@
           }
         }
       },
-      _g_g_gatherElements: function (selector) {
+      _g_g_gatherElements(selector) {
         if (selector) {
           return this.o.el.find(selector);
         } else {

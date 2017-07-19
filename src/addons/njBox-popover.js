@@ -14,7 +14,7 @@
 	    boundary       : true//(boolean) popover specific option. Should popover stay in window boundaries?
     },
     prototype: {
-      _popover_init: function () {
+      _popover_init() {
         var that = this,
           o = that.o,
           $ = that.$;
@@ -207,7 +207,7 @@
       _p_getCoordsFromPlacement(placement, dimensions) {
         var that = this,
             o = that.o,
-            clickedElDimensions = dimensions.clickedEl || dimensions.els;//we can use dimensions from initializing element for setting first coords (case when we call .show programmatically)
+            clickedElDimensions = dimensions.clickedEl || dimensions.el;//we can use dimensions from initializing element for setting first coords (case when we call .show programmatically)
 
         if(!clickedElDimensions) return placement;
         

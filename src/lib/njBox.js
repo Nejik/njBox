@@ -61,7 +61,8 @@ class njBox {
 
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
     this._g = {//globals, state this not cleared after every hide
-      optionsPassed: opts
+      optionsPassed: opts,
+      insertWrap: true//should we insert all dom stuff with ui? No if popover)
     };
     this._handlers = {};//all callback functions we used in event listeners lives here
 
@@ -103,6 +104,7 @@ class njBox {
 
     //create popup container dom elements
     this.dom = this._createDom();
+    this.dom.insertInto = this.dom.items;
     this._cb('domready', this.dom);
 
     var containerIsBody = this._g.containerIsBody = this.dom.container[0] === this.dom.body[0];
@@ -135,11 +137,18 @@ class njBox {
   show(index) {
     this._init();//try to init
     this.state.arguments.show = arguments;
-    if (index !== undefined) this.state.active = index - 1;
+    
+    var o = this.o,
+        state = this.state;
 
-    var o = this.o;
+    if (index !== undefined) state.active = index - 1;
 
-    if (this.state.status !== 'inited') {
+    if(state.status === 'hide') {
+      this.preventHidden = true;
+      this._hiddenCb();
+      return;
+    }
+    if (state.status !== 'inited') {
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
@@ -150,41 +159,22 @@ class njBox {
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
 
-    if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
+    if (!state.focused) state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
 
     this.returnValue = null;
 
-    var container = this.dom.container;
-
-    if (!container[0].njb_instances) {
-      container[0].njb_instances = 1;
-    } else {
-      container[0].njb_instances++;
-    }
-    // this.dom.container.addClass('njb-open');
-    
     this._scrollbar('hide');
 
     this._backdrop('show');
     
-
-    var containerToInsert;
-    //insert modal to page
-    if (this._g.popover) {
-      containerToInsert = container;
-    } else {
-      container.append(this.dom.wrap);
-      containerToInsert = this.dom.items;
-    }
-
     //set event handlers
     this._addListeners();
-
-    this._drawItem(this.items[this.state.active], false, containerToInsert);
+    
+    //draw modal on screen
+    if(this._g.insertWrap) this.dom.container.append(this.dom.wrap);
+    this._drawItem(this.items[this.state.active], false, this.dom.insertInto);
     
     this._cb('inserted');
-
-    //draw modal on screen
 
     this.position();
 
@@ -198,17 +188,31 @@ class njBox {
     
     return this;
   }
+  // _insertDom() {
+  //   var container = this.dom.container;
+    
+  //   this.dom.container.append(this.dom.toInsert);
+  //   debugger;
+  //   this._drawItem(this.items[this.state.active], false, this.dom.container);
+  // }
+
   hide() {
     this.state.arguments.hide = arguments;
-    var that = this;
+    var that = this,
+        state = that.state;
 
-    if (this.state.status !== 'shown') {
+    if(state.status === 'show') {
+      this.preventShown = true;
+      this._shownCb();
+    }
+
+    if (state.status !== 'shown') {
       this._e('njBox, hide, we can hide only shown modal (probably animation is still running or plugin destroyed).')
       return;
     }
 
     if (this._cb('hide') === false) return;//callback hide
-    if (this.state.focused) this.state.focused.focus();
+    if (state.focused) state.focused.focus();
 
     this._backdrop('hide');
 
@@ -1006,7 +1010,7 @@ class njBox {
 
         setTimeout(function () {
           that._getActive().removeClass('njb--pulse');
-        }, that._getAnimTime(this._getActive()))
+        }, that._getAnimTime(that._getActive()))
       }
     }
 
@@ -1234,19 +1238,42 @@ class njBox {
     }
   }
   _shownCb() {
+    if(this.state.preventShown) {
+      console.log('shown prevented');
+      return;
+    }
     console.log('shown');
+    var o = this.o,
+        modal = this._getActive();
+    
+    this._clearShowClasses();
+    
+    this._focus_set(this.items[this.state.active]);
+    this._cb('shown');
+  }
+  _hiddenCb() {
+    if(this.state.preventHidden) {
+      console.log('hidden prevented');
+      return;
+    }
+    console.log('hidden');
+    var o = this.o,
+        modal = this._getActive();
+    
+    this._clearHideClasses();
+
+    this._clear();
+    this._cb('hidden');
+  }
+  _clearShowClasses() {
     var o = this.o,
         modal = this._getActive();
     
     if (o.animclass) modal.removeClass(o.animclass);
     modal.removeClass(this._g.animation.show);
-    
-    this._focus_set(this.items[this.state.active]);
     modal[0].clientHeight;//reflow
-    this._cb('shown');
   }
-  _hiddenCb() {
-    console.log('hidden');
+  _clearHideClasses() {
     var o = this.o,
         modal = this._getActive(),
         animShow = this._g.animation.show,
@@ -1255,9 +1282,7 @@ class njBox {
     if (o.animclass) modal.removeClass(o.animclass);
     if (animHide === animShow) modal.removeClass('njb-anim-reverse');
     modal.removeClass(animHide);
-
-    this._clear();
-    this._cb('hidden');
+    modal[0].clientHeight;//reflow
   }
 
 
@@ -1493,7 +1518,6 @@ class njBox {
 
     return _getMaxTransitionDuration(el, 'animation') || _getMaxTransitionDuration(el, 'transition')
   }
-  
   _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
     var openedBox = this.dom.body.find('.njb-wrap'),
       openedInstance;
@@ -1507,9 +1531,6 @@ class njBox {
         modal = this._getActive();
 
     this._cb('clear');
-
-    if (this.dom.container) this.dom.container[0].njb_instances--;
-    // if (this.dom.container[0].njb_instances === 0) this.dom.container.removeClass('njb-open');
 
     if (o['class']) this.dom.wrap.removeClass(o['class']);
 
@@ -1696,7 +1717,6 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
 
 
 //builtin dialog methods
-
 njBox.alert = function (content, okCb, cancelCb) {
   return new njBox({
     content: function (item) {

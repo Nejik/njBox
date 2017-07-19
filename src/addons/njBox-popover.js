@@ -122,6 +122,9 @@
               that._g.els .on('mouseleave', h.trigger_follow_leave)
               break;
           }
+
+          this.dom.insertInto = this.dom.container;
+          this._g.insertWrap = false;
         })
         that.on('hide', function() {
           if(this.o.trigger = 'focus') delete that.state.focused;
@@ -201,6 +204,19 @@
                             .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
         })
       },
+      // _insertDom() {
+      //   var container = this.dom.container,
+      //       containerToInsert;
+      //   //insert modal to page
+      //   if (this._g.popover) {
+      //     containerToInsert = container;
+      //   } else {
+      //     container.append(this.dom.wrap);
+      //     containerToInsert = this.dom.items;
+      //   }
+    
+      //   this._drawItem(this.items[this.state.active], false, containerToInsert);
+      // },
       _p_getCoordsFromPlacement(placement, dimensions) {
         if(!dimensions.clickedEl) return placement;
         var that = this,

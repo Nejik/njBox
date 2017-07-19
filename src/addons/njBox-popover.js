@@ -66,7 +66,6 @@
               h.trigger_mouseenter = function(e) {
                 var el = this;
                 if (e.originalEvent) e = e.originalEvent;//work with original event
-
                 that.state.clickedEvent = e;
                 that.state.clickedEl = el;
                 that.state.focused = document.activeElement;

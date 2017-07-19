@@ -144,11 +144,12 @@ class njBox {
     if (index !== undefined) state.active = index - 1;
 
     if(state.status === 'hide') {
-      this.preventHidden = true;
+      clearTimeout(this._g.hiddenCb);
       this._hiddenCb();
-      return;
+      // debugger;
     }
     if (state.status !== 'inited') {
+      console.log(state.status);
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
@@ -198,7 +199,7 @@ class njBox {
         state = that.state;
 
     if(state.status === 'show') {
-      this.preventShown = true;
+      clearTimeout(this._g.shownCb);
       this._shownCb();
     }
 
@@ -215,7 +216,7 @@ class njBox {
     this._removeListeners();
 
     this._anim('hide');
-
+    
     return this;
   }
   position() {
@@ -1208,9 +1209,9 @@ class njBox {
           modal.attr('open', '');
           modal.addClass(animShow);
 
-          setTimeout(() => {
+          that._g.shownCb =setTimeout(() => {
+              if(that.state.status === 'show') that._shownCb();
             //check if hiding not initialized
-            if(that.state.status === 'show') that._shownCb();
           }, animShowDur);
         } else {
           that._shownCb();
@@ -1225,7 +1226,9 @@ class njBox {
           if (animHide === animShow) modal.addClass('njb-anim-reverse');
           modal.addClass(animHide);
 
-          setTimeout(() => {that._hiddenCb()}, animHideDur)
+          that._g.hiddenCb = setTimeout(() => {
+              that._hiddenCb()
+          }, animHideDur)
         } else {
           that._hiddenCb();
         }
@@ -1233,10 +1236,6 @@ class njBox {
     }
   }
   _shownCb() {
-    if(this.state.preventShown) {
-      console.log('shown prevented');
-      return;
-    }
     console.log('shown');
     var o = this.o,
         modal = this._getActive();
@@ -1247,18 +1246,14 @@ class njBox {
     this._cb('shown');
   }
   _hiddenCb() {
-    if(this.state.preventHidden) {
-      console.log('hidden prevented');
-      return;
-    }
-    console.log('hidden');
     var o = this.o,
-        modal = this._getActive();
+    modal = this._getActive();
     
     this._clearHideClasses();
-
+    
     this._clear();
     this._cb('hidden');
+    this.state.status = 'inited';
   }
   _clearShowClasses() {
     var o = this.o,
@@ -1557,8 +1552,7 @@ class njBox {
     this.state = {
       active: 0,
       arguments: {},
-      inited: true,
-      state: 'inited'
+      inited: true
     };
 
     this._cb('cleared');
@@ -1586,7 +1580,6 @@ class njBox {
     //make some stuff on callbacks
     switch (type) {
       case 'hidden':
-        this.state.status = 'inited';
         if (o.focusprevious) this._focusPreviousModal();
         break;
     }

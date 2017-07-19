@@ -372,7 +372,7 @@
           if (that.items[thirdItem]) removeSlide(that.items[thirdItem]);//we should check if such slide exist, because it can be null, when o.loop is false
 
           that._g_drawItemSiblings();
-          that._focus_set(that.items[that.state.active]);
+          that._set_focus(that.items[that.state.active]);
           that.state.itemChanging = false;
           that._cb('changed', that.state.active);
 

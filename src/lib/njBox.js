@@ -170,32 +170,28 @@ class njBox {
     //set event handlers
     this._addListeners();
     
-    //draw modal on screen
+    this._uiUpdate();
+
+    //insert ui into dom
     if(this._g.insertWrap) this.dom.container.append(this.dom.wrap);
+    //insert modal into dom
     this._drawItem(this.items[this.state.active], false, this.dom.insertInto);
     
     this._cb('inserted');
 
     this.position();
 
-    //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
-    this.dom.wrap[0].style.display = 'none';
-    this.dom.wrap[0].clientHeight;
-    this.dom.wrap[0].style.display = 'block';
+    if(this._g.insertWrap) {
+      //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
+      this.dom.wrap[0].style.display = 'none';
+      this.dom.wrap[0].clientHeight;
+      this.dom.wrap[0].style.display = 'block';
+    }
 
-    this._uiUpdate();
     this._anim('show');
     
     return this;
   }
-  // _insertDom() {
-  //   var container = this.dom.container;
-    
-  //   this.dom.container.append(this.dom.toInsert);
-  //   debugger;
-  //   this._drawItem(this.items[this.state.active], false, this.dom.container);
-  // }
-
   hide() {
     this.state.arguments.hide = arguments;
     var that = this,
@@ -745,10 +741,11 @@ class njBox {
     var o = this.o,
         dimensions = {};
     
-    dimensions.window = this._getDomSize(this.dom.window[0])
-    dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window[0] : this.dom.container[0])
+    dimensions.window = this._getDomSize(this.dom.window)
+    dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
     dimensions.modal = this._getDomSize(this._getActive())
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
+    if(this._g.els && this._g.els.length === 1) dimensions.els = this._getDomSize(this._g.els)
 
     dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 
@@ -894,7 +891,7 @@ class njBox {
       }
     }
   }
-  _focus_set(item, first) {
+  _set_focus(item, first) {
     var o = this.o,
       focusable,
       focusEl;
@@ -1006,7 +1003,7 @@ class njBox {
         that.hide();
       } else {
         that._getActive().addClass('njb--pulse');
-        that._focus_set(that.items[that.state.active]);
+        that._set_focus(that.items[that.state.active]);
 
         setTimeout(function () {
           that._getActive().removeClass('njb--pulse');
@@ -1087,16 +1084,16 @@ class njBox {
       if (related) {//firefox have no related
         fromUi = !!$(related).closest('.njb-ui').length;
         if (fromUi) {
-          that._focus_set(that.items[that.state.active]);
+          that._set_focus(that.items[that.state.active]);
         } else {
-          that._focus_set(that.items[that.state.active], true);
+          that._set_focus(that.items[that.state.active], true);
         }
       } else {
-        that._focus_set(that.items[that.state.active], true);
+        that._set_focus(that.items[that.state.active], true);
       }
     }
     h.focusCatchAfter = function (e) {
-      that._focus_set(that.items[that.state.active]);
+      that._set_focus(that.items[that.state.active]);
     }
 
     this.dom.focusCatchBefore.on('focus', h.focusCatchBefore)
@@ -1163,9 +1160,7 @@ class njBox {
         break;
     }
   }
-  _uiUpdate(index) {
-    index = index || this.state.active;
-
+  _uiUpdate(index = this.state.active) {
     var dom = this.dom,
         o = this.o,
         item = this.items[index];
@@ -1248,7 +1243,7 @@ class njBox {
     
     this._clearShowClasses();
     
-    this._focus_set(this.items[this.state.active]);
+    this._set_focus(this.items[this.state.active]);
     this._cb('shown');
   }
   _hiddenCb() {
@@ -1524,7 +1519,7 @@ class njBox {
 
     if (!openedBox.length) return;
     openedInstance = openedBox[openedBox.length - 1].njBox;
-    openedInstance._focus_set(openedInstance.items[openedInstance.state.active]);
+    openedInstance._set_focus(openedInstance.items[openedInstance.state.active]);
   }
   _clear() {
     var o = this.o,

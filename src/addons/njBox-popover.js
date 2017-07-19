@@ -38,6 +38,10 @@
               o = that.o,
               h = this._handlers;
           
+          this.dom.insertInto = this.dom.container;
+          this._g.insertWrap = false;
+
+
           switch (o.trigger) {
             case 'click':
               h.trigger_click = function(e) {
@@ -122,9 +126,6 @@
               that._g.els .on('mouseleave', h.trigger_follow_leave)
               break;
           }
-
-          this.dom.insertInto = this.dom.container;
-          this._g.insertWrap = false;
         })
         that.on('hide', function() {
           if(this.o.trigger = 'focus') delete that.state.focused;
@@ -153,13 +154,13 @@
           item.dom.modal.css('width', item.dom.modal.css('width'));
         })
         that.on('position', function () {
+          if (!this._g.popover) return;
+
           var that = this,
               o = this.o,
               state = this.state,
               coords = o.placement,
               activeModal = that._getActive();
-          
-          if (!this._g.popover) return;
 
           if(state.arguments.position.length) {
             coords = state.arguments.position[0];
@@ -167,7 +168,6 @@
 
           coords = (typeof coords === 'function') ? coords.call(this, this._getActive()[0]) : coords;
           coords = that._p_parseCoords(coords);
-
           if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
             coords = this._p_checkBounds(
               this._p_getCoordsFromPlacement(o.placement, state.dimensions)
@@ -204,35 +204,24 @@
                             .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
         })
       },
-      // _insertDom() {
-      //   var container = this.dom.container,
-      //       containerToInsert;
-      //   //insert modal to page
-      //   if (this._g.popover) {
-      //     containerToInsert = container;
-      //   } else {
-      //     container.append(this.dom.wrap);
-      //     containerToInsert = this.dom.items;
-      //   }
-    
-      //   this._drawItem(this.items[this.state.active], false, containerToInsert);
-      // },
       _p_getCoordsFromPlacement(placement, dimensions) {
-        if(!dimensions.clickedEl) return placement;
         var that = this,
-            o = that.o;
+            o = that.o,
+            clickedElDimensions = dimensions.clickedEl || dimensions.els;//we can use dimensions from initializing element for setting first coords (case when we call .show programmatically)
+
+        if(!clickedElDimensions) return placement;
         
-        var popoverWiderThanClicked = dimensions.modal.width > dimensions.clickedEl.width,
-            popoverTallerThanClicked = dimensions.modal.height > dimensions.clickedEl.height,
+        var popoverWiderThanClicked = dimensions.modal.width > clickedElDimensions.width,
+            popoverTallerThanClicked = dimensions.modal.height > clickedElDimensions.height,
             offset = that._p_parseCoords(o.offset),
             coords = [],
             leftForTopAndBottom,
             topForLeftAndRight;
         
         if (popoverWiderThanClicked) {
-          leftForTopAndBottom = dimensions.clickedEl.left - ((dimensions.modal.width - dimensions.clickedEl.width) / 2)
+          leftForTopAndBottom = clickedElDimensions.left - ((dimensions.modal.width - clickedElDimensions.width) / 2)
         } else {
-          leftForTopAndBottom = dimensions.clickedEl.left + ((dimensions.clickedEl.width - dimensions.modal.width) / 2)
+          leftForTopAndBottom = clickedElDimensions.left + ((clickedElDimensions.width - dimensions.modal.width) / 2)
         }
         if (dimensions.container.scrollLeft) {
           leftForTopAndBottom += dimensions.container.scrollLeft;
@@ -241,9 +230,9 @@
         
 
         if (popoverTallerThanClicked) {
-          topForLeftAndRight = dimensions.clickedEl.top - ((dimensions.modal.height - dimensions.clickedEl.height) / 2)
+          topForLeftAndRight = clickedElDimensions.top - ((dimensions.modal.height - clickedElDimensions.height) / 2)
         } else {
-          topForLeftAndRight = dimensions.clickedEl.top + ((dimensions.clickedEl.height - dimensions.modal.height) / 2)
+          topForLeftAndRight = clickedElDimensions.top + ((clickedElDimensions.height - dimensions.modal.height) / 2)
         }
         if (dimensions.container.scrollTop) {
           topForLeftAndRight += dimensions.container.scrollTop;
@@ -257,21 +246,21 @@
           
           case 'bottom':
             coords[0] = leftForTopAndBottom;
-            coords[1] = (dimensions.clickedEl.bottom + offset[1]) + dimensions.container.scrollTop;
+            coords[1] = (clickedElDimensions.bottom + offset[1]) + dimensions.container.scrollTop;
           break;
 
           case 'top':
             coords[0] = leftForTopAndBottom;
-            coords[1] = (dimensions.clickedEl.top - dimensions.modal.height - offset[1]) + dimensions.container.scrollTop;
+            coords[1] = (clickedElDimensions.top - dimensions.modal.height - offset[1]) + dimensions.container.scrollTop;
           break;
 
           case 'left':
-            coords[0] = dimensions.clickedEl.left - dimensions.modal.width - offset[0];
+            coords[0] = clickedElDimensions.left - dimensions.modal.width - offset[0];
             coords[1] = topForLeftAndRight;
           break
 
           case 'right':
-            coords[0] = dimensions.clickedEl.right + offset[0];
+            coords[0] = clickedElDimensions.right + offset[0];
             coords[1] = topForLeftAndRight;
           break
         }

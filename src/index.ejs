@@ -67,10 +67,7 @@
   <script>
     t = new njBox('.el', {
       layout: 'popover',
-      trigger: 'hover',
-      onhidden: function() {
-        console.log(this);
-      }
+      trigger: 'hover'
     }).on('inited', function(event, arg1, arg2) {
       console.log(this);
     })

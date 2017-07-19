@@ -138,18 +138,15 @@ class njBox {
     this._init();//try to init
     this.state.arguments.show = arguments;
     
-    var o = this.o,
-        state = this.state;
+    var o = this.o;
 
     if (index !== undefined) state.active = index - 1;
 
-    if(state.status === 'hide') {
+    if(this.state.status === 'hide') {
       clearTimeout(this._g.hiddenCb);
       this._hiddenCb();
-      // debugger;
     }
-    if (state.status !== 'inited') {
-      console.log(state.status);
+    if (this.state.status !== 'inited') {
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
@@ -160,7 +157,7 @@ class njBox {
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
 
-    if (!state.focused) state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
+    if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
 
     this.returnValue = null;
 
@@ -1236,34 +1233,17 @@ class njBox {
     }
   }
   _shownCb() {
-    console.log('shown');
-    var o = this.o,
-        modal = this._getActive();
-    
-    this._clearShowClasses();
-    
-    this._set_focus(this.items[this.state.active]);
-    this._cb('shown');
-  }
-  _hiddenCb() {
-    var o = this.o,
-    modal = this._getActive();
-    
-    this._clearHideClasses();
-    
-    this._clear();
-    this._cb('hidden');
-    this.state.status = 'inited';
-  }
-  _clearShowClasses() {
     var o = this.o,
         modal = this._getActive();
     
     if (o.animclass) modal.removeClass(o.animclass);
     modal.removeClass(this._g.animation.show);
     modal[0].clientHeight;//reflow
+    
+    this._set_focus(this.items[this.state.active]);
+    this._cb('shown');
   }
-  _clearHideClasses() {
+  _hiddenCb() {
     var o = this.o,
         modal = this._getActive(),
         animShow = this._g.animation.show,
@@ -1273,6 +1253,10 @@ class njBox {
     if (animHide === animShow) modal.removeClass('njb-anim-reverse');
     modal.removeClass(animHide);
     modal[0].clientHeight;//reflow
+    
+    this._clear();
+    this._cb('hidden');
+    this.state.status = 'inited';
   }
 
 

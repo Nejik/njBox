@@ -50,15 +50,21 @@
               
                 if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
                 (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
-              
-                if (that.state.status !== 'inited') {
-                  that.hide();
-                  return;
+                
+                
+                switch (that.state.status) {
+                  case 'inited':
+                  case 'hide':
+                    that.state.clickedEvent = e;
+                    that.state.clickedEl = el;
+                    that.state.focused = el;
+                    that.show();
+                    break;
+                  case 'show':
+                  case 'shown':
+                    that.hide();
+                    break;
                 }
-                that.state.clickedEvent = e;
-                that.state.clickedEl = el;
-                that.state.focused = el;
-                that.show();
               }
               that._g.els.on('click', h.trigger_click)
               break;

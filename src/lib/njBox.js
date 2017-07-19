@@ -192,21 +192,20 @@ class njBox {
   }
   hide() {
     this.state.arguments.hide = arguments;
-    var that = this,
-        state = that.state;
+    var that = this;
 
-    if(state.status === 'show') {
+    if(this.state.status === 'show') {
       clearTimeout(this._g.shownCb);
       this._shownCb();
     }
 
-    if (state.status !== 'shown') {
+    if (this.state.status !== 'shown') {
       this._e('njBox, hide, we can hide only shown modal (probably animation is still running or plugin destroyed).')
       return;
     }
 
     if (this._cb('hide') === false) return;//callback hide
-    if (state.focused) state.focused.focus();
+    if (this.state.focused) this.state.focused.focus();
 
     this._backdrop('hide');
 

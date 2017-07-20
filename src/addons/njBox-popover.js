@@ -58,7 +58,7 @@
                     that.state.clickedEvent = e;
                     that.state.clickedEl = el;
                     that.state.focused = el;
-                    that.show();
+                    show();
                     break;
                   case 'show':
                   case 'shown':
@@ -105,23 +105,18 @@
                           .on('blur', h.trigger_blur)
               break;
             case 'follow':
-              h.trigger_follow_enter = function(e) {
-                 if (e.originalEvent) e = e.originalEvent;//work with original event
-
+              h.trigger_follow_enter = function() {
                 that.show();
                 that.dom.document.on('mousemove', h.trigger_follow_move)
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
-                if (that.state.status === 'show' || that.state.status === 'shown') {
-                  // console.log('original', [e.pageX + 5, e.pageY + 5]);
-                  // console.log('bounded', that._p_checkBounds([e.pageX + 5, e.pageY + 5]));
 
+                if (that.state.status === 'show' || that.state.status === 'shown') {
                   that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
                 }
               }
-              h.trigger_follow_leave = function(e) {
-                if (e.originalEvent) e = e.originalEvent;//work with original event
+              h.trigger_follow_leave = function() {
                 that.dom.document.off('mousemove', h.trigger_follow_move)
                 that.hide();
               }
@@ -166,17 +161,19 @@
               o = this.o,
               state = this.state,
               coords = o.placement,
-              activeModal = that._getActive().dom.modalOuter;
+              modalOuter = that._getActive().dom.modalOuter;
 
-          //use modalOuter results, becase scale transformations on modal affects sizes and positioning...
-          this.state.dimensions.modal = this._getDomSize(this._getActive().dom.modalOuter)
+          //use modalOuter results, because scale transformations on modal affects sizes and positioning...
+          this.state.dimensions.modal = this._getDomSize(modalOuter)
 
           if(state.arguments.position.length) {
             coords = state.arguments.position[0];
           }
 
-          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords;
-          coords = that._p_parseCoords(coords);
+          coords = that._p_parseCoords(
+                      (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
+                  )
+
           if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
             coords = this._p_checkBounds(
               this._p_getCoordsFromPlacement(o.placement, state.dimensions)
@@ -186,7 +183,7 @@
           state.coords = coords;//computed
         
           if(coords && coords.length === 2) {
-            activeModal .css('left', coords[0] + "px")
+            modalOuter  .css('left', coords[0] + "px")
                         .css('top', coords[1] + "px")
           }
         })

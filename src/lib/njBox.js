@@ -286,6 +286,8 @@ class njBox {
 
     return this;
   }
+
+
   _createEl(templateName) {
     var template = this.o.templates[templateName],
       el = $(template);
@@ -1236,7 +1238,7 @@ class njBox {
         modal = this._getActive();
     
     if (o.animclass) modal.removeClass(o.animclass);
-    modal.removeClass(this._g.animation.show);
+    if(this._g.animation.show) modal.removeClass(this._g.animation.show);
     modal[0].clientHeight;//reflow
     
     this._set_focus(this.items[this.state.active]);
@@ -1250,7 +1252,7 @@ class njBox {
     
     if (o.animclass) modal.removeClass(o.animclass);
     if (animHide === animShow) modal.removeClass('njb-anim-reverse');
-    modal.removeClass(animHide);
+    if(animHide) modal.removeClass(animHide);
     modal[0].clientHeight;//reflow
     
     this._clear();

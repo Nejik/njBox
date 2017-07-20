@@ -108,17 +108,14 @@
               h.trigger_follow_enter = function(e) {
                  if (e.originalEvent) e = e.originalEvent;//work with original event
 
-                // o.placement = [e.pageX + 3, e.pageY + 3];
-
-                
                 that.show();
                 that.dom.document.on('mousemove', h.trigger_follow_move)
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
                 if (that.state.status === 'show' || that.state.status === 'shown') {
-                  console.log('original', [e.pageX + 5, e.pageY + 5]);
-                  console.log('bounded', that._p_checkBounds([e.pageX + 5, e.pageY + 5]));
+                  // console.log('original', [e.pageX + 5, e.pageY + 5]);
+                  // console.log('bounded', that._p_checkBounds([e.pageX + 5, e.pageY + 5]));
 
                   that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
                 }
@@ -160,7 +157,7 @@
         })
         that.on('item_inserted', function(item) {
           if (!that._g.popover) return;
-          item.dom.modal.css('width', item.dom.modal.css('width'));
+          item.dom.modalOuter.css('width', item.dom.modalOuter.css('width'));
         })
         that.on('position', function () {
           if (!this._g.popover) return;
@@ -169,19 +166,22 @@
               o = this.o,
               state = this.state,
               coords = o.placement,
-              activeModal = that._getActive();
+              activeModal = that._getActive().dom.modalOuter;
+
+          //use modalOuter results, becase scale transformations on modal affects sizes and positioning...
+          this.state.dimensions.modal = this._getDomSize(this._getActive().dom.modalOuter)
 
           if(state.arguments.position.length) {
             coords = state.arguments.position[0];
           }
 
-          // coords = (typeof coords === 'function') ? coords.call(this, this._getActive()[0]) : coords;
-          // coords = that._p_parseCoords(coords);
-          // if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
-          //   coords = this._p_checkBounds(
-          //     this._p_getCoordsFromPlacement(o.placement, state.dimensions)
-          //   );
-          // }
+          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords;
+          coords = that._p_parseCoords(coords);
+          if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
+            coords = this._p_checkBounds(
+              this._p_getCoordsFromPlacement(o.placement, state.dimensions)
+            );
+          }
 
           state.coords = coords;//computed
         
@@ -192,7 +192,7 @@
         })
         that.on('item_created', function(item) {
           if(that._g.popover) item.dom.modal.addClass('njb--popover');
-          item.toInsert = item.dom.modal;
+          item.toInsert = item.dom.modalOuter;
         })
         that.on('listeners_added', function() {
           var that = this,

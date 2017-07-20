@@ -68,10 +68,15 @@
     t = new njBox('.el', {
       layout: 'popover',
       trigger: 'follow',
-      anim: false
+      onposition: function() {
+        console.log('position')
+        return '1 1';
+      }
     }).on('inited', function(event, arg1, arg2) {
-      console.log(this);
+      // console.log(this);
     })
+
+    
   </script>
 </body>
 

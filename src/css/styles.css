@@ -71,15 +71,18 @@
   overflow: hidden;
 }
 .njb-outer {
+  position: absolute;top: 0;left: 0;
+}
+.njb-items .njb-outer {
   width: 100%;
   height: 100%;
-  position: absolute;top: 0;left: 0;
+  
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   text-align: center;
   white-space: nowrap;
 
-  transition: left 350ms, transform 350ms;
+  transition: left 350ms, right 350ms, transform 350ms;
   
   user-select: none;
   box-sizing: border-box;
@@ -108,7 +111,6 @@
   &--popover {
     max-width: none;
     box-shadow: 0 0 5px rgba(0,0,0,.5);
-    position: absolute;left: 0;top: 0;
     &.njb--pulse {
       animation: none;
     }

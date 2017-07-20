@@ -247,9 +247,10 @@ class njBox {
       });
     }
     
-    this._setMaxHeight(this.items[this.state.active]);
+    this._setMaxHeight(this._getActive());
     
     this._cb('positioned');
+
     return this;
   }
   destroy() {
@@ -742,7 +743,7 @@ class njBox {
     
     dimensions.window = this._getDomSize(this.dom.window)
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
-    dimensions.modal = this._getDomSize(this._getActive())
+    dimensions.modal = this._getDomSize(this._getActive().dom.modal)
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
     if(o.el && o.el.length === 1) dimensions.el = this._getDomSize(o.el)
 
@@ -1001,12 +1002,12 @@ class njBox {
         if (that._cb('cancel') === false) return;
         that.hide();
       } else {
-        that._getActive().addClass('njb--pulse');
+        that._getActive().dom.modal.addClass('njb--pulse');
         that._set_focus(that.items[that.state.active]);
 
         setTimeout(function () {
-          that._getActive().removeClass('njb--pulse');
-        }, that._getAnimTime(that._getActive()))
+          that._getActive().dom.modal.removeClass('njb--pulse');
+        }, that._getAnimTime(that._getActive().dom.modal))
       }
     }
 
@@ -1184,12 +1185,12 @@ class njBox {
     }
   }
   _getActive() {
-    return this.items[this.state.active].dom.modal;
+    return this.items[this.state.active];
   }
   _anim(type) {
     var o = this.o,
       that = this,
-      modal = that._getActive(),
+      modal = that._getActive().dom.modal,
       animShow = this._g.animation.show,
       animHide = this._g.animation.hide,
       animShowDur = this._g.animation.showDur,
@@ -1235,7 +1236,7 @@ class njBox {
   }
   _shownCb() {
     var o = this.o,
-        modal = this._getActive();
+        modal = this._getActive().dom.modal;
     
     if (o.animclass) modal.removeClass(o.animclass);
     if(this._g.animation.show) modal.removeClass(this._g.animation.show);
@@ -1246,7 +1247,7 @@ class njBox {
   }
   _hiddenCb() {
     var o = this.o,
-        modal = this._getActive(),
+        modal = this._getActive().dom.modal,
         animShow = this._g.animation.show,
         animHide = this._g.animation.hide;
     
@@ -1503,7 +1504,7 @@ class njBox {
   }
   _clear() {
     var o = this.o,
-        modal = this._getActive();
+        modal = this._getActive().dom.modalOuter;
 
     this._cb('clear');
 
@@ -1589,7 +1590,7 @@ class njBox {
     var clearArgs = Array.prototype.slice.call(arguments, 1);
 
     if (type === 'ok' || type === 'cancel') {
-      let modal = this._getActive(),
+      let modal = this._getActive().dom.modal,
         prompt_input = modal.find('[data-njb-return]'),
         prompt_value;
       if (prompt_input.length) prompt_value = prompt_input[0].value || null;

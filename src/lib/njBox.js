@@ -1445,10 +1445,10 @@ class njBox {
     if (appended) document.body.removeChild(div);
 
     return {
-      show: animShow,
-      hide: animHide,
-      showDur: animShowDur,
-      hideDur: animHideDur
+      show: animShow || '',
+      hide: animHide || '',
+      showDur: animShowDur || 0,
+      hideDur: animHideDur || 0
     }
   }
   _getAnimTime(el, property) {//get max animation or transition time

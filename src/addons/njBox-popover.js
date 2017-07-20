@@ -108,15 +108,18 @@
               h.trigger_follow_enter = function(e) {
                  if (e.originalEvent) e = e.originalEvent;//work with original event
 
-                o.placement = [e.pageX + 3, e.pageY + 3];
+                // o.placement = [e.pageX + 3, e.pageY + 3];
 
-                that.dom.document.on('mousemove', h.trigger_follow_move)
-
+                
                 that.show();
+                that.dom.document.on('mousemove', h.trigger_follow_move)
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
                 if (that.state.status === 'show' || that.state.status === 'shown') {
+                  console.log('original', [e.pageX + 5, e.pageY + 5]);
+                  console.log('bounded', that._p_checkBounds([e.pageX + 5, e.pageY + 5]));
+
                   that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
                 }
               }
@@ -126,7 +129,6 @@
                 that.hide();
               }
               
-
               that._g.els .on('mouseenter', h.trigger_follow_enter)
               that._g.els .on('mouseleave', h.trigger_follow_leave)
               break;
@@ -150,7 +152,9 @@
                           .on('blur', h.trigger_blur)
               break;
             case 'follow':
-              console.log(this);
+              that._g.els .off('mouseenter', h.trigger_follow_enter)
+              that._g.els .off('mouseleave', h.trigger_follow_leave)
+              that.dom.document.off('mousemove', h.trigger_follow_move)
               break;
           }
         })
@@ -171,13 +175,13 @@
             coords = state.arguments.position[0];
           }
 
-          coords = (typeof coords === 'function') ? coords.call(this, this._getActive()[0]) : coords;
-          coords = that._p_parseCoords(coords);
-          if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
-            coords = this._p_checkBounds(
-              this._p_getCoordsFromPlacement(o.placement, state.dimensions)
-            );
-          }
+          // coords = (typeof coords === 'function') ? coords.call(this, this._getActive()[0]) : coords;
+          // coords = that._p_parseCoords(coords);
+          // if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
+          //   coords = this._p_checkBounds(
+          //     this._p_getCoordsFromPlacement(o.placement, state.dimensions)
+          //   );
+          // }
 
           state.coords = coords;//computed
         
@@ -272,16 +276,13 @@
         
         return coords;
       },
-      _p_getDirtyStatus(currentCoords, dimensions) {
-        var d = dimensions,
-            boundaryCoords = d.container,
-            modalCoords = d.modal;
-
+      _p_getDirtyStatus(props) {
+        var {coords, container, element} = props;
         return {
-          left: currentCoords[0] < boundaryCoords.left,
-          top: currentCoords[1] < boundaryCoords.top,
-          right: currentCoords[0] + modalCoords.width > boundaryCoords.scrollWidth,
-          bottom: currentCoords[1] + modalCoords.height > boundaryCoords.scrollHeight
+          left: coords[0] < container.left,
+          top: coords[1] < container.top,
+          right: coords[0] + element.width > container.scrollWidth,
+          bottom: coords[1] + element.height > container.scrollHeight
         }
       },
       _p_getOppositeDirection(direction) {
@@ -304,41 +305,45 @@
 
         var offset = that._p_parseCoords(o.offset),
             dimensions = that.state.dimensions,
-            boundaryCoords = dimensions.window,
-            fixedCoords = currentcoords,
-            dirty = this._p_getDirtyStatus(currentcoords, dimensions);
-        
-        if (dirty[o.placement] && o.reverse) {
-          fixedCoords = this._p_getCoordsFromPlacement(this._p_getOppositeDirection(o.placement), this.state.dimensions)
-          dirty = this._p_getDirtyStatus(fixedCoords, dimensions);
-        }
+            container = dimensions.container,
+            modal = dimensions.modal,
+            fixedCoords = currentcoords.slice(),
+            dirty = this._p_getDirtyStatus({
+              coords: currentcoords,
+              container,
+              element: modal
+            });
+        // debugger;
+        // if (dirty[o.placement] && o.reverse) {
+        //   fixedCoords = this._p_getCoordsFromPlacement(this._p_getOppositeDirection(o.placement), this.state.dimensions)
+        //   dirty = this._p_getDirtyStatus(fixedCoords, dimensions);
+        // }
 
-        if (boundary) {
-          fixedCoords = makeSticky(dirty, fixedCoords);
-        }
+        fixedCoords = makeSticky({dirty, coords:fixedCoords, container, element:modal});
         
-        
-        function makeSticky(dirty, coordsToFix) {
-          var coords = coordsToFix.slice();
+        function makeSticky(props) {
+          var {dirty, coords, container, element} = props;
+
+          var maxRight = container.scrollWidth - element.width;
 
           //fix negative left position
           if (dirty.left) {
-            coords[0] = boundaryCoords.left;
+            coords[0] = container.left;
           }
-        
+          
           //fix negative top position
           if (dirty.top) {
-            coords[1] = boundaryCoords.top;
+            coords[1] = container.top;
           }
-        
+          
           //fix negative right position
           if(dirty.right) {
-            coords[0] = (boundaryCoords.scrollWidth - dimensions.modal.width)
+            coords[0] = maxRight;
           }
-        
+          
           //fix negative bottom position
           if (dirty.bottom) {
-            coords[1] = (boundaryCoords.scrollHeight - dimensions.modal.height);
+            coords[1] = (container.scrollHeight - element.height)
           }
           return coords;
         }

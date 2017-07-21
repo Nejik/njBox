@@ -1,14 +1,10 @@
-*не работает duration (точнее работает но только на вызывание колбэков, может стоит сделать на установку времени анимации тоже?)
-* поповер вставлять в обертке, что-бы можно было делать любые анимации и позиционирование не мешало
 * добавить возможность для поповера делать зеркальное отображение а не прилипание к краю
-*попробовать избавиться от упоминания поповера в мэйн плагине
-* role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
-
 * выкосить глобальный неймспейс и аддоны из него
 * ранить defaults в ссылке где-то в инстансе, что-бы был доступ елси нету njbox в глобальном контексте
 * подумать как избавить от обращения к глобальным njBox....
 
 
+* role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
   aria label or aria-labelledby from header option
   role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html

@@ -802,7 +802,7 @@ class njBox {
   _setMaxHeight(item) {
     let o = this.o;
 
-    if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image' || this._g.popover) return;
+    if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
     if (!this.state.autoheightAdded) {
       // this.dom.wrap.addClass('njb-wrap--autoheight');
@@ -1512,13 +1512,7 @@ class njBox {
 
     this._scrollbar('show');
 
-    if(this._g.popover) {
-      modal[0].parentNode.removeChild(modal[0]);
-      modal.css('left','0')
-            .css('top','0')
-    } else {
-      if (this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
-    }
+    if(this._g.insertWrap && this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
 
     this._removeSelectorItemsElement();
 

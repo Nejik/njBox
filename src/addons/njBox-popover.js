@@ -20,7 +20,7 @@
           $ = that.$;
         
         if(o.layout === 'popover') {
-          that._g.popover = true
+          that._g.popover = true;
           o.backdrop = that._getPassedOption('backdrop') || false;
           o.scrollbar = that._getPassedOption('scrollbar') || 'show';
           o.out = that._getPassedOption('out') || false;
@@ -30,6 +30,7 @@
           o.focusprevious = false;
           o.click = false;
           o.clickels = false;
+          o.autoheight = that._getPassedOption('autoheight') || false;;
         }
         if(!that._g.popover) return;
         
@@ -208,6 +209,15 @@
                             .undelegate('[data-njb-close]', 'click', h.wrap_close)
                             .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
                             .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+        })
+        that.on('clear', function() {
+          if(!this._g.popover) return;
+
+          var modal = this._getActive().dom.modalOuter;
+
+            modal[0].parentNode.removeChild(modal[0]);
+            modal.css('left','0')
+                  .css('top','0')
         })
       },
       _p_getCoordsFromPlacement(placement, dimensions) {

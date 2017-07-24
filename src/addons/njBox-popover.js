@@ -30,7 +30,11 @@
           o.focusprevious = false;
           o.click = false;
           o.clickels = false;
-          o.autoheight = that._getPassedOption('autoheight') || false;;
+          o.autoheight = that._getPassedOption('autoheight') || false;
+
+          if(o.trigger === 'follow') {
+            o.placement = that._getPassedOption('placement') || 'right';
+          }
         }
         if(!that._g.popover) return;
         
@@ -114,7 +118,9 @@
                 if (e.originalEvent) e = e.originalEvent;//work with original event
 
                 if (that.state.status === 'show' || that.state.status === 'shown') {
-                  that.position(that._p_checkBounds([e.pageX + 5, e.pageY + 5]))
+                  
+                  // that.position(that._p_fixBounds([e.pageX + 5, e.pageY + 5]))
+                  that._p_getFollowCoords(e)
                 }
               }
               h.trigger_follow_leave = function() {
@@ -127,9 +133,9 @@
               break;
           }
         })
-        that.on('hide', function() {
-          if(this.o.trigger = 'focus') delete that.state.focused;
-        })
+        // that.on('hide', function() {
+        //   if(this.o.trigger === 'focus') delete this.state.focused;
+        // })
         that.on('destroy', function() {
           switch (o.trigger) {
             case 'click':
@@ -176,7 +182,7 @@
                   )
 
           if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
-            coords = this._p_checkBounds(
+            coords = this._p_fixBounds(
               this._p_getCoordsFromPlacement(o.placement, state.dimensions)
             );
           }
@@ -219,6 +225,13 @@
             modal.css('left','0')
                   .css('top','0')
         })
+      },
+      _p_getFollowCoords(e) {
+        var o = this.o,
+            origCoords = [e.pageX + 5, e.pageY + 5];
+      
+        
+
       },
       _p_getCoordsFromPlacement(placement, dimensions) {
         var that = this,
@@ -304,7 +317,7 @@
             return 'top'
         }
       },
-      _p_checkBounds(currentcoords) {
+      _p_fixBounds(currentcoords) {
         var that = this,
             o = that.o,
             boundary = o.boundary;
@@ -355,6 +368,9 @@
           return coords;
         }
         return fixedCoords;
+      },
+      _p_checkDirection(currentcoords) {
+
       },
       _p_parseCoords(stringOrArray) {
       	if (typeof stringOrArray === 'string') {

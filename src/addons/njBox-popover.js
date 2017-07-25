@@ -6,11 +6,11 @@
 (function () {
   if (window.njBox) njBox.addAddon('popover', {
     options: {
-      layout         : 'fixed',//(fixed || absolute || popover) how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. popover mode works only with popover addon)
+      layout         : 'fixed',//(fixed || absolute || popover) how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. Popover mode works only with popover addon). Its not popover addon specific options, it extends basic option with popover option.
       trigger        : 'click',//(click || hover || focus || follow) how popover is triggered
-      placement      : 'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as its second, this context is set to the popover instance.
+      placement      : 'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as second, 'this' context is set to the popover instance.
       reverse        : true,//(boolean) should we reverse direction left/right top/bottom if no space for popover
-      offset         : '10 10',//(string or array) popover specific option. Offset of the popover relative to its target
+      offset         : '10 10',//(string or array) (default '5 5' for trigger follow case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
 	    boundary       : true//(boolean) popover specific option. Should popover stay in window boundaries?
     },
     prototype: {
@@ -34,6 +34,7 @@
 
           if(o.trigger === 'follow') {
             o.placement = that._getPassedOption('placement') || 'right';
+            o.offset = '5 5';
           }
         }
         if(!that._g.popover) return;
@@ -46,7 +47,7 @@
           this.dom.insertInto = this.dom.container;
           this._g.insertWrap = false;
 
-
+          //todo, перенести в ивент биндинг
           switch (o.trigger) {
             case 'click':
               h.trigger_click = function(e) {
@@ -63,7 +64,7 @@
                     that.state.clickedEvent = e;
                     that.state.clickedEl = el;
                     that.state.focused = el;
-                    show();
+                    that.show();
                     break;
                   case 'show':
                   case 'shown':
@@ -110,23 +111,25 @@
                           .on('blur', h.trigger_blur)
               break;
             case 'follow':
-              h.trigger_follow_enter = function() {
+              h.trigger_follow_enter = function(e) {
                 if(that.state.status === 'inited') {
+                  that.state.followEvent = e;
                   that.show();
                 }
                 that.dom.document.on('mousemove', h.trigger_follow_move)
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
+                if (that.state.status !== 'show' && that.state.status !== 'shown') return
+                
 
-                if (that.state.status === 'show' || that.state.status === 'shown') {
-                  
-                  if (that._p_mouseInRect({e, 'rect': that.state.dimensions.el})) {
-                    that.position(that._p_getFollowCoords(e))
-                  } else {
-                    that.dom.document.off('mousemove', h.trigger_follow_move)
-                    that.hide();
-                  }
+                that.state.followEvent = e;
+
+                if (that._p_mouseInRect({e, 'rect': that.state.dimensions.el})) {
+                  that.position()
+                } else {
+                  that.dom.document.off('mousemove', h.trigger_follow_move)
+                  that.hide();
                 }
               }
               
@@ -176,23 +179,20 @@
           if(state.arguments.position.length) {
             coords = state.arguments.position[0];
           }
-
-          coords = that._p_parseCoords(
-                      (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
-                  )
-
-          //todo, сделать typeof text и сделать метод проверки правильных указаний placement, т.е. что это left/right/top/bottom
-          // if (!(typeof coords == 'object' && coords.length === 2)) {//if our placement still text and we need to calculate position
-          //   coords = this._p_fixBounds(
-          //     this._p_getCoordsFromPlacement(o.placement, state.dimensions)
-          //   );
-          // }
+          
+          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
+          
+          if (o.trigger === 'follow') {
+            coords = that._p_getFollowCoords(this.state.followEvent);
+          } else if(this._p_isPlacement(coords)) {
+            coords = that._p_getCoords(coords);
+          }
 
           state.coords = coords;//computed
         
-          if(coords && coords.length === 2) {
-            modalOuter  .css('left', coords[0] + "px")
-                        .css('top', coords[1] + "px")
+          if(state.coords && state.coords.length === 2) {
+            modalOuter  .css('left', state.coords[0] + "px")
+                        .css('top', state.coords[1] + "px")
           }
         })
         that.on('item_created', function(item) {
@@ -227,6 +227,116 @@
                   .css('top','0')
         })
       },
+      _p_getCoords(placement) {
+        var o = this.o,
+            reverse = o.reverse,
+            boundary = o.boundary,
+            dimensions = this.state.dimensions,
+            container = dimensions.container,
+            modal = dimensions.modal,
+            dirty,
+            coords;
+
+        coords = this._p_getCoordsFromPlacement(placement, dimensions)
+        
+        if(boundary || reverse) {
+          dirty = this._p_getDirtyStatus({
+            coords,
+            element: modal,
+            container
+          });
+        }
+
+        //reverse position
+        if(reverse && dirty && dirty[placement]) {
+          var newPlacement = this._p_getOppositeDirection(placement);
+          coords = this._p_getCoordsFromPlacement(newPlacement, dimensions)
+          dirty = this._p_getDirtyStatus({
+            coords,
+            element: modal,
+            container
+          });
+        }
+
+        //bounds to window
+        if(boundary && dirty) {
+          coords = this._p_fixBounds({coords});
+        }
+
+        return coords;
+      },
+      _p_getFollowCoords(e) {
+        var o = this.o,
+            mouseCoords = [e.clientX, e.clientY],
+            computedCoords,
+            dimensions = this.state.dimensions,
+            container = dimensions.container,
+            modal = dimensions.modal,
+            placement = o.placement,
+            reverse = o.reverse,
+            boundary = o.boundary,
+            offset = this._p_parseCoords(o.offset),
+            dirty;
+
+        computedCoords = getCoordsForFollow(mouseCoords);
+
+        if(boundary || reverse) {
+          dirty = this._p_getDirtyStatus({
+            coords: computedCoords,
+            element: modal,
+            container
+          });
+        }
+        
+        if(reverse && dirty && dirty[placement]) {
+          placement = this._p_getOppositeDirection(placement);
+
+          computedCoords = getCoordsForFollow(mouseCoords);
+          dirty = this._p_getDirtyStatus({
+            coords: mouseCoords,
+            container: container,
+            element: modal
+          });
+        }
+        
+        if(boundary && dirty) {
+          computedCoords = this._p_fixBounds({coords : computedCoords});
+        }
+
+        function getCoordsForFollow(mouseCoords) {
+          var computedCoords = mouseCoords.slice()//copy array
+
+          if (placement === 'right') {
+            computedCoords[0] += offset[0];
+            computedCoords[1] += offset[1];
+          } else if(placement === 'left') {
+            computedCoords[0] -= modal.width + offset[0]
+          }
+
+          return computedCoords;
+        }
+        
+        
+        return computedCoords
+      },
+      _p_isPlacement(placement) {
+        var result = false;
+
+        switch (placement) {
+          case 'left':
+          case 'right':
+          case 'bottom':
+          case 'top':
+          case 'center':
+            result = true;
+            break;
+        
+          default:
+            break;
+        }
+
+        return result;
+      },
       _p_mouseInRect(props) {
         var { e,
               rect
@@ -243,35 +353,6 @@
                 result = true
               }
         return result
-      },
-      _p_getFollowCoords(e) {
-        var o = this.o,
-            origCoords = [e.pageX + 5, e.pageY + 5],
-            fixedCoords = origCoords.slice(),//copy array
-            dimensions = this.state.dimensions,
-            container = dimensions.container,
-            modal = dimensions.modal,
-            placement = o.placement,
-            reverse = o.reverse,
-            boundary = o.boundary,
-            dirty;
-
-        if(boundary || reverse) {
-          dirty = this._p_getDirtyStatus({
-            coords: origCoords,
-            container: container,
-            element: modal
-          });
-        }
-
-        //todo reverse here
-        
-        if(boundary && dirty) {
-          fixedCoords = this._p_fixBounds({coords : origCoords});
-        }
-        
-        
-        return fixedCoords
       },
       _p_getCoordsFromPlacement(placement, dimensions) {
         var that = this,
@@ -340,10 +421,10 @@
         var {coords, container, element} = props,
             result = false,
             statusObj = {
-              left: coords[0] < container.left,
-              top: coords[1] < container.top,
-              right: coords[0] + element.width > container.scrollWidth,
-              bottom: coords[1] + element.height > container.scrollHeight
+              left: coords[0] <= container.left,
+              top: coords[1] <= container.top,
+              right: coords[0] + element.width >= container.scrollWidth,
+              bottom: coords[1] + element.height >= container.scrollHeight
             }
         
         if(statusObj.left || statusObj.top || statusObj.right || statusObj.bottom) {
@@ -365,9 +446,9 @@
       },
       _p_fixBounds(props) {
         var that = this,
-        {coords} = props,
-        o = that.o,
-        boundary = o.boundary;
+            {coords} = props,
+            o = that.o,
+            boundary = o.boundary;
         
         if(!boundary) return coords;
 
@@ -381,11 +462,6 @@
               container,
               element: modal
             });
-        // debugger;
-        // if (dirty[o.placement] && o.reverse) {
-        //   fixedCoords = this._p_getCoordsFromPlacement(this._p_getOppositeDirection(o.placement), this.state.dimensions)
-        //   dirty = this._p_getDirtyStatus(fixedCoords, dimensions);
-        // }
 
         fixedCoords = makeSticky({dirty, coords:fixedCoords, container, element:modal});
         
@@ -417,22 +493,25 @@
         }
         return fixedCoords;
       },
-      _p_checkDirection(currentcoords) {
-
-      },
+      //parse coords always should return correct array
       _p_parseCoords(stringOrArray) {
+        var defaultArray = [0,0],
+            arrayToReturn = defaultArray;
+
       	if (typeof stringOrArray === 'string') {
-      		if (/\s/.test(stringOrArray)) {
+      		if (/\s/.test(stringOrArray)) {//check space in string
       			var arr = stringOrArray.split(' ')
       			arr[0] = parseFloat(arr[0])
       			arr[1] = parseFloat(arr[1])
-      			return arr;
+      			arrayToReturn = arr;
       		} else {
-      			return stringOrArray;
+      			arrayToReturn = defaultArray
       		}
-      	} else if(typeof stringOrArray === 'object') {
-      		return stringOrArray;
-      	}
+        } else if(typeof stringOrArray === 'object' && stringOrArray.length == 2) {
+      		arrayToReturn = [parseFloat(stringOrArray[0]), parseFloat(stringOrArray[1])];
+        }
+        
+        return arrayToReturn;
       }
     }
   })

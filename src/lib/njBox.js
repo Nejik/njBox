@@ -743,11 +743,8 @@ class njBox {
     
     dimensions.window = this._getDomSize(this.dom.window)
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
-    dimensions.modal = this._getDomSize(this._getActive().dom.modal)
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
     if(o.el && o.el.length === 1) dimensions.el = this._getDomSize(o.el)
-
-    dimensions.autoheight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 
     return dimensions;
   }
@@ -800,7 +797,8 @@ class njBox {
     return rectComputed;
   }
   _setMaxHeight(item) {
-    let o = this.o;
+    let o = this.o,
+        dimensions = this.state.dimensions;
 
     if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
@@ -817,7 +815,7 @@ class njBox {
       bodyMargin = summ(v.body, 'margin'),
       bodyPadding = (summ(v.body, 'padding') + parseInt(v.body.css('borderTopWidth')) + parseInt(v.body.css('borderBottomWidth'))) || 0,
 
-      containerHeight = this.state.dimensions.autoheight,
+      containerHeight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
 
       height = containerHeight,
 
@@ -1503,8 +1501,7 @@ class njBox {
     openedInstance._set_focus(openedInstance.items[openedInstance.state.active]);
   }
   _clear() {
-    var o = this.o,
-        modal = this._getActive().dom.modalOuter;
+    var o = this.o;
 
     this._cb('clear');
 
@@ -1580,7 +1577,7 @@ class njBox {
     this.trigger.apply(this, ['cb'].concat(cbArgs));
 
 
-    //trigger callback from options with "on" prefix (onshow, onhide)
+    //trigger callback from options with "on" prefix (e.g. onshow, onhide)
     var clearArgs = Array.prototype.slice.call(arguments, 1);
 
     if (type === 'ok' || type === 'cancel') {

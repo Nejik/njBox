@@ -47,6 +47,7 @@
           this.dom.insertInto = this.dom.container;
           this._g.insertWrap = false;
 
+          //todo, перенести в ивент биндинг
           switch (o.trigger) {
             case 'click':
               h.trigger_click = function(e) {
@@ -111,19 +112,18 @@
               break;
             case 'follow':
               h.trigger_follow_enter = function(e) {
-                that._g.followEvent = e;
-                that.show();
-                that.dom.document.off('mousemove', undefined)
-
-                that.dom.document.off('mousemove', h.trigger_follow_move)
-                                  .on('mousemove', h.trigger_follow_move)
+                if(that.state.status === 'inited') {
+                  that.state.followEvent = e;
+                  that.show();
+                }
+                that.dom.document.on('mousemove', h.trigger_follow_move)
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
                 if (that.state.status !== 'show' && that.state.status !== 'shown') return
                 
 
-                that._g.followEvent = e;
+                that.state.followEvent = e;
 
                 if (that._p_mouseInRect({e, 'rect': that.state.dimensions.el})) {
                   that.position()
@@ -137,6 +137,9 @@
               break;
           }
         })
+        // that.on('hide', function() {
+        //   if(this.o.trigger === 'focus') delete this.state.focused;
+        // })
         that.on('destroy', function() {
           switch (o.trigger) {
             case 'click':
@@ -180,7 +183,7 @@
           coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
           
           if (o.trigger === 'follow') {
-            coords = that._p_getFollowCoords(this._g.followEvent);
+            coords = that._p_getFollowCoords(this.state.followEvent);
           } else if(this._p_isPlacement(coords)) {
             coords = that._p_getCoords(coords);
           }

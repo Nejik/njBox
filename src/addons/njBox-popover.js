@@ -7,7 +7,7 @@
   if (window.njBox) njBox.addAddon('popover', {
     options: {
       layout         : 'fixed',//(fixed || absolute || popover) how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. Popover mode works only with popover addon). Its not popover addon specific options, it extends basic option with popover option.
-      trigger        : 'click',//(click || hover || focus || follow) how popover is triggered
+      trigger        : 'click',//(false || click || hover || follow) how popover is triggered
       placement      : 'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as second, 'this' context is set to the popover instance.
       reverse        : true,//(boolean) should we reverse direction left/right top/bottom if no space for popover
       offset         : '10 10',//(string or array) (default '5 5' for trigger follow case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
@@ -23,7 +23,7 @@
           that._g.popover = true;
           o.backdrop = that._getPassedOption('backdrop') || false;
           o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-          o.out = that._getPassedOption('out') || false;
+          // o.out = that._getPassedOption('out') || true;
           o.esc = that._getPassedOption('esc') || false;
           o.autofocus = that._getPassedOption('autofocus') || false;
           o.container = 'body';//you cant change container in popover mode
@@ -47,7 +47,6 @@
           this.dom.insertInto = this.dom.container;
           this._g.insertWrap = false;
 
-          //todo, перенести в ивент биндинг
           switch (o.trigger) {
             case 'click':
               h.trigger_click = function(e) {
@@ -89,41 +88,43 @@
               that._g.els .on('mouseenter', h.trigger_mouseenter)
                           .on('mouseleave', h.trigger_mouseleave)
               break;
-            case 'focus':
-              h.trigger_focus_click = function(e) {
-                if (e.originalEvent) e = e.originalEvent;//work with original event
-                (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
-              }
-              h.trigger_focus = function(e) {
-                var el = this;
-                if (e.originalEvent) e = e.originalEvent;//work with original event
+            // case 'focus':
+            //   h.trigger_focus_click = function(e) {
+            //     if (e.originalEvent) e = e.originalEvent;//work with original event
+            //     (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+            //   }
+            //   h.trigger_focus = function(e) {
+            //     console.log('focus');
+            //     var el = this;
+            //     if (e.originalEvent) e = e.originalEvent;//work with original event
 
-                that.state.clickedEvent = e;
-                that.state.clickedEl = el;
-                that.state.focused = el;
-                that.show()
-              }
-              h.trigger_blur = function(e) {
-                that.hide()
-              }
-              that._g.els .on('click', h.trigger_focus_click)
-                          .on('focus', h.trigger_focus)
-                          .on('blur', h.trigger_blur)
-              break;
+            //     that.state.clickedEvent = e;
+            //     that.state.clickedEl = el;
+            //     that.state.focused = el;
+            //     that.show()
+            //   }
+            //   h.trigger_blur = function(e) {
+            //     that.hide()
+            //   }
+            //   that._g.els .on('click', h.trigger_focus_click)
+            //               .on('focus', h.trigger_focus)
+            //               .on('blur', h.trigger_blur)
+            //   break;
             case 'follow':
               h.trigger_follow_enter = function(e) {
-                if(that.state.status === 'inited') {
-                  that.state.followEvent = e;
-                  that.show();
-                }
-                that.dom.document.on('mousemove', h.trigger_follow_move)
+                that._g.followEvent = e;
+                that.show();
+                that.dom.document.off('mousemove', undefined)
+
+                that.dom.document.off('mousemove', h.trigger_follow_move)
+                                  .on('mousemove', h.trigger_follow_move)
               }
               h.trigger_follow_move = function(e) {
                 if (e.originalEvent) e = e.originalEvent;//work with original event
                 if (that.state.status !== 'show' && that.state.status !== 'shown') return
                 
 
-                that.state.followEvent = e;
+                that._g.followEvent = e;
 
                 if (that._p_mouseInRect({e, 'rect': that.state.dimensions.el})) {
                   that.position()
@@ -137,9 +138,6 @@
               break;
           }
         })
-        // that.on('hide', function() {
-        //   if(this.o.trigger === 'focus') delete this.state.focused;
-        // })
         that.on('destroy', function() {
           switch (o.trigger) {
             case 'click':
@@ -149,11 +147,11 @@
               that._g.els .off('mouseenter', h.trigger_mouseenter)
                           .off('mouseleave', h.trigger_mouseleave)
               break;
-            case 'focus':
-              that._g.els .on('click', h.trigger_focus_click)
-                          .on('focus', h.trigger_focus)
-                          .on('blur', h.trigger_blur)
-              break;
+            // case 'focus':
+            //   that._g.els .on('click', h.trigger_focus_click)
+            //               .on('focus', h.trigger_focus)
+            //               .on('blur', h.trigger_blur)
+            //   break;
             case 'follow':
               that._g.els .off('mouseenter', h.trigger_follow_enter)
               that.dom.document.off('mousemove', h.trigger_follow_move)
@@ -183,7 +181,7 @@
           coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
           
           if (o.trigger === 'follow') {
-            coords = that._p_getFollowCoords(this.state.followEvent);
+            coords = that._p_getFollowCoords(this._g.followEvent);
           } else if(this._p_isPlacement(coords)) {
             coords = that._p_getCoords(coords);
           }

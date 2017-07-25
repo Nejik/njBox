@@ -1012,7 +1012,7 @@ class njBox {
     that.dom.container.on('resize', h.container_resize)
                       .on('scroll', h.container_scroll)
     
-    that.dom.container.on('click', h.container_out)
+    that.dom.document.on('click', h.container_out)
 
     h.wrap_resize = function () {
       that.position();
@@ -1103,9 +1103,11 @@ class njBox {
     var h = this._handlers,
         that = this;
 
+    that.dom.document.off('click', h.container_out)
+    
     that.dom.container.off('resize', h.container_resize)
       .off('scroll', h.container_scroll)
-      .off('click', h.container_out)
+      
 
     that.dom.wrap
       .off('resize', h.wrap_resize)

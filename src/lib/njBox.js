@@ -798,7 +798,9 @@ class njBox {
   }
   _setMaxHeight(item) {
     let o = this.o,
-        dimensions = this.state.dimensions;
+        dimensions = this.state.dimensions,
+        height,
+        bodyBorderBox;
 
     if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
 
@@ -1104,7 +1106,7 @@ class njBox {
         that = this;
 
     that.dom.document.off('click', h.container_out)
-    
+
     that.dom.container.off('resize', h.container_resize)
       .off('scroll', h.container_scroll)
       

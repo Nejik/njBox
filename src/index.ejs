@@ -67,7 +67,7 @@
   <script src="njBox-popover.js"></script>  
   <script>
     t = new njBox('.el', {
-      layout: 'popover',
+      // layout: 'popover',
       // trigger: 'follow',
       // anim: 'fade',
       onposition: function() {
@@ -75,9 +75,13 @@
         // return '1 1';
       }
     })
-    .on('item_content_ready', function(event, arg1, arg2) {
+    .on('item_inserted', function(event, arg1, arg2) {
       // debugger;
-      console.log(arguments);
+      // console.log(arguments);
+    })
+    .on('item_loaded', function(event, arg1, arg2) {
+      debugger;
+      console.log('item_loaded', arguments);
     })
 
     

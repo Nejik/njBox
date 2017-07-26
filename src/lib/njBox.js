@@ -173,7 +173,7 @@ class njBox {
     //insert ui into dom
     if(this._g.insertWrap) this.dom.container.append(this.dom.wrap);
     //insert modal into dom
-    this._drawItem(this.items[this.state.active], false, this.dom.insertInto);
+    this._drawItem(this._getActive(), false, this.dom.insertInto);
     
     this._cb('inserted');
 
@@ -190,7 +190,9 @@ class njBox {
     
     return this;
   }
-  
+  _insertToPage() {
+    
+  }
   hide() {
     this.state.arguments.hide = arguments;
     var that = this;
@@ -524,10 +526,15 @@ class njBox {
       if (dom.footerInput) dom.footerInput.html(item.footer)
       
         
-        item.o.status = 'loaded';
+      item.o.status = 'loaded';
 
       that._cb('item_content_ready', item);//img_ready callback
-      if(that.state.status !== 'inited' && that.items && that.items[that.state.active] === item) that.position();//need it for delayed items autoheight
+
+      if(that.state.status !== 'inited' && that.items && that._getActive() === item) {
+        that._cb('item_loaded', item);
+        that.position();//need it for delayed items autoheight
+      }
+
     }
     
     if (itemType === 'template') {
@@ -874,6 +881,7 @@ class njBox {
     }
 
     this._cb('item_inserted', item);
+    if(item.o.contentInserted) this._cb('item_loaded', item);
   }
   
   _removeSelectorItemsElement() {

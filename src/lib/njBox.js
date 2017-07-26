@@ -190,9 +190,6 @@ class njBox {
     
     return this;
   }
-  _insertToPage() {
-    
-  }
   hide() {
     this.state.arguments.hide = arguments;
     var that = this;

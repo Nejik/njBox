@@ -224,11 +224,8 @@
             modal.css('left','0')
                   .css('top','0')
         })
-        that.on('item_img_ready', function() {
-          console.log('ready');
-        })
-        that.on('item_img_load', function() {
-          console.log('load');
+        that.on('item_img_true', function() {
+          
         })
       },
       _p_getCoords(placement) {

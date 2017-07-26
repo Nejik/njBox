@@ -67,7 +67,7 @@
   <script src="njBox-popover.js"></script>  
   <script>
     t = new njBox('.el', {
-      // layout: 'popover',
+      layout: 'popover',
       // trigger: 'follow',
       // anim: 'fade',
       onposition: function() {
@@ -75,14 +75,9 @@
         // return '1 1';
       }
     })
-    .on('item_img_ready', function(event, arg1, arg2) {
-      console.log('ready', arguments);
-    })
-    .on('item_img_load', function(event, arg1, arg2) {
-    console.log('load', arguments);
-    })
-    .on('item_img_true', function(event, arg1, arg2) {
-    console.log('true',arguments);
+    .on('item_content_ready', function(event, arg1, arg2) {
+      // debugger;
+      console.log(arguments);
     })
 
     

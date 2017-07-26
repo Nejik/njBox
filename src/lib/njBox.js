@@ -190,6 +190,7 @@ class njBox {
     
     return this;
   }
+  
   hide() {
     this.state.arguments.hide = arguments;
     var that = this;
@@ -521,8 +522,11 @@ class njBox {
       if (dom.headerInput) dom.headerInput.html(item.header)
       //insert footer content
       if (dom.footerInput) dom.footerInput.html(item.footer)
+      
+        
+        item.o.status = 'loaded';
 
-      item.o.status = 'loaded';
+      that._cb('item_content_ready', item);//img_ready callback
       if(that.state.status !== 'inited' && that.items && that.items[that.state.active] === item) that.position();//need it for delayed items autoheight
     }
     
@@ -593,7 +597,6 @@ class njBox {
       item.dom.bodyInput.html(o.text.imageError.replace('%url%', item.content));
 
       that._cb('img_e', item);//img_ready, img_load callbacks
-      // rendered();
 
       item.o.status = 'error';
       item.o.contentInserted = true;
@@ -645,7 +648,6 @@ class njBox {
       item.dom.bodyInput.append(img);
       item.o.contentInserted = true;
       callback();
-      item.o.status = 'loaded';
 
       //animation after image loading
       //todo add custom image animation, don't use global popup animation
@@ -858,8 +860,10 @@ class njBox {
         itemToInsert = item.toInsert;
     
     this._cb('item_prepare', item);
-
-    if (o.delayed && !item.o.contentInserted && (item.type === 'image' || item.type === 'selector')) {
+    
+    if (item.o.contentInserted) {
+      this._cb('item_content_ready', item);
+    } else if(o.delayed && (item.type === 'image' || item.type === 'selector')) {
       this._insertItemContent({item, delayed: false});
     }
 

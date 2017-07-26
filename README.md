@@ -271,6 +271,7 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | item_domready | onitem_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
 | events_setted | onevents_setted | - |When event handlers attached. <br />Mostly for making addons.
 | item_prepare | onitem_prepare | itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
+| item_content_ready | onitem_content_ready | itemObject | When content inserted into item.
 | item_inserted | onitem_inserted | itemObject | After item inserted.
 | position | onposition | - | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
 | item_img_ready | onitem_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]

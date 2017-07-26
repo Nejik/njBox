@@ -46,3 +46,15 @@ Docs:
 Keeping track of the last focused element so that focus can return to it once the modal is closed.
 Allowing for multiple options to close the modal window (close button, escape key, mouse click on overlay).
 Trapping focus within the modal so that users can't tab out of it and interact with content that is obscured by the modal.
+
+
+"опасные" методы
+Object.assign
+Array.indexOf
+
+
+//todo 
+templates и text
+//todo в dom аддон
+* this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
+* 

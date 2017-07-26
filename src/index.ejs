@@ -74,8 +74,15 @@
         // console.log('position')
         // return '1 1';
       }
-    }).on('inited', function(event, arg1, arg2) {
-      // console.log(this);
+    })
+    .on('item_img_ready', function(event, arg1, arg2) {
+      console.log('ready', arguments);
+    })
+    .on('item_img_load', function(event, arg1, arg2) {
+    console.log('load', arguments);
+    })
+    .on('item_img_true', function(event, arg1, arg2) {
+    console.log('true',arguments);
     })
 
     

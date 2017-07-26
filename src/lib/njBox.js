@@ -610,25 +610,32 @@ class njBox {
     loaded = img.complete && img.width + img.height > 0;
 
     if (o.img === 'ready' && ready || o.img === 'load' && loaded) {
-      checkShow(true);
+      insertImg();
     } else {
       this._preloader('show', item);
 
       findImgSize(img, function () {
-        checkShow('ready');
+        that._cb('item_img_ready', item);//img_ready callback
+
+        if (o.img === 'ready') {
+          insertImg();
+        }
+
       });
 
       item._handlerLoad = function () {
         $img.off('load', item._handlerLoad);
-        checkShow('load');
+        that._cb('item_img_load', item);//img_load callback
+
+        if (o.img === 'load') {
+          insertImg();
+        }
       }
       $img.on('load', item._handlerLoad)
     }
 
-    function checkShow(ev) {
-      that._cb('item_img_' + ev, item);//img_ready, img_load callbacks
-
-      if (ev !== o.img && ev !== true) return;
+    function insertImg() {
+      that._cb('item_img_true', item);//img_ready, img_load callbacks
 
       that._preloader('hide', item);
 

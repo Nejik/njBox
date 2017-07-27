@@ -1667,9 +1667,9 @@ njBox.get = function (elem) {
   };
 }
 //autobind functions
-njBox.autobind = function () {
+njBox.autobind = function (selector) {
   //autobind global
-  $(njBox.defaults.autobind).each(function () {
+  $(selector).each(function () {
     new njBox({
       elem: $(this)
     })
@@ -1677,7 +1677,7 @@ njBox.autobind = function () {
 }
 if (typeof window !== 'undefined') {//autobind only in browser and on document ready
   $(function () {
-    njBox.autobind();
+    njBox.autobind(njBox.defaults.autobind);
   })
 }
 

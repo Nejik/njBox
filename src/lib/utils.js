@@ -1,3 +1,103 @@
+export function getDefaultInfo() {
+	let options = {};
+
+	//calculate scrollbar width
+	var scrollDiv = document.createElement("div");
+	scrollDiv.style.cssText = 'width: 99px; height: 99px; overflow: scroll; position: absolute; top: -99px;';
+	document.body.appendChild(scrollDiv);
+	options.scrollbarSize = (scrollDiv.offsetWidth - scrollDiv.clientWidth) || 0;
+	document.body.removeChild(scrollDiv);
+	//end calculate scrollbar width
+
+	//detect features
+
+	//ie8 and below
+	options.oldIE = !!(document.all && !document.addEventListener);
+
+	//touch interface
+	options.touch = 'ontouchstart' in window;
+
+	//detect css3 support
+	let h = options;
+
+	h.nativeDialogSupport = !!document.createElement('dialog').showModal;
+	h.transition = styleSupport('transition');
+	h.transitionDuration = styleSupport('transitionDuration');
+	h.transform = styleSupport('transform');
+	h.animation = styleSupport('animation');
+
+	function styleSupport(prop) {
+		var vendorProp, supportedProp,
+			prefix, prefixes = ["Webkit", "Moz", "O", "ms"],
+			capProp = prop.charAt(0).toUpperCase() + prop.slice(1),// Capitalize first character of the prop to test vendor prefix
+			div = document.createElement("div");
+
+		document.body.insertBefore(div, null);
+
+		if (prop in div.style) {
+			supportedProp = prop;// Browser supports standard CSS property name
+			prefix = null;
+		} else {
+			for (var i = 0; i < prefixes.length; i++) {// Otherwise test support for vendor-prefixed property names
+				vendorProp = prefixes[i] + capProp;
+
+				if (vendorProp in div.style) {
+					prefix = prefixes[i];
+					break;
+				} else {
+					vendorProp = undefined;
+				}
+
+			}
+		}
+
+		var support = {
+			js: supportedProp || vendorProp,
+			css: writePrefixes(prop, prefix)
+		}
+
+		if (prop === 'transform') {//detect transform3d
+			if (div.style[support.js] !== undefined) {
+				div.style[support.js] = "translate3d(1px,1px,1px)";
+				var has3d = window.getComputedStyle(div)[support.js];
+			}
+			support['3d'] = (has3d !== undefined && has3d.length > 0 && has3d !== "none");
+		}
+
+		document.body.removeChild(div);
+		return support;
+	}
+
+	function writePrefixes(prop, prefix) {
+		//make prop camelCase
+		prop = prop.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+
+		if (prefix === null) {
+			return prop;
+		}
+
+		let ourPrefix;
+		switch (prefix) {
+			case 'Webkit':
+				ourPrefix = '-webkit-' + prop;
+				break;
+			case 'Moz':
+				ourPrefix = '-moz-' + prop;
+				break;
+			case 'ms':
+				ourPrefix = '-ms-' + prop;
+				break;
+			case 'O':
+				ourPrefix = '-o-' + prop;
+				break;
+		}
+		return ourPrefix;
+	}
+	//end of CSS3 support
+
+	return options
+}
+
 export function isPlainObject(obj) {
 	return	typeof obj === 'object'
 								&& obj !== null

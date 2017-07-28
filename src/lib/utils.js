@@ -112,7 +112,7 @@ export const defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
 	delayed        : true,//(boolean) Interesting option, that works only for selector and image types. When its true with selector type, dom element will not be touched until show, and will be returned to dom after hiding modal. When its true and type image, images will not be loading on initialization.
-	type           : 'text',//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
+	type           : undefined,//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
 	header         : undefined,//(html) html that will be added as modal header (for first slide)
 	footer         : undefined,//(html) html that will be added as modal footer (for first slide)
 	// we need quotes here because of ie8..
@@ -154,6 +154,21 @@ export const defaults = {
 	label          : false,//(string) add aria-label attribute to support screenreaders
 	labelledby     : false,//(id selector) add aria-labelledby attribute to support screenreaders
 	describedby    : false//(id selector) add aria-describedby attribute to support screenreaders
+}
+export const templates = {
+	wrap          : '<div class="njb-wrap"><div class="njb-items"></div></div>',
+	backdrop      : '<div class="njb-backdrop"></div>',
+	modalOuter    : '<div class="njb-outer"></div>',
+	modal         : '<div class="njb"></div>',
+	body          : '<div class="njb__body" data-njb-body></div>',
+	header        : '<header class="njb__header" data-njb-header></header>',
+	footer        : '<footer class="njb__footer" data-njb-footer></footer>',
+	close         : '<button type="button" class="njb-ui__close" data-njb-close><span aria-hidden="true">×</span></button>',
+	focusCatcher  : '<span tabindex="0" class="njb-focus-catch" aria-hidden="true"></span>',
+
+	preloader     : '<div class="njb-preloader"><div class="njb-preloader__inner"><div class="njb-preloader__bar1"></div><div class="njb-preloader__bar2"></div><div class="njb-preloader__bar3"></div></div></div>',
+	ui            : '<div class="njb-ui"></div>',
+	title         : '<div class="njb-ui__title"><div class="njb-ui__title-inner" id="njb-title" data-njb-title></div></div>'//id in title used for accessibility
 }
 
 export const text = {

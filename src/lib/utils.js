@@ -126,7 +126,7 @@ export const defaults = {
 	clickels       : '',//(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 
 	backdrop       : true,//(boolean) should we show backdrop?
-	backdropassist : true,//(boolean) if true, animation durations of modal will automatically sets to backdrop to be in sync (it can be calculatied automatically from css)
+	backdropassist : true,//(boolean) if true, animation durations of modal will automatically sets to backdrop to be in sync
 	scrollbar      : 'hide',//(show || hide) should we hide scrollbar from page?
 	out            : true,//(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc            : true,//(boolean) close modal when esc button pressed?

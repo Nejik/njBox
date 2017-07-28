@@ -50,7 +50,7 @@ class njBox extends njBox_base {
 
       this._handlers = {};//all callback functions we used in event listeners lives here
     })
-    this.on('options_set', function(o) {
+    this.on('options_set', function() {
       var that = this,
           o  = that.o;
       //set default settings
@@ -123,6 +123,135 @@ class njBox extends njBox_base {
       item.toInsert = item.dom.modalOuter;
 
       this._insertItemContent({item, delayed: this.o.delayed});
+    })
+    this.on('show_prepare', function() {
+      if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
+
+      if(this.o.scrollbar === 'hide') this._scrollbar('hide');
+      
+      if(this.o.backdrop) this._backdrop('show');
+
+      //set event handlers
+      this._addListeners();
+
+      this._uiUpdate();
+    })
+    this.on('dom_insert', function() {
+      this._drawItem({
+        item: this._getActive(),
+        container: this.dom.insertInto,
+        prepend: false
+      });
+      //insert modal into dom
+      if(this._g.insertWrap) {
+        this.dom.container.append(this.dom.wrap);
+
+        //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
+        this.dom.wrap[0].style.display = 'none';
+        this.dom.wrap[0].clientHeight;
+        this.dom.wrap[0].style.display = 'block';
+      }
+    })
+    this.on('animation_show', function() {
+      var that = this,
+          o = that.o,
+          modal = that._getActive().dom.modal,
+          animShow = this._g.animation.show,
+          animShowDur = this._g.animation.showDur;
+
+      this.dom.wrap[0].clientHeight;//fore reflow before applying class
+      this.dom.wrap.addClass('njb-wrap--visible');
+
+      if (o.animclass) modal.addClass(o.animclass);
+      modal.attr('open', '');
+
+      if (animShow) {
+        modal.addClass(animShow);
+
+        that._g.shownCb = setTimeout(() => {
+            if(that.state.status === 'show') that._shownCb();
+          //check if hiding not initialized
+        }, animShowDur);
+      } else {
+        that._shownCb();
+      }
+    })
+    this.on('shown', function() {
+      var o = this.o,
+          modal = this._getActive().dom.modal;
+
+      if (o.animclass) modal.removeClass(o.animclass);
+      if(this._g.animation.show) modal.removeClass(this._g.animation.show);
+      modal[0].clientHeight;//reflow
+      
+      this._set_focus(this.items[this.state.active]);
+    })
+    this.on('hide_prepare', function() {
+      this._backdrop('hide');
+
+      this._removeListeners();
+    })
+    this.on('animation_hide', function() {
+      var that = this,
+          o = that.o,
+          modal = that._getActive().dom.modal,
+          animShow = this._g.animation.show,
+          animHide = this._g.animation.hide,
+          animHideDur = this._g.animation.showDur;
+
+      modal[0].removeAttribute('open');
+      this.dom.wrap.removeClass('njb-wrap--visible')
+
+      if (animHide) {
+        if (o.animclass) modal.addClass(o.animclass);
+        if (animHide === animShow) modal.addClass('njb-anim-reverse');
+        modal.addClass(animHide);
+
+        that._g.hiddenCb = setTimeout(() => {
+            that._hiddenCb()
+        }, animHideDur)
+      } else {
+        that._hiddenCb();
+      }
+    })
+    this.on('clear', function() {
+      var o = this.o,
+          modal = this._getActive().dom.modal,
+          animShow = this._g.animation.show,
+          animHide = this._g.animation.hide;
+      
+      if (o.animclass) modal.removeClass(o.animclass);
+      if (animHide === animShow) modal.removeClass('njb-anim-reverse');
+      if(animHide) modal.removeClass(animHide);
+      modal[0].clientHeight;//reflow
+
+
+      if (o['class']) this.dom.wrap.removeClass(o['class']);
+
+      this._scrollbar('show');
+
+      if(this._g.insertWrap && this.dom.wrap && this.dom.wrap.length) this.dom.wrap[0].parentNode.removeChild(this.dom.wrap[0]);
+
+      this._removeSelectorItemsElement();
+
+      if (this.dom.items && this.dom.items.length) empty(this.dom.items[0]);//we can't use innerHTML="" here, for IE(even 11) we need remove method
+
+        //clear inline position
+      for (var i = 0, l = this.items.length; i < l; i++) {
+        this.items[i].dom.modalOuter[0].style.cssText = '';
+      }
+
+      function empty(el) {
+        while (el.firstChild) {
+          el.removeChild(el.firstChild);
+        }
+      }
+    })
+    this.on('destroy', function() {
+      this._defaults = 
+      this._handlers = 
+      this.$ = 
+      this._text = undefined;
     })
   }
   _gatherData(el) {
@@ -706,6 +835,385 @@ class njBox extends njBox_base {
       if (o.clickels) $(o.clickels).off('click', this._handlers.elsClick);
     }
   }
+  _addListeners() {//all other event handlers
+    var o = this.o,
+      that = this,
+      h = this._handlers;
+
+    h.container_resize = function (e) {
+      that.position();
+    }
+    h.container_scroll = function (e) {
+      that.position();
+    }
+    h.container_out = function (e) {
+      if(that.state.clickedEl && that.state.clickedEl === e.target || that.state.status !== 'shown') return;
+      var $el = $(e.target),
+        prevent = $el.closest('.njb, .njb-ui').length;
+      if (prevent) return;
+
+      (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+
+
+      if (o.out) {
+        if (that._cb('cancel') === false) return;
+        that.hide();
+      } else {
+        that._getActive().dom.modal.addClass('njb--pulse');
+        that._set_focus(that.items[that.state.active]);
+
+        setTimeout(function () {
+          that._getActive().dom.modal.removeClass('njb--pulse');
+        }, that._getAnimTime(that._getActive().dom.modal))
+      }
+    }
+
+    that.dom.container.on('resize', h.container_resize)
+                      .on('scroll', h.container_scroll)
+    
+    that.dom.document.on('click', h.container_out)
+
+    h.wrap_resize = function () {
+      that.position();
+    }
+    h.wrap_scroll = function () {
+      that.position();
+    }
+    h.wrap_keydown = function (e) {
+      that._cb('keydown', e);
+
+      switch (e.which) {
+        case 27://esc
+          if (o.esc) {
+            if (that._cb('cancel') === false) return;
+            that.hide();
+          }
+
+          (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+          break;
+
+      }
+    }
+    h.wrap_close = function (e) {
+      (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+
+      if (that._cb('cancel') === false) return;
+      that.hide();
+    }
+    h.wrap_ok = function (e) {
+      (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+
+      if (that._cb('ok') === false) return;
+      that.hide();
+    }
+    h.wrap_cancel = function (e) {
+      (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+
+      if (that._cb('cancel') === false) return;
+      that.hide();
+    }
+
+    that.dom.wrap .on('resize', h.wrap_resize)
+                  .on('scroll', h.wrap_scroll)
+                  .on('keydown', h.wrap_keydown)
+                  .delegate('[data-njb-close]', 'click', h.wrap_close)
+                  .delegate('[data-njb-ok]', 'click', h.wrap_ok)
+                  .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+
+    h.window_resize = function () {
+      that.position();
+    }
+    h.window_scroll = function () {
+      that.position();
+    }
+    h.window_orientation = function () {
+      that.position();
+    }
+
+    that.dom.window.on('resize', h.window_resize)
+                    .on('scroll', h.window_scroll)
+                    .on('orientationchange', h.window_orientation)
+
+    h.focusCatchBefore = function (e) {
+      var related = e.relatedTarget,
+        fromUi;
+
+      if (related) {//firefox have no related
+        fromUi = !!$(related).closest('.njb-ui').length;
+        if (fromUi) {
+          that._set_focus(that.items[that.state.active]);
+        } else {
+          that._set_focus(that.items[that.state.active], true);
+        }
+      } else {
+        that._set_focus(that.items[that.state.active], true);
+      }
+    }
+    h.focusCatchAfter = function (e) {
+      that._set_focus(that.items[that.state.active]);
+    }
+
+    this.dom.focusCatchBefore.on('focus', h.focusCatchBefore)
+    this.dom.focusCatchAfter.on('focus', h.focusCatchAfter)
+
+    this._cb('listeners_added');
+  }
+  _removeListeners() {
+    var h = this._handlers,
+        that = this;
+
+    that.dom.document.off('click', h.container_out)
+
+    that.dom.container.off('resize', h.container_resize)
+      .off('scroll', h.container_scroll)
+      
+
+    that.dom.wrap
+      .off('resize', h.wrap_resize)
+      .off('scroll', h.wrap_scroll)
+      .off('keydown', h.wrap_keydown)
+      .undelegate('[data-njb-close]', 'click', h.wrap_close)
+      .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
+      .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+
+
+    that.dom.window
+      .off('resize', h.window_resize)
+      .off('scroll', h.window_scroll)
+      .off('orientationchange', h.window_orientation)
+
+
+    that.dom.focusCatchBefore.off('focus', h.focusCatchBefore)
+    that.dom.focusCatchAfter.off('focus', h.focusCatchAfter)
+
+    this._cb('listeners_removed');
+
+    //remove links to all previous handlers
+    var elsClick = h.elsClick;
+    this._handlers = {
+      elsClick: elsClick
+    }
+  }
+  _scrollbar(type) {
+    var o = this.o;
+    switch (type) {
+      case 'hide':
+        if (this.state.scrollbarHidden) return;
+
+        if (this._g.containerIsBody) {//we can insert modal window in any custom element, that's why we need this if
+          var sb = (document.documentElement.scrollHeight || document.body.scrollHeight) > document.documentElement.clientHeight;//check for scrollbar existance (we can have no scrollbar on simple short pages)
+
+          //don't add padding to html tag if no scrollbar (simple short page) or popup already opened
+          if (!this.dom.container[0].njb_scrollbar && !this.state.scrollbarHidden && (sb || this.dom.html.css('overflowY') === 'scroll' || this.dom.body.css('overflowY') === 'scroll')) {
+            //existing of that variable means that other instance of popup hides scrollbar on this element already
+            this.dom.html.addClass('njb-hideScrollbar');
+            this.dom.html.css('paddingRight', parseInt(this.dom.html.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
+          }
+        } else {
+          var sb = (this.dom.container[0].scrollHeight > this.dom.container[0].clientHeight);//check for scrollbar existance on this element
+
+          //don't add padding to container if no scrollbar (simple short page) or popup already opened
+          // if (!this.state.scrollbarHidden && (sb || this.dom.container.css('overflowY') === 'scroll')) {
+
+          this.dom.container.addClass('njb-hideScrollbar');
+          // this.dom.container.css('paddingRight', parseInt(this.dom.container.css('paddingRight')) + njBox.g.scrollbarSize + 'px');
+
+          // }
+        }
+        this.state.scrollbarHidden = true;
+
+        // if(this.state.scrollbarHidden) {
+        //fixes case when we have 2 modals on one container, and after first close, first popup shows scrollbar
+        //how many elements hides scrollbar on this element...
+        (this.dom.container[0].njb_scrollbar) ? this.dom.container[0].njb_scrollbar++ : this.dom.container[0].njb_scrollbar = 1;
+        // }
+        
+        break;
+
+      case 'show':
+        if (!this.state.scrollbarHidden) return;
+
+        if (--this.dom.container[0].njb_scrollbar) {
+          delete this.state.scrollbarHidden;
+          return;
+        } else {
+          // ie 7 don't support delete on dom elements
+          this.dom.container[0].njb_scrollbar = undefined;
+        }
+
+        if (this._g.containerIsBody) {
+          this.dom.html.removeClass('njb-hideScrollbar');
+          var computedPadding = parseInt(this.dom.html.css('paddingRight')) - njBox.g.scrollbarSize;
+
+          if (computedPadding) {//if greater than 0
+            this.dom.html.css('paddingRight', computedPadding + 'px');
+          } else {//if padding is 0, remove it from style attribute
+            this.dom.html[0].style.paddingRight = '';
+          }
+        } else {
+
+          this.dom.container.removeClass('njb-hideScrollbar');
+          var computedPadding = parseInt(this.dom.container.css('paddingRight')) - njBox.g.scrollbarSize;
+
+          if (computedPadding) {//if greater than 0
+            this.dom.container.css('paddingRight', computedPadding + 'px');
+          } else {//if padding is 0, remove it from style attribute
+            this.dom.container[0].style.paddingRight = ''
+          }
+        }
+
+        delete this.state.scrollbarHidden;
+
+        break;
+    }
+  }
+  _backdrop(type) {
+    var o = this.o,
+      that = this;
+
+    switch (type) {
+      case 'show':
+        this.dom.backdrop = this._createEl('backdrop');
+
+        if (this.state.backdropVisible) return;
+        
+        if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._g.animation.showDur + 'ms')
+
+        if (o.layout === 'absolute') this.dom.backdrop.addClass('njb-absolute');
+        this.dom.container.append(this.dom.backdrop);
+
+        setTimeout(function () {//this prevent page from scrolling in chrome while background transition is working..., also needed as reflow
+          that.dom.backdrop.addClass('njb-backdrop--visible');
+        }, 0)
+
+        this.state.backdropVisible = true;
+        
+        break;
+
+      case 'hide':
+        if (!this.state.backdropVisible) return;
+        if (o.backdropassist) this.dom.backdrop.css('transitionDuration', this._g.animation.hideDur + 'ms')
+
+        this.dom.backdrop.removeClass('njb-backdrop--visible');
+
+        setTimeout(function () {
+          that.dom.backdrop[0].parentNode.removeChild(that.dom.backdrop[0])
+          if (o.backdropassist) that.dom.backdrop[0].style.cssText = '';
+          delete that.state.backdropVisible;
+        }, that._getAnimTime(that.dom.backdrop[0]))
+        break;
+    }
+  }
+  _uiUpdate(index = this.state.active) {
+    var dom = this.dom,
+        o = this.o,
+        item = this.items[index];
+
+    if (!item) {
+      this._e('njBox, can\'t update ui info from item index - ' + index);
+      return;
+    }
+
+    //set title
+    if (item.title) {
+      dom.ui.addClass('njb-ui--title');
+    } else {
+      dom.ui.removeClass('njb-ui--title');
+    }
+    dom.wrap.find('[data-njb-title]').html(item.title || '')
+
+    if (item.type === 'image') {
+      dom.wrap.removeClass('njb-wrap--content').addClass('njb-wrap--image');
+    } else {
+      dom.wrap.removeClass('njb-wrap--image').addClass('njb-wrap--content');
+    }
+  }
+  _drawItem(props) {
+    var o = this.o,
+        {item, container, prepend} = props,
+        itemToInsert = item.toInsert;
+    
+    this._cb('item_prepare', item);
+
+    if (item.state.contentInserted) {
+      this._cb('item_content_ready', item);
+    } else if(o.delayed && (item.type === 'image' || item.type === 'selector')) {
+      this._insertItemContent({item, delayed: false});
+    }
+
+    if (prepend) {
+      container.prepend(itemToInsert)
+    } else {
+      container.append(itemToInsert);
+    }
+
+    this._cb('item_inserted', item);
+    if(item.state.contentInserted) this._cb('item_ready', item);
+  }
+  _set_focus(item, last) {
+    var o = this.o,
+      focusable,
+      focusEl;
+    
+    if(!o.autofocus) {
+      this.dom.wrap[0].focus();
+      return;
+    }
+
+    if (last) {
+      focusable = this.dom.ui.find(this.o._focusable)
+      focusable[focusable.length - 1].focus();
+      return;
+    }
+    if (o.autofocus) {
+      focusEl = item.dom.modal.find(o.autofocus)[0]
+    }
+    if (!focusEl) {
+      focusEl = item.dom.modal.find('[autofocus]')[0]
+    }
+    if (!focusEl) {
+      focusable = item.dom.modal.find(this.o._focusable)
+      focusEl = focusable[0]
+    }
+
+    if (focusEl) {
+      focusEl.focus();
+    }
+    //  else if (o.close === "outside") {//then try to focus close buttons
+    //   this.dom.close[0].focus()
+    // } else if (o.close === "inside" && item.dom.close) {//if type:"template" is used we have no close button here
+    //   item.dom.close[0].focus();
+    // }
+    else {//if no, focus popup itself
+      item.dom.modal[0].focus();
+    }
+  }
+  _removeSelectorItemsElement() {
+    var items = this.items,
+        item,
+        contentEl;
+
+    for (var i = 0, l = items.length; i < l; i++) {
+      if (items[i].type === 'selector' && this.o.delayed) {
+        item = items[i];
+        if (!item.state.contentInserted) continue;
+
+        contentEl = item.state.contentEl;
+
+        if (item.state.contentElDisplayNone) {
+          contentEl[0].style.display = 'none'
+          item.state.contentElDisplayNone = undefined;
+        }
+        if (item.state.contentElStyle) {
+          contentEl[0].style.cssText = item.o.contentElStyle;
+          item.state.contentElStyle = undefined;
+        }
+        //return selector element to the dom
+        this.dom.body.append(contentEl)
+        item.state.contentInserted = false;
+      }
+    }
+  }
   
 }
 njBox.defaults = defaults;
@@ -739,7 +1247,7 @@ njBox.get = function (elem) {
 //   })
 // }
 
-window.t = new njBox('.el', {backdrop:false, content:'content1'})
-.on('inited', function() {
-  // console.log(this);
+window.t = new njBox('.el', {content:'content1'})
+.on('hidden', function() {
+  
 })

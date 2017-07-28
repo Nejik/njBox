@@ -1,3 +1,6 @@
+*не показывается после закрытия
+*не забыть destroy перенести
+*this._text вынести из njBox_base
 *вынести alert/promt/confirm в отдельный файл dialog.js
 *njBox.g getdefault info убрать из глобального скоупа (?)
 njBox в глобальном скопе обычный объект Оо

@@ -69,6 +69,10 @@ class njBox_base {
     this.items = this._createItems(this._g.rawItems)
     this._cb('items_create');
     this._cb('items_created', this.items);
+    if (!this.items.length) {
+      this._e('njBox, smth goes wrong, plugin don\'t create any item to show', true);
+      return;
+    }
     
     this.state.inited = true;
     this._cb('inited');
@@ -78,9 +82,10 @@ class njBox_base {
     this.state.arguments.show = arguments;
     
     var o = this.o;
-
-    if (index !== undefined) this.state.active = index - 1;
-
+    
+    if (index !== undefined && typeof index === 'number') this.state.active = index - 1;
+    
+    //if popup is hiding now, force to end hide and start show
     if(this.state.status === 'hide') {
       clearTimeout(this._g.hiddenCb);
       this._hiddenCb();
@@ -89,20 +94,22 @@ class njBox_base {
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
-    if (!this.items.length) {
-      this._e('njBox, smth goes wrong, plugin don\'t create any item to show', true);
-      return;
-    }
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
+
+    this._cb('show_prepare');
+    this._cb('show_prepared');
 
     this.returnValue = null;
     
     this._cb('dom_insert');
+    this._cb('dom_inserted');
 
     this.position();//set all positions
 
-    this._anim('show');
+    this._cb('animation_show');
+
+    //dont forget manually call  _shownCb
     
     return this;
   }
@@ -122,8 +129,13 @@ class njBox_base {
 
     if (this._cb('hide') === false) return;//callback hide
 
-    this._anim('hide');
+    this._cb('hide_prepare');
+    this._cb('hide_prepared');
+
+    this._cb('animation_hide');
     
+    //dont forget manually call  _hiddenCb
+
     return this;
   }
   position() {
@@ -148,16 +160,13 @@ class njBox_base {
     this._cb('destroy');
 
     this._events =
-      this.o =
-      this.state = 
-      this._defaults = 
-      this._text =
-      this._g =
-      this._handlers =
-      this.items =
-      this.itemsRaw =
-      this.dom =
-      this.$ = undefined;
+    this.o =
+    this.state = 
+    this._text =
+    this._g =
+    this.items =
+    this.itemsRaw =
+    this.dom = undefined;
 
     this._cb('destroyed');
 
@@ -210,16 +219,6 @@ class njBox_base {
   _getActive() {
     return this.items[this.state.active];
   }
-  _anim(type) {
-    switch (type) {
-      case 'show':
-        this._cb('animation_show');
-        break;
-      case 'hide':
-        this._cb('animation_hide');
-        break;
-    }
-  }
   _shownCb() {
     this._cb('shown');
   }
@@ -228,20 +227,6 @@ class njBox_base {
     this._cb('hidden');
     this.state.status = 'inited';
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   _clear() {
     var o = this.o;

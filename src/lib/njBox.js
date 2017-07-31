@@ -18,6 +18,12 @@ import {
 
 import j from 'lib/j'
 
+import {
+  alert,
+  confirm,
+  prompt
+} from 'lib/dialogs.js'
+
 var njBox = (function(window, undefined, setTimeout, document) {
 
 //use jquery if avaliable
@@ -1418,6 +1424,9 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
     njBox.autobind(njBox.defaults.autobind);
   })
 }
+njBox.alert = alert;
+njBox.confirm = confirm;
+njBox.prompt = prompt;
 
 return njBox;
 })(window,undefined, setTimeout, document);

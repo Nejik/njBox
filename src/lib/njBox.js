@@ -16,13 +16,13 @@ import {
   text
 } from 'lib/utils.js';
 
-import j from 'lib/j'
-
 import {
   alert,
   confirm,
   prompt
 } from 'lib/dialogs.js'
+
+import j from 'lib/j'
 
 var njBox = (function(window, undefined, setTimeout, document) {
 
@@ -144,6 +144,8 @@ class njBox extends njBox_base {
     this.on('show_prepare', function() {
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
 
+      this.returnValue = null;
+      
       if(this.o.scrollbar === 'hide') this._scrollbar('hide');
       
       if(this.o.backdrop) this._backdrop('show');
@@ -961,13 +963,19 @@ class njBox extends njBox_base {
     h.wrap_ok = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      if (that._cb('ok') === false) return;
+      that.returnValue = that._getReturnValue();
+
+      if (that._cb('ok', that.returnValue) === false) return;
+
       that.hide();
     }
     h.wrap_cancel = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      if (that._cb('cancel') === false) return;
+      that.returnValue = that._getReturnValue();
+
+      if (that._cb('cancel', that.returnValue) === false) return;
+
       that.hide();
     }
 
@@ -1015,6 +1023,14 @@ class njBox extends njBox_base {
     this.dom.focusCatchAfter.on('focus', h.focusCatchAfter)
 
     this._cb('listeners_added');
+  }
+  _getReturnValue() {
+    let modal = this._getActive().dom.modal,
+        prompt_input = modal.find('[data-njb-return]'),
+        prompt_value;
+    if (prompt_input.length) prompt_value = prompt_input[0].value || "";
+
+    return prompt_value;
   }
   _removeListeners() {
     var h = this._handlers,

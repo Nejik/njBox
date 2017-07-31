@@ -235,6 +235,7 @@ class njBox {
     if (clear) this._clear();
   }
   _cb(type) {//cb - callback
+    // console.log(type);
     var o = this.o,
       callbackResult;
 
@@ -254,17 +255,21 @@ class njBox {
     //trigger on modal instance
     this.trigger.apply(this, arguments);
 
+
+
+    var cbArgs = Array.prototype.slice.call(arguments);
+
     //trigger common global callback on instance
     this.trigger.apply(this, ['cb'].concat(cbArgs));
 
     //trigger common callback function from options
-    var cbArgs = Array.prototype.slice.call(arguments);
     if (o && o['oncb'] && typeof o['oncb'] === 'function') {
       callbackResult = o['oncb'].apply(this, cbArgs);
     }
 
     //trigger callback from options with "on" prefix (e.g. onshow, onhide)
     var clearArgs = Array.prototype.slice.call(arguments, 1);
+    
     if (o && typeof o['on' + type] === 'function') {
       callbackResult = o['on' + type].apply(this, clearArgs);
     }

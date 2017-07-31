@@ -45,14 +45,6 @@ class njBox extends njBox_base {
     super(opts);
     this.initialization();
   }
-  update() {//recreate all slides from this._g.rawItems
-    this.state.arguments.update = arguments;
-    this.items = this._createItems(this._g.rawItems);
-
-    this._addClickHandler();
-
-    return this;
-  }
   initialization() {
     this.on('init', function() {
       this._defaults = njBox.defaults;
@@ -125,11 +117,7 @@ class njBox extends njBox_base {
     this.on('item_normalized', function(item) {
       if(!item.type) item.type = this._type(item.content)
     })
-    this.on('item_normalized', function(item, itemRaw) {
-      item.el = itemRaw.el || undefined;
-    })
     this.on('item_create', function(item, index) {
-      item.content = item.content || this._text._missedContent;
       item.dom = this._createItemDom(item);
       item.toInsert = item.dom.modalOuter;
 
@@ -137,6 +125,8 @@ class njBox extends njBox_base {
     })
     this.on('show_prepare', function() {
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
+
+      this.returnValue = null;
 
       if(this.o.scrollbar === 'hide') this._scrollbar('hide');
       
@@ -270,9 +260,6 @@ class njBox extends njBox_base {
         }
       }
     })
-    this.on('hidden', function() {
-      if (this.o.focusprevious) this._focusPreviousModal();
-    })
     this.on('position', function() {
       var dimensions = this.state.dimensions = this._getDimensions();
 
@@ -298,13 +285,8 @@ class njBox extends njBox_base {
       this._setMaxHeight(this._getActive());
     })
     this.on('destroy', function() {
-      this._removeClickHandler();
-
-      this.dom.container.removeClass('njb-relative');
-
       this._defaults = 
       this._handlers = 
-      this._text = 
       this.$ = 
       this._text = undefined;
     })
@@ -312,7 +294,7 @@ class njBox extends njBox_base {
   _gatherData(el) {
     let o = this.o,
       $el = $(el),
-      dataProcessed = {el}
+      dataProcessed = {}
 
     if (!$el.length) {
       return dataProcessed;
@@ -911,6 +893,7 @@ class njBox extends njBox_base {
 
 
       if (o.out) {
+        if (that._cb('cancel') === false) return;
         that.hide();
       } else {
         that._getActive().dom.modal.addClass('njb--pulse');
@@ -939,6 +922,7 @@ class njBox extends njBox_base {
       switch (e.which) {
         case 27://esc
           if (o.esc) {
+            if (that._cb('cancel') === false) return;
             that.hide();
           }
 
@@ -950,6 +934,7 @@ class njBox extends njBox_base {
     h.wrap_close = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
+      if (that._cb('cancel') === false) return;
       that.hide();
     }
     h.wrap_ok = function (e) {
@@ -1375,21 +1360,6 @@ class njBox extends njBox_base {
       v.body.css('maxHeight', height + 'px');
     }
   }
-  _getPassedOption(optionName) {//this method needs to check if option was passed specifically by user or get from defaults
-    if (this._g.optionsGathered && this._g.optionsGathered[optionName] !== undefined) {
-      return this._g.optionsGathered[optionName]
-    } else if(this._g.optionsPassed[optionName] && this._g.optionsPassed[optionName] !== undefined) {
-      return this._g.optionsPassed[optionName]
-    }
-  }
-  _focusPreviousModal() {//because of possibility to open multiple dialogs, we need to proper focus handling when dialogs are closed
-    var openedBox = this.dom.body.find('.njb-wrap'),
-      openedInstance;
-
-    if (!openedBox.length) return;
-    openedInstance = openedBox[openedBox.length - 1].njBox;
-    openedInstance._set_focus(openedInstance.items[openedInstance.state.active]);
-  }
   
 }
 njBox.defaults = defaults;
@@ -1402,7 +1372,11 @@ if (document.body && !njBox.g) njBox.g = getDefaultInfo();
 njBox.get = function (elem) {
   var el = $(elem)[0];
 
-  return el && el.njBox || undefined
+  if (el) {
+    return el.njBox || undefined;
+  } else {
+    return undefined;
+  };
 }
 //todo smth with jquery here
 // njBox.autobind = function (selector) {
@@ -1425,3 +1399,6 @@ return njBox;
 export default njBox;
 
 window.t = new njBox('.el', {content:'content1'})
+.on('hidden', function() {
+  
+})

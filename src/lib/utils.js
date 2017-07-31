@@ -104,6 +104,9 @@ export function isPlainObject(obj) {
 								&& obj.constructor === Object
 								&& Object.prototype.toString.call(obj) === '[object Object]';
 }
+export function isWindow(elem) {
+	return elem != null && elem == elem.window
+}
 
 export function getItemFromDom(dom, selector) {
 	return dom.attr(selector) !== null ? dom : dom.find(`[${selector}]`);

@@ -3,7 +3,7 @@
  * nejikrofl@gmail.com
  * Copyright (c) 2017 N.J.
 */
-class njBox_base {
+class njBox {
   constructor(options) {
     if (!arguments.length) {
       console.error('njBox, arguments not passed.');
@@ -46,8 +46,8 @@ class njBox_base {
     this._cb('options_setted', o);
 
     // initializing addons
-    for (let key in njBox_base.addons) {
-      if (njBox_base.addons.hasOwnProperty(key)) {
+    for (let key in njBox.addons) {
+      if (njBox.addons.hasOwnProperty(key)) {
         this['_' + key + '_init']();
       }
     }
@@ -80,6 +80,11 @@ class njBox_base {
   show(index) {
     this._init();//try to init
     this.state.arguments.show = arguments;
+
+    if (this.state.status !== 'inited') {
+      this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+      return;
+    }
     
     var o = this.o;
     
@@ -90,26 +95,19 @@ class njBox_base {
       clearTimeout(this._g.hiddenCb);
       this._hiddenCb();
     }
-    if (this.state.status !== 'inited') {
-      this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
-      return;
-    }
+    
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
 
     this._cb('show_prepare');
     this._cb('show_prepared');
 
-    this.returnValue = null;
-    
     this._cb('dom_insert');
     this._cb('dom_inserted');
 
-    this.position();//set all positions
-
     this._cb('animation_show');
 
-    //dont forget manually call  _shownCb
+    //dont forget manually call  _shownCb here after animation end
     
     return this;
   }
@@ -134,7 +132,7 @@ class njBox_base {
 
     this._cb('animation_hide');
     
-    //dont forget manually call  _hiddenCb
+    //dont forget manually call  _hiddenCb here after animation end
 
     return this;
   }
@@ -146,8 +144,8 @@ class njBox_base {
     if (!this.state || !this.state.inited || (this.state.status !== 'show' && this.state.status !== 'shown')) return;
     
     this._cb('position');
-    
     this._cb('positioned');
+    
     return this;
   }
   destroy() {
@@ -311,12 +309,12 @@ class njBox_base {
   }
 }
 //addons
-njBox_base.addons = {}
+njBox.addons = {}
 
-njBox_base.addAddon = function (name, addon) {
-  njBox_base.addons[name] = true;
+njBox.addAddon = function (name, addon) {
+  njBox.addons[name] = true;
 
-  if (addon.options) Object.assign(njBox_base.defaults, addon.options);
-  Object.assign(njBox_base.prototype, addon.prototype);
+  if (addon.options) Object.assign(njBox.defaults, addon.options);
+  Object.assign(njBox.prototype, addon.prototype);
 }
-export default njBox_base;
+export default njBox;

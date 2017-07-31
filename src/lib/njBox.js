@@ -1,9 +1,16 @@
+/*!
+ * njBox - v3.0.0
+ * nejikrofl@gmail.com
+ * Copyright (c) 2017 N.J.
+*/
+
 import njBox_base from './njBox_base.js'
 
 import {
   getDefaultInfo,
   getItemFromDom,
   isPlainObject,
+  isWindow,
   defaults,
   templates,
   text
@@ -11,13 +18,11 @@ import {
 
 import j from 'lib/j'
 
+var njBox = (function(window, undefined, setTimeout, document) {
+
 //use jquery if avaliable
-let $;
-if(window.$ || window.jQuery) {
-  $ = window.$ || window.jQuery
-} else {
-  $ = j;
-}
+let $ = window.$ || window.jQuery;
+if(!$) $ = j;
 
 class njBox extends njBox_base {
   constructor(el, options) {
@@ -45,7 +50,7 @@ class njBox extends njBox_base {
       this._defaults = njBox.defaults;
       this._templates = njBox.templates;
       this._text = njBox.text;
-      //get environment infod, getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it init again
+      //get environment info, getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it init again
       if (!njBox.g) njBox.g = getDefaultInfo();
 
       this._handlers = {};//all callback functions we used in event listeners lives here
@@ -109,12 +114,6 @@ class njBox extends njBox_base {
         }
       }     
     })
-    this.on('inited', function() {
-      //add initial click handlers
-      this._addClickHandler();
-      //todo
-      // if (o.buttonrole && this._g.els) this._g.els.attr('role', o.buttonrole);
-    })
     this.on('item_normalized', function(item) {
       if(!item.type) item.type = this._type(item.content)
     })
@@ -126,6 +125,8 @@ class njBox extends njBox_base {
     })
     this.on('show_prepare', function() {
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
+
+      this.returnValue = null;
 
       if(this.o.scrollbar === 'hide') this._scrollbar('hide');
       
@@ -152,6 +153,15 @@ class njBox extends njBox_base {
         this.dom.wrap[0].style.display = 'block';
       }
     })
+    this.on('dom_inserted', function() {
+      this.position();//set all positions
+    })
+    this.on('inited', function() {
+      //add initial click handlers
+      this._addClickHandler();
+      //todo
+      // if (o.buttonrole && this._g.els) this._g.els.attr('role', o.buttonrole);
+    })
     this.on('animation_show', function() {
       var that = this,
           o = that.o,
@@ -169,8 +179,8 @@ class njBox extends njBox_base {
         modal.addClass(animShow);
 
         that._g.shownCb = setTimeout(() => {
-            if(that.state.status === 'show') that._shownCb();
-          //check if hiding not initialized
+          //check if hiding not initialized while showing animation
+          if(that.state.status === 'show') that._shownCb();
         }, animShowDur);
       } else {
         that._shownCb();
@@ -187,6 +197,8 @@ class njBox extends njBox_base {
       this._set_focus(this.items[this.state.active]);
     })
     this.on('hide_prepare', function() {
+      if (this.state.focused) this.state.focused.focus();
+
       this._backdrop('hide');
 
       this._removeListeners();
@@ -208,7 +220,8 @@ class njBox extends njBox_base {
         modal.addClass(animHide);
 
         that._g.hiddenCb = setTimeout(() => {
-            that._hiddenCb()
+            //check if showing not initialized while hiding animation
+          if(that.state.status === 'hide') that._hiddenCb()
         }, animHideDur)
       } else {
         that._hiddenCb();
@@ -246,6 +259,30 @@ class njBox extends njBox_base {
           el.removeChild(el.firstChild);
         }
       }
+    })
+    this.on('position', function() {
+      var dimensions = this.state.dimensions = this._getDimensions();
+
+      //position of global wrapper
+      if (this.o.layout === 'absolute') {
+        //global wrap positioning
+        var scrollTop = dimensions.container.scrollTop,
+          scrollLeft = dimensions.container.scrollLeft;
+
+        if (scrollTop <= dimensions.container.scrollTopMax) {
+          this.dom.wrap.css({ 'top': scrollTop + 'px', 'left': scrollLeft + 'px' })
+        }
+
+        //backdrop positioning
+        this.dom.backdrop.css({ 'width': 'auto', 'height': 'auto' });
+        this.dom.backdrop[0].clientHeight;
+        this.dom.backdrop.css({
+          'width': dimensions.container.scrollWidth + 'px',
+          'height': dimensions.container.scrollHeight + 'px'
+        });
+      }
+
+      this._setMaxHeight(this._getActive());
     })
     this.on('destroy', function() {
       this._defaults = 
@@ -1214,6 +1251,115 @@ class njBox extends njBox_base {
       }
     }
   }
+  _getDimensions() {
+    var o = this.o,
+        dimensions = {};
+    
+    dimensions.window = this._getDomSize(this.dom.window)
+    dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
+    if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
+    if(o.el && o.el.length === 1) dimensions.el = this._getDomSize(o.el)
+
+    return dimensions;
+  }
+  _getDomSize(domObject) {
+    domObject = $(domObject)[0]
+    var objIsWindow = isWindow(domObject),
+        rectOriginal,
+        rectComputed,
+        d = document,
+        documentElement = d.documentElement,
+        documentBody = d.body;
+    
+    if (objIsWindow) {
+      rectComputed = {
+        el: domObject,
+        left: 0,
+        top: 0,
+        right: documentElement.clientWidth,
+        bottom: documentElement.clientHeight,
+        width: documentElement.clientWidth,
+        height: documentElement.clientHeight,
+        scrollWidth: Math.max(
+          documentBody.scrollWidth, documentElement.scrollWidth,
+          documentBody.offsetWidth, documentElement.offsetWidth,
+          documentBody.clientWidth, documentElement.clientWidth
+        ),
+        scrollHeight: Math.max(
+          documentBody.scrollHeight, documentElement.scrollHeight,
+          documentBody.offsetHeight, documentElement.offsetHeight,
+          documentBody.clientHeight, documentElement.clientHeight
+        ),
+        scrollLeft: window.pageXOffset || documentElement.scrollLeft || documentBody.scrollLeft || 0,
+        scrollTop: window.pageYOffset || documentElement.scrollTop || documentBody.scrollTop || 0
+      }
+    } else {
+      rectOriginal = domObject.getBoundingClientRect()
+      rectComputed = Object.assign({}, rectOriginal)
+      
+      rectComputed.el = domObject;
+      rectComputed.width = rectComputed.right - rectComputed.left;
+      rectComputed.height = rectComputed.bottom - rectComputed.top;
+      rectComputed.scrollWidth = domObject.scrollWidth;
+      rectComputed.scrollHeight = domObject.scrollHeight;
+      rectComputed.scrollLeft = domObject.scrollLeft || 0;
+      rectComputed.scrollTop = domObject.scrollTop || 0;
+    }
+    rectComputed.scrollLeftMax = rectComputed.scrollWidth - rectComputed.width < 0 ? 0 : rectComputed.scrollWidth - rectComputed.width;
+    rectComputed.scrollTopMax = rectComputed.scrollHeight - rectComputed.height < 0 ? 0 : rectComputed.scrollHeight - rectComputed.height;
+    
+    return rectComputed;
+  }
+  _setMaxHeight(item) {
+    let o = this.o,
+        dimensions = this.state.dimensions,
+        height,
+        bodyBorderBox;
+
+    if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
+
+    if (!this.state.autoheightAdded) {
+      // this.dom.wrap.addClass('njb-wrap--autoheight');
+      (o.autoheight === true) ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image')
+      this.state.autoheightAdded = true
+    }
+
+    let v = item.dom,
+      modalMargin = summ(v.modal, 'margin'),
+      modalPadding = (summ(v.modal, 'padding') + parseInt(v.modal.css('borderTopWidth')) + parseInt(v.modal.css('borderBottomWidth'))) || 0,
+
+      bodyMargin = summ(v.body, 'margin'),
+      bodyPadding = (summ(v.body, 'padding') + parseInt(v.body.css('borderTopWidth')) + parseInt(v.body.css('borderBottomWidth'))) || 0,
+
+      containerHeight = (this._g.containerIsBody) ? dimensions.window.height : dimensions.container.height;
+
+      height = containerHeight,
+
+      bodyBorderBox = v.body.css('boxSizing') === 'border-box';
+
+    function summ(el, prop) {
+      return (parseInt(el.css(prop + 'Top')) + parseInt(el.css(prop + 'Bottom'))) || 0;
+    }
+
+    let headerHeight = 0,
+      footerHeight = 0;
+    
+    (v.header && v.header.length) ? headerHeight = v.header[0].scrollHeight + (parseInt(v.header.css('borderTopWidth')) + parseInt(v.header.css('borderBottomWidth'))) || 0 : 0;
+    (v.footer && v.footer.length) ? footerHeight = v.footer[0].scrollHeight + (parseInt(v.footer.css('borderTopWidth')) + parseInt(v.footer.css('borderBottomWidth'))) || 0 : 0;
+
+    height = containerHeight - modalMargin - modalPadding - bodyMargin - headerHeight - footerHeight;
+
+    if (!bodyBorderBox) height -= bodyPadding;
+
+
+    if (item.type === 'image') {
+      var autoheightImg = containerHeight - modalMargin - modalPadding - bodyMargin - bodyPadding - headerHeight - footerHeight;
+
+      if (v.img) v.img.css('maxHeight', autoheightImg + 'px');
+    } else {
+      v.body.css('maxHeight', height + 'px');
+    }
+  }
   
 }
 njBox.defaults = defaults;
@@ -1246,6 +1392,11 @@ njBox.get = function (elem) {
 //     njBox.autobind(njBox.defaults.autobind);
 //   })
 // }
+
+return njBox;
+})(window,undefined, setTimeout, document);
+
+export default njBox;
 
 window.t = new njBox('.el', {content:'content1'})
 .on('hidden', function() {

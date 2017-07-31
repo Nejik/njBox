@@ -1,3 +1,5 @@
+*this.returnValue = prompt_value перенести
+*не работает if (this.state.focused) this.state.focused.focus();
 *не показывается после закрытия
 *не забыть destroy перенести
 *this._text вынести из njBox_base

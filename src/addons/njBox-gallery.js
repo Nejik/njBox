@@ -513,7 +513,7 @@
         if (this.$.isArray(o.content)) {
           this._g.items_raw = o.content;
         } else {
-          this._g.els = this._g_g_gatherElements(o.gallery);
+          this._g.els = this._g_gatherElements(o.gallery);
           this._g.items_raw = [];
 
           if (this._g.els && this._g.els.length) {
@@ -526,7 +526,7 @@
           }
         }
       },
-      _g_g_gatherElements(selector) {
+      _g_gatherElements(selector) {
         if (selector) {
           return this.o.el.find(selector);
         } else {

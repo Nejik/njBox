@@ -24,6 +24,13 @@ class njBox {
   _init() {
     if (this.state && this.state.inited) return;//init only once
 
+    // initializing addons
+    for (let key in njBox.addons) {
+      if (njBox.addons.hasOwnProperty(key)) {
+        this['_' + key + '_init']();
+      }
+    }
+
     this._cb('init');
 
     var opts = this.co;//constructorOptions
@@ -34,26 +41,19 @@ class njBox {
       active: 0,
       arguments: {}//here all arguments from public methods are saved (for using in callbacks/events)
     };
-
+    
     //inner options, this settings alive throughout the life cycle of the plugin(until destroy)
     this._g = {
       optionsPassed: opts
     };
 
-    var o = this.o = opts;
+    this.o = opts;
 
     this._cb('options_set');
-    this._cb('options_setted', o);
-
-    // initializing addons
-    for (let key in njBox.addons) {
-      if (njBox.addons.hasOwnProperty(key)) {
-        this['_' + key + '_init']();
-      }
-    }
+    this._cb('options_setted', this.o);
 
     //we should have content for creating item
-    if (!o.content) {
+    if (!this.o.content) {
       this._e('njBox, no content for popup.');
       return;
     }
@@ -86,8 +86,6 @@ class njBox {
       return;
     }
     
-    var o = this.o;
-    
     if (index !== undefined && typeof index === 'number') this.state.active = index - 1;
     
     //if popup is hiding now, force to end hide and start show
@@ -113,7 +111,6 @@ class njBox {
   }
   hide() {
     this.state.arguments.hide = arguments;
-    var that = this;
 
     if(this.state.status === 'show') {
       clearTimeout(this._g.shownCb);
@@ -139,8 +136,6 @@ class njBox {
   position() {
     this.state.arguments.position = arguments;
 
-    var o = this.o;
-
     if (!this.state || !this.state.inited || (this.state.status !== 'show' && this.state.status !== 'shown')) return;
     
     this._cb('position');
@@ -160,10 +155,9 @@ class njBox {
     this._events =
     this.o =
     this.state = 
-    this._text =
     this._g =
     this.items =
-    this.itemsRaw =
+    this._g.rawItems =
     this.dom = undefined;
 
     this._cb('destroyed');
@@ -187,31 +181,28 @@ class njBox {
 
     return normalizedItem;
   }
-  _normalizeItem(item, el) {
+  _normalizeItem(itemRaw, el) {
     var evaluatedContent;
     
-    if (typeof item.content === 'function') {
-      evaluatedContent = item.content.call(this, item);
+    if (typeof itemRaw.content === 'function') {
+      evaluatedContent = itemRaw.content.call(this, itemRaw);
     } else {
-      evaluatedContent = item.content;
+      evaluatedContent = itemRaw.content;
     }
 
-    var content = evaluatedContent || this._text._missedContent;
-
     var item = {
-      content: content,
-      type: item.type,
-      header: item.header,
-      footer: item.footer,
-      title: item.title,
+      content: evaluatedContent,
+      type: itemRaw.type,
+      header: itemRaw.header,
+      footer: itemRaw.footer,
+      title: itemRaw.title,
       state: {
         status: 'inited'
       },
-      raw: item
+      raw: itemRaw
     }
 
-
-    this._cb('item_normalized', item);
+    this._cb('item_normalized', item, itemRaw);
     return item;
   }
   _getActive() {
@@ -236,8 +227,6 @@ class njBox {
       arguments: {},
       inited: true
     };
-
-    this._cb('cleared');
   }
   _e(msg, clear) {//_e
     if (!msg) return;
@@ -265,19 +254,17 @@ class njBox {
     //trigger on modal instance
     this.trigger.apply(this, arguments);
 
+    //trigger common global callback on instance
+    this.trigger.apply(this, ['cb'].concat(cbArgs));
 
     //trigger common callback function from options
     var cbArgs = Array.prototype.slice.call(arguments);
     if (o && o['oncb'] && typeof o['oncb'] === 'function') {
       callbackResult = o['oncb'].apply(this, cbArgs);
     }
-    //trigger common global callback on instance
-    this.trigger.apply(this, ['cb'].concat(cbArgs));
-
 
     //trigger callback from options with "on" prefix (e.g. onshow, onhide)
     var clearArgs = Array.prototype.slice.call(arguments, 1);
-
     if (o && typeof o['on' + type] === 'function') {
       callbackResult = o['on' + type].apply(this, clearArgs);
     }

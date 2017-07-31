@@ -1,3 +1,4 @@
+*o.el и o.elem дублируют друг друга
 *this.returnValue = prompt_value перенести
 *не работает if (this.state.focused) this.state.focused.focus();
 *не показывается после закрытия

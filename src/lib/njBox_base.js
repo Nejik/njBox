@@ -160,10 +160,9 @@ class njBox {
     this._events =
     this.o =
     this.state = 
-    this._text =
     this._g =
     this.items =
-    this.itemsRaw =
+    this._g.rawItems =
     this.dom = undefined;
 
     this._cb('destroyed');
@@ -187,31 +186,28 @@ class njBox {
 
     return normalizedItem;
   }
-  _normalizeItem(item, el) {
+  _normalizeItem(itemRaw, el) {
     var evaluatedContent;
     
-    if (typeof item.content === 'function') {
-      evaluatedContent = item.content.call(this, item);
+    if (typeof itemRaw.content === 'function') {
+      evaluatedContent = itemRaw.content.call(this, itemRaw);
     } else {
-      evaluatedContent = item.content;
+      evaluatedContent = itemRaw.content;
     }
 
-    var content = evaluatedContent || this._text._missedContent;
-
     var item = {
-      content: content,
-      type: item.type,
-      header: item.header,
-      footer: item.footer,
-      title: item.title,
+      content: evaluatedContent,
+      type: itemRaw.type,
+      header: itemRaw.header,
+      footer: itemRaw.footer,
+      title: itemRaw.title,
       state: {
         status: 'inited'
       },
-      raw: item
+      raw: itemRaw
     }
 
-
-    this._cb('item_normalized', item);
+    this._cb('item_normalized', item, itemRaw);
     return item;
   }
   _getActive() {
@@ -236,8 +232,6 @@ class njBox {
       arguments: {},
       inited: true
     };
-
-    this._cb('cleared');
   }
   _e(msg, clear) {//_e
     if (!msg) return;

@@ -1423,5 +1423,3 @@ return njBox;
 })(window,undefined, setTimeout, document);
 
 export default njBox;
-
-// window.t = new njBox('.el', {content:'content1'})

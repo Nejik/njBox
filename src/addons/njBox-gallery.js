@@ -60,7 +60,7 @@
           }
         })
         this.on('item_create', function (item, index) {
-          if (this._g.gallery) item.dom.modalOuter.attr('data-njb-index', index);
+          item.dom.modalOuter.attr('data-njb-index', index);
         })
         this.on('dom_insert', function () {
           this._g_setQueue(this.state.active);
@@ -113,8 +113,8 @@
           this.state.active = this._g_detectIndexForOpen();
         })
         this.on('shown', function () {
-          // this._g_drawItemSiblings()
-          // this._g_preload()
+          this._g_drawItemSiblings()
+          this._g_preload()
         })
         this.on('keydown', function (e) {
           var o = this.o;
@@ -143,7 +143,7 @@
         return this;
       },
       goTo(index) {
-        index = index - 1;//inside gallery we have index -1, because slides starts from 0
+        index = index - 1;//inside gallery we have index - 1, because slides starts from 0
 
         if (typeof index !== 'number') {
           this._error('njBox, wrong index argument in goTo method.')
@@ -291,12 +291,20 @@
           that = this;
         if (typeof that.queue.prev.index === 'number') {
           that._g_moveItem(that.queue.prev.item, -110, '%');
-          that._drawItem(that.queue.prev.item, true, that.dom.items);
+          this._drawItem({
+            item: that.queue.prev.item,
+            container: that.dom.items,
+            prepend: true
+          });
           that.queue.prev.tabs = that._g_makeUnfocusable(that.queue.prev.item.dom.modal, o._focusable)
         }
         if (typeof that.queue.next.index === 'number') {
           that._g_moveItem(that.queue.next.item, 110, '%');
-          that._drawItem(that.queue.next.item, false, that.dom.items);
+          this._drawItem({
+            item: that.queue.next.item,
+            container: that.dom.items,
+            prepend: false
+          });
           that.queue.next.tabs = that._g_makeUnfocusable(that.queue.next.item.dom.modal, o._focusable)
         }
         that.position();
@@ -305,10 +313,10 @@
         unit = unit || 'px';
 
         //detect translate property
-        if (njBox.g.transform['3d']) {
-          item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)'
-        } else if (njBox.g.transform['css']) {
-          item.dom.modalOuter[0].style.cssText = njBox.g.transform.css + ': translateX(' + (value + unit) + ')'
+        if (njBox_class.g.transform['3d']) {
+          item.dom.modalOuter[0].style.cssText = njBox_class.g.transform.css + ': translate3d(' + (value + unit) + ',0,0)'
+        } else if (njBox_class.g.transform['css']) {
+          item.dom.modalOuter[0].style.cssText = njBox_class.g.transform.css + ': translateX(' + (value + unit) + ')'
         } else {
           item.dom.modalOuter[0].style.cssText = 'left:' + (value + unit)
         }

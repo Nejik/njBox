@@ -174,7 +174,7 @@ j.fn.data = function (type) {
     }
 }
 j.fn.attr = function (prop, value) {
-    if (value) {
+    if (value !== undefined) {
         return this.each(function () {
             this.setAttribute(prop, value);
         })

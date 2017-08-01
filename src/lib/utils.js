@@ -97,20 +97,11 @@ export function getDefaultInfo() {
 
 	return options
 }
-
-export function isPlainObject(obj) {
-	return	typeof obj === 'object'
-								&& obj !== null
-								&& obj.constructor === Object
-								&& Object.prototype.toString.call(obj) === '[object Object]';
-}
-export function isWindow(elem) {
-	return elem != null && elem == elem.window
-}
-
 export function getItemFromDom(dom, selector) {
 	return dom.attr(selector) !== null ? dom : dom.find(`[${selector}]`);
 }
+
+
 export const defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
@@ -173,7 +164,6 @@ export const templates = {
 	ui            : '<div class="njb-ui"></div>',
 	title         : '<div class="njb-ui__title"><div class="njb-ui__title-inner" id="njb-title" data-njb-title></div></div>'//id in title used for accessibility
 }
-
 export const text = {
 	_missedContent: 'njBox plugin: meow, put some content here...',//text for case, when slide have no content
 	preloader     : 'Loading...',//title on preloader element

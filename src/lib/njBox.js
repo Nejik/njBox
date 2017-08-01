@@ -9,20 +9,18 @@ import njBox_base from './njBox_base.js'
 import {
   getDefaultInfo,
   getItemFromDom,
-  isPlainObject,
-  isWindow,
   defaults,
   templates,
   text
 } from 'lib/utils.js';
-
-import j from 'lib/j'
 
 import {
   alert,
   confirm,
   prompt
 } from 'lib/dialogs.js'
+
+import j from 'lib/j'
 
 var njBox = (function(window, undefined, setTimeout, document) {
 
@@ -39,7 +37,7 @@ class njBox extends njBox_base {
     var opts;
 
     if (!options && el) {//if we have only one argument
-      if (isPlainObject(el)) {//if this argument is plain object, it is options
+      if ($.isPlainObject(el)) {//if this argument is plain object, it is options
         opts = el;
       } else {//if it's not options, it is dom/j/jQuery element or selector
         opts = { elem: el }
@@ -49,17 +47,10 @@ class njBox extends njBox_base {
       opts.elem = el;
     }
     super(opts);
-    this.initialization();
+    this._initialization();
   }
-  update() {//recreate all slides from this._g.rawItems
-    this.state.arguments.update = arguments;
-    this.items = this._createItems(this._g.rawItems);
-
-    this._addClickHandler();
-
-    return this;
-  }
-  initialization() {
+  
+  _initialization() {
     this.on('init', function() {
       this._defaults = njBox.defaults;
       this._templates = njBox.templates;
@@ -75,7 +66,7 @@ class njBox extends njBox_base {
       //set default settings
       this._g.insertWrap = true;//should we insert all dom stuff with ui? No if popover)
       
-      var o = this.o = Object.assign({}, this._defaults, o)
+      var o = this.o = $.extend({}, this._defaults, o)
 
       if (o.jquery) $ = o.jquery;
       this.$ = $;
@@ -86,7 +77,14 @@ class njBox extends njBox_base {
         this._g.els = $elem;
         this._cb('options_gathered', optionsGathered, $elem[0]);
 
-        Object.assign(this.o, optionsGathered)
+        $.extend(this.o, optionsGathered)
+      }
+
+      // initializing addons
+      for (let key in njBox.addons) {
+        if (njBox.addons.hasOwnProperty(key)) {
+          this['_' + key + '_init']();
+        }
       }
 
       this._g.animation = this._calculateAnimations();
@@ -97,12 +95,12 @@ class njBox extends njBox_base {
 
         if (!$elem.length) {
           that._e(`njBox, wrong selector or element in o.elem (${elem})`);
-          return;
+          return $elem;
         }
         if ($elem.length > 1) $elem = $($elem[0]);
         if ($elem[0].njBox) {
           that._e(`njBox, already inited on this element (${elem})`);
-          return;
+          return $elem;
         }
         $elem[0].njBox = that; //prevent multiple initialization on one element
 
@@ -128,10 +126,9 @@ class njBox extends njBox_base {
         }
       }     
     })
-    this.on('item_normalized', function(item) {
-      if(!item.type) item.type = this._type(item.content)
-    })
     this.on('item_normalized', function(item, itemRaw) {
+      if(!item.type) item.type = this._type(item.content)
+
       item.el = itemRaw.el || undefined;
     })
     this.on('item_create', function(item, index) {
@@ -143,6 +140,8 @@ class njBox extends njBox_base {
     })
     this.on('show_prepare', function() {
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
+
+      delete this.returnValue;
 
       if(this.o.scrollbar === 'hide') this._scrollbar('hide');
       
@@ -315,15 +314,23 @@ class njBox extends njBox_base {
       this._text = undefined;
     })
   }
+  update() {//recreate all slides from this._g.rawItems
+    this.state.arguments.update = arguments;
+    this.items = this._createItems(this._g.rawItems);
+
+    this._addClickHandler();
+
+    return this;
+  }
   _gatherData(el) {
     let o = this.o,
       $el = $(el),
-      dataProcessed = {el}
+      dataProcessed = {$elem:$el}
 
     if (!$el.length) {
       return dataProcessed;
     }
-    var dataO = Object.assign({}, $el.data());//data original, copy options to separate object, because we want to modify some options during processing, if we do that on native domstringmap, deleting will also touch html
+    var dataO = $.extend({}, $el.data());//data original, copy options to separate object, because we want to modify some options during processing, if we do that on native domstringmap, deleting will also touch html
 
 
     if (dataO.njbOptions) {
@@ -351,7 +358,7 @@ class njBox extends njBox_base {
       if (title_attr) dataProcessed.title = title_attr;
     }
 
-    Object.assign(dataProcessed, choosePrefixedData(dataO))
+    $.extend(dataProcessed, choosePrefixedData(dataO))
 
     function choosePrefixedData(data) {
       var prefixedData = {};
@@ -961,13 +968,19 @@ class njBox extends njBox_base {
     h.wrap_ok = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      if (that._cb('ok') === false) return;
+      that.returnValue = that._getReturnValue();
+
+      if (that._cb('ok', that.returnValue) === false) return;
+
       that.hide();
     }
     h.wrap_cancel = function (e) {
       (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
-      if (that._cb('cancel') === false) return;
+      that.returnValue = that._getReturnValue();
+
+      if (that._cb('cancel', that.returnValue) === false) return;
+
       that.hide();
     }
 
@@ -1015,6 +1028,14 @@ class njBox extends njBox_base {
     this.dom.focusCatchAfter.on('focus', h.focusCatchAfter)
 
     this._cb('listeners_added');
+  }
+  _getReturnValue() {
+    let modal = this._getActive().dom.modal,
+        prompt_input = modal.find('[data-njb-return]'),
+        prompt_value;
+    if (prompt_input.length) prompt_value = prompt_input[0].value || "";
+
+    return prompt_value;
   }
   _removeListeners() {
     var h = this._handlers,
@@ -1279,13 +1300,13 @@ class njBox extends njBox_base {
     dimensions.window = this._getDomSize(this.dom.window)
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
-    if(o.el && o.el.length === 1) dimensions.el = this._getDomSize(o.el)
+    if(o.$elem && o.$elem.length === 1) dimensions.el = this._getDomSize(o.$elem)
 
     return dimensions;
   }
   _getDomSize(domObject) {
     domObject = $(domObject)[0]
-    var objIsWindow = isWindow(domObject),
+    var objIsWindow = $.isWindow(domObject),
         rectOriginal,
         rectComputed,
         d = document,
@@ -1316,7 +1337,7 @@ class njBox extends njBox_base {
       }
     } else {
       rectOriginal = domObject.getBoundingClientRect()
-      rectComputed = Object.assign({}, rectOriginal)
+      rectComputed = $.extend({}, rectOriginal)
       
       rectComputed.el = domObject;
       rectComputed.width = rectComputed.right - rectComputed.left;
@@ -1396,13 +1417,29 @@ class njBox extends njBox_base {
     openedInstance = openedBox[openedBox.length - 1].njBox;
     openedInstance._set_focus(openedInstance.items[openedInstance.state.active]);
   }
-  
 }
+
 njBox.defaults = defaults;
 njBox.templates = templates;
 njBox.text = text;
+
+
 //get environment info, getDefaultInfo trying to launch as early as possible (even before this init method), but may fail because of missing body tag (if script included in head), so we check it init again
 if (document.body && !njBox.g) njBox.g = getDefaultInfo();
+
+
+njBox.addons = {}
+njBox.addAddon = function(name, addonObj) {
+  var {options, templates, text, prototype} = addonObj;
+  
+  this.addons[name] = addonObj;
+  
+  if (options) $.extend(this.defaults, options);
+  if (templates) $.extend(this.templates, templates);
+  if (text) $.extend(this.text, text);
+  if (prototype) $.extend(this.prototype, prototype);
+}
+
 
 //get instance
 njBox.get = function (elem) {
@@ -1410,7 +1447,6 @@ njBox.get = function (elem) {
 
   return el && el.njBox || undefined
 }
-//todo smth with jquery here
 njBox.autobind = function (selector) {
   //autobind global
   $(selector).each(function () {
@@ -1424,11 +1460,13 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
     njBox.autobind(njBox.defaults.autobind);
   })
 }
+
+
 njBox.alert = alert;
 njBox.confirm = confirm;
 njBox.prompt = prompt;
 
 return njBox;
-})(window,undefined, setTimeout, document);
+})(window, undefined, setTimeout, document);
 
 export default njBox;

@@ -3,6 +3,8 @@
  * nejikrofl@gmail.com
  * Copyright (c) 2017 N.J.
 */
+
+//abstract main class, without anything related to dom, just state management
 class njBox {
   constructor(options) {
     if (!arguments.length) {
@@ -23,13 +25,6 @@ class njBox {
 
   _init() {
     if (this.state && this.state.inited) return;//init only once
-
-    // initializing addons
-    for (let key in njBox.addons) {
-      if (njBox.addons.hasOwnProperty(key)) {
-        this['_' + key + '_init']();
-      }
-    }
 
     this._cb('init');
 
@@ -53,8 +48,8 @@ class njBox {
     this._cb('options_setted', this.o);
 
     //we should have content for creating item
-    if (!this.o.content) {
-      this._e('njBox, no content for popup.');
+    if (!this.o.elem && !this.o.content) {
+      this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
       return;
     }
 
@@ -76,8 +71,10 @@ class njBox {
     
     this.state.inited = true;
     this._cb('inited');
+    
+    return this;
   }
-  show(index) {
+  show() {
     this._init();//try to init
     this.state.arguments.show = arguments;
 
@@ -85,8 +82,7 @@ class njBox {
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
-    
-    if (index !== undefined && typeof index === 'number') this.state.active = index - 1;
+    // if (index !== undefined && typeof index === 'number') this.state.start = index - 1;
     
     //if popup is hiding now, force to end hide and start show
     if(this.state.status === 'hide') {
@@ -254,17 +250,21 @@ class njBox {
     //trigger on modal instance
     this.trigger.apply(this, arguments);
 
+
+
+    var cbArgs = Array.prototype.slice.call(arguments);
+
     //trigger common global callback on instance
     this.trigger.apply(this, ['cb'].concat(cbArgs));
 
     //trigger common callback function from options
-    var cbArgs = Array.prototype.slice.call(arguments);
     if (o && o['oncb'] && typeof o['oncb'] === 'function') {
       callbackResult = o['oncb'].apply(this, cbArgs);
     }
 
     //trigger callback from options with "on" prefix (e.g. onshow, onhide)
     var clearArgs = Array.prototype.slice.call(arguments, 1);
+
     if (o && typeof o['on' + type] === 'function') {
       callbackResult = o['on' + type].apply(this, clearArgs);
     }
@@ -295,13 +295,5 @@ class njBox {
     return this;
   }
 }
-//addons
-njBox.addons = {}
 
-njBox.addAddon = function (name, addon) {
-  njBox.addons[name] = true;
-
-  if (addon.options) Object.assign(njBox.defaults, addon.options);
-  Object.assign(njBox.prototype, addon.prototype);
-}
 export default njBox;

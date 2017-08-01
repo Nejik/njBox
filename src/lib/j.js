@@ -1,5 +1,4 @@
 //syntax sugar like jquery
-
 let j = function (selector) {
     return new j.fn.init(selector || '');
 };
@@ -15,6 +14,19 @@ j.match = function (el, selector) {
         || el.msMatchesSelector;
 
     return matchesSelector.call(el, selector);
+}
+j.extend = function() {
+    return Object.assign.apply(Object, Array.prototype.slice.call(arguments));
+}
+j.isPlainObject = function(obj) {
+    return	typeof obj === 'object'
+            && obj !== null
+            && obj.constructor === Object
+            && Object.prototype.toString.call(obj) === '[object Object]';
+    
+}
+j.isWindow = function(obj) {
+    return obj != null && obj == obj.window
 }
 j.fn = j.prototype;
 j.fn.init = function (selector) {
@@ -55,7 +67,6 @@ j.fn.each = function (callback) {
     }
     return this;
 }
-
 j.str2dom = function (html) {
     var div = document.createElement('div');
     div.innerHTML = html;
@@ -249,7 +260,7 @@ function insert(content, type) {
     var els = j(content),
         frag = document.createDocumentFragment();
     
-    //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+    //insert all elements in fragment, because prepend method insert elements reversed
     els.each(function () {
         frag.appendChild( this );
     });
@@ -261,7 +272,4 @@ function insert(content, type) {
         }
     });
 }
-
-
-
 export default j;

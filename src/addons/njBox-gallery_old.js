@@ -3,75 +3,85 @@
  * nejikrofl@gmail.com
  * Copyright (c) 2017 N.J.
 */
-
-(function (njBox_class = window.njBox) {
-  if(!njBox_class) return;
-
-  function isArray(arg) {
-    return Object.prototype.toString.call(arg) === '[object Array]';
-  };
-
-  njBox_class.addAddon('gallery', {
+(function () {
+  if (window.njBox) njBox.addAddon('gallery', {
     options: {
       gallery: '',//(selector) child items selector, for gallery elements.
       arrows: true,//(boolean) should we add navigation arrows
       start: false,//(number) slide number, from which we should show gallery (not zero based, first slide is number 1)
       loop: true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
       preload: '1 1',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
-    },
-    templates: {
-      count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>1</span></div>',
-      prev: '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
-      next: '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
-    },
-    text: {
-      current: 'Current slide',
-      total: 'Total slides',
-      prev: 'Previous gallery item',//prev slide button title
-      next: 'Next gallery item'//next slide button title
+
+      templates: {
+        count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>1</span></div>',
+        prev: '<button type="button" class="njb-ui__arrow njb-ui__arrow--prev" data-njb-prev></button>',
+        next: '<button type="button" class="njb-ui__arrow njb-ui__arrow--next" data-njb-next></button>'
+      },
+      text: {
+        current: 'Current slide',
+        total: 'Total slides',
+        prev: 'Previous gallery item',//prev slide button title
+        next: 'Next gallery item'//next slide button title
+      }
     },
     prototype: {
       _gallery_init() {
         var that = this,
-            o = this.o;
+          o = this.o,
+          $ = this.$;
         
         if (o.gallery) {
           that._g.gallery = true;
           if(o.layout === "popover") o.layout = "fixed";
-        } else if (isArray(o.content)) {
-          that._g.gallery = true
         }
 
+        if ($.isArray(o.content)) {
+          that._g.gallery = true
+        }
+        
         if(!that._g.gallery) return;
-
-        this.on('items_gather', function () {
+        
+        this.on('items_raw', function () {
           this._g_createRawItems();
         })
-        this.on('dom_create', function () {
-          this.$.extend(this.dom, this._g_createDom());
+        this.on('domready', function () {
+          if (!this._g.gallery) return;
 
+          this.dom.ui_count = $(o.templates.count)
           this.dom.ui.append(this.dom.ui_count)
+
+          this.dom.ui_current = this.dom.ui_count.find('[data-njb-current]')
+          this.dom.ui_current.attr('title', o.text.current)
+          this.dom.ui_total = this.dom.ui_count.find('[data-njb-total]')
+          this.dom.ui_total.attr('title', o.text.total)
+
+          this.dom.prev = $(o.templates.prev);
+          this.dom.prev.attr('title', o.text.prev);
+          this.dom.next = $(o.templates.next)
+          this.dom.next.attr('title', o.text.next);
 
           if (o.arrows && this._g.gallery && !this._g.arrowsInserted) {
             if (this.dom.next[0]) this.dom.ui.append(this.dom.next);
             if (this.dom.prev[0]) this.dom.ui.append(this.dom.prev);
-  
+
             this._g.arrowsInserted = true;
           }
         })
-        this.on('item_create', function (item, index) {
+        this.on('item_created', function (item, index) {
           if (this._g.gallery) item.dom.modalOuter.attr('data-njb-index', index);
         })
-        this.on('dom_insert', function () {
+        this.on('inserted', function () {
+          if (!that._g.gallery) return
+
           this._g_setQueue(this.state.active);
-          that._g_uiUpdate();
+          that._g__uiUpdate();
         })
         // this.on('item_inserted', function (item) {
         //   if (!this._g.gallery) return; 
         //   // if(this.state.status === 'shown') that.position();
         // })
         this.on('change', function () {
-          that._g_uiUpdate();
+          that._g__uiUpdate();
         })
         this.on('changed', function () {
           this._g_preload()
@@ -82,12 +92,12 @@
             h = this._handlers;
 
           h.wrap_prev = function (e) {
-            (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
             that.prev();
+            e.preventDefault();
           }
           h.wrap_next = function (e) {
-            (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
             that.next();
+            e.preventDefault();
           }
 
           this.dom.wrap
@@ -102,12 +112,15 @@
                          .undelegate('[data-njb-next]', 'click', h.wrap_next)
           }
         })
-        this.on('position', function () {
-          //we need autoheight for prev and next slide in gallery (active slide autoheighted by main plugin)
+        this.on('positioned', function () {
+          //we need autoheight for prev and next slide in gallery
+          if (!this._g.gallery) return; 
+
           if (this.state.status === 'shown') {
             if (this.queue.prev.index !== null) this._setMaxHeight(this.items[this.queue.prev.index]);
             if (this.queue.next.index !== null) this._setMaxHeight(this.items[this.queue.next.index]);
           }
+          
         })
         this.on('show', function () {
           this.state.active = this._g_detectIndexForOpen();
@@ -122,12 +135,12 @@
           var o = this.o;
           switch (e.which) {
             case 37://left arrow
-              (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
               that.prev();
+              e.preventDefault();
               break;
             case 39://right arrow
-              (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
               that.next();
+              e.preventDefault();
               break;
           }
         })
@@ -207,25 +220,6 @@
         }
         return this;
       },
-      _g_createDom() {
-        var dom = {},
-            o = this.o,
-            $ = this.$;
-
-        dom.ui_count = $(this._templates.count)
-        
-        dom.ui_current = dom.ui_count.find('[data-njb-current]')
-        dom.ui_current.attr('title', this._text.current)
-        dom.ui_total = dom.ui_count.find('[data-njb-total]')
-        dom.ui_total.attr('title', this._text.total)
-
-        dom.prev = $(this._templates.prev);
-        dom.prev.attr('title', this._text.prev);
-        dom.next = $(this._templates.next)
-        dom.next.attr('title', this._text.next);
-
-        return dom;
-      },
       _g_makeUnfocusable(el, selector) {
         var $ = this.$,
             wrap = $(el),
@@ -260,7 +254,7 @@
         var o = this.o,
           that = this;
 
-        if (!o.preload || this.state.status !== 'shown') return;//we should start preloading only after show animation is finished, because loading images can make animation glitchy
+        if (!o.preload || this.state.status !== 'shown') return;//we should start preloading only after show animation is finished, because loading images makes animation glitchy
 
         var temp = o.preload.split(' '),
           prev = parseInt(temp[0]),
@@ -285,7 +279,7 @@
           var item = this.items[index],
             content = item.content;
 
-          if (item.state.status !== 'loading' && item.state.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
+          if (item.o.status !== 'loading' && item.o.status !== 'loaded' && item.type === 'image') document.createElement('img').src = content;
         }
       },
       _g_drawItemSiblings() {
@@ -391,39 +385,28 @@
       },
       _g_detectIndexForOpen() {
         var o = this.o,
-            $ = this.$,
-            indexFromArgument = this.state.arguments.show[0],
-            indexFromOptions = parseInt(o.start),
-            computedIndex;
-        
-        //try to use index from option
-        if(typeof indexFromOptions === 'number') {
-          computedIndex = indexFromOptions - 1;
-        }
+          that = this,
+          index,
+          showArg = this.state.arguments.show.index;
 
-        //try to detect index for open from argument from show method
-        if (typeof indexFromArgument === 'string') {//show argument can be a string
-          indexFromArgument = parseInt(indexFromArgument);
-        } else if($.isPlainObject(indexFromArgument)) {//or argument can be an object with index value
-          indexFromArgument = parseInt(indexFromArgument.index)
+        if (showArg !== undefined) this.state.active = showArg - 1;
+
+        index = this.state.active || 0;
+
+        if (this._g.gallery && o.start - 1 && this.items[o.start - 1]) {//then we check o.start option
+          index = o.start - 1;
         }
-        if(typeof indexFromArgument === 'number') computedIndex = indexFromArgument - 1;
-                
         //if we have clicked element, take index from it
-        if (this._g.els && this._g.els.length && this.state.clickedEl) {
+        if (this._g.gallery && this._g.els && this._g.els.length && that.state.clickedEl && o.click) {
           this._g.els.each(function (i, el) {
-            if (this.state.clickedEl === el) {
-              computedIndex = i;
+            if (that.state.clickedEl === el) {
+              index = i;
               return;
             }
           })
         }
 
-        if(!(typeof computedIndex === 'number' && this.items[computedIndex])) {
-          computedIndex = 0;
-        }
-
-        return computedIndex;
+        return index;
       },
       _g_setQueue(currentIndex) {
         var order = this._g_getItemsOrder(currentIndex);
@@ -452,6 +435,7 @@
         var item;
         
         if (index === null) {
+          index = null
           item = null
         } else {
           item = this.items[index]
@@ -462,7 +446,7 @@
           item: item
         }
       },
-      _g_uiUpdate(index) {
+      _g__uiUpdate(index) {
         index = index || this.state.active;
 
         var o = this.o,
@@ -524,27 +508,29 @@
       _g_createRawItems() {
         var o = this.o;
 
-        if (isArray(o.content)) {
-          this._g.rawItems = o.content;
+        if (!this._g.gallery) return;
+
+        if (this.$.isArray(o.content)) {
+          this._g.items_raw = o.content;
         } else {
           this._g.els = this._g_gatherElements(o.gallery);
-          this._g.rawItems = [];
+          this._g.items_raw = [];
 
           if (this._g.els && this._g.els.length) {
             for (var index = 0; index < this._g.els.length; index++) {
               var element = this._g.els[index],
                 gathered_data = this._gatherData(element);
               this._cb('item_gathered', gathered_data, element);
-              this._g.rawItems.push(gathered_data)
+              this._g.items_raw.push(gathered_data)
             }
           }
         }
       },
       _g_gatherElements(selector) {
         if (selector) {
-          return this.o.$elem.find(selector);
+          return this.o.el.find(selector);
         } else {
-          return this.o.$elem;
+          return this.o.el;
         }
       }
     }

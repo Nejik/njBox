@@ -416,6 +416,12 @@ class njBox extends njBox_base {
     dom.wrap[0].njBox = this;
     if (o.zindex) dom.wrap.css('zIndex', o.zindex);
 
+    if (o.autoheight === true) {
+      dom.wrap.addClass('njb-wrap--autoheight-true')
+    } else if(o.autoheight === 'image') {
+      dom.wrap.addClass('njb-wrap--autoheight-image')
+    }
+
     dom.items = dom.wrap.find('.njb-items');
 
     //create ui layer
@@ -658,14 +664,16 @@ class njBox extends njBox_base {
       if (dom.headerInput) dom.headerInput.html(item.header)
       //insert footer content
       if (dom.footerInput) dom.footerInput.html(item.footer)
-      
       item.state.status = 'loaded';
 
       that._cb('item_loaded', item);
 
       if(that.state.status !== 'inited' && that.items && that._getActive() === item) {
         that._cb('item_ready', item);
-        that.position();//needs for delayed items autoheight
+        
+        if(o.delayed) {
+          that.position();//needs for delayed items autoheight
+        }
       }
 
     }
@@ -716,6 +724,7 @@ class njBox extends njBox_base {
     } else {//if we don't find element with this selector
       bodyItemToInsert.html(item.content)
     }
+    callback();
   }
   _insertImage(item, callback) {
     var that = this,
@@ -1284,7 +1293,7 @@ class njBox extends njBox_base {
           item.state.contentElDisplayNone = undefined;
         }
         if (item.state.contentElStyle) {
-          contentEl[0].style.cssText = item.o.contentElStyle;
+          contentEl[0].style.cssText = item.state.contentElStyle;
           item.state.contentElStyle = undefined;
         }
         //return selector element to the dom
@@ -1359,12 +1368,6 @@ class njBox extends njBox_base {
         bodyBorderBox;
 
     if (!o.autoheight || o.autoheight === 'image' && item.type !== 'image') return;
-
-    if (!this.state.autoheightAdded) {
-      // this.dom.wrap.addClass('njb-wrap--autoheight');
-      (o.autoheight === true) ? this.dom.wrap.addClass('njb-wrap--autoheight-true') : this.dom.wrap.addClass('njb-wrap--autoheight-image')
-      this.state.autoheightAdded = true
-    }
 
     let v = item.dom,
       modalMargin = summ(v.modal, 'margin'),

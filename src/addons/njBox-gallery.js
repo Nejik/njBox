@@ -113,10 +113,8 @@
           this.state.active = this._g_detectIndexForOpen();
         })
         this.on('shown', function () {
-          if (!this._g.gallery) return;
-
-          this._g_drawItemSiblings()
-          this._g_preload()
+          // this._g_drawItemSiblings()
+          // this._g_preload()
         })
         this.on('keydown', function (e) {
           var o = this.o;
@@ -390,14 +388,25 @@
         }
       },
       _g_detectIndexForOpen() {
-        var o = this.o,
+        var that = this,
+            o = this.o,
             $ = this.$,
             indexFromArgument = this.state.arguments.show[0],
             indexFromOptions = parseInt(o.start),
             computedIndex;
         
+        //if we have clicked element, take index from it
+        if (this._g.els && this._g.els.length && this.state.clickedEl) {
+          this._g.els.each(function (i, el) {
+            if (that.state.clickedEl === el) {
+              computedIndex = i;
+              return;
+            }
+          })
+        }
+        
         //try to use index from option
-        if(typeof indexFromOptions === 'number') {
+        if(typeof indexFromOptions === 'number' && !isNaN(indexFromOptions)) {
           computedIndex = indexFromOptions - 1;
         }
 
@@ -409,16 +418,8 @@
         }
         if(typeof indexFromArgument === 'number') computedIndex = indexFromArgument - 1;
                 
-        //if we have clicked element, take index from it
-        if (this._g.els && this._g.els.length && this.state.clickedEl) {
-          this._g.els.each(function (i, el) {
-            if (this.state.clickedEl === el) {
-              computedIndex = i;
-              return;
-            }
-          })
-        }
-
+        
+        //check computed index for validity
         if(!(typeof computedIndex === 'number' && this.items[computedIndex])) {
           computedIndex = 0;
         }

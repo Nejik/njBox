@@ -2,6 +2,7 @@
  * njBox - v3.0.0
  * nejikrofl@gmail.com
  * Copyright (c) 2017 N.J.
+ * MIT license
 */
 
 //abstract main class, without anything related to dom, just state management

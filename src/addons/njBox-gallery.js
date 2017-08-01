@@ -62,6 +62,15 @@
         this.on('item_create', function (item, index) {
           item.dom.modalOuter.attr('data-njb-index', index);
         })
+        this.on('item_loaded', function(item) {
+          if (item === this.queue.prev.item || item === this.queue.next.item) {
+            that._cb('item_ready', item);
+            this.position();
+          }
+        })
+        this.on('item_ready', function(item) {
+
+        })
         this.on('dom_insert', function () {
           this._g_setQueue(this.state.active);
           that._g_uiUpdate();
@@ -204,6 +213,9 @@
           }
         }
         return this;
+      },
+      _g_inQueue(item) {
+
       },
       _g_createDom() {
         var dom = {},

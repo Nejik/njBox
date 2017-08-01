@@ -36,13 +36,14 @@
 </head>
 
 <body>
-   <div class="gallery" data-njb-gallery="a">
+    <!-- <a data-njb-img="load" href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" data-njb-header="lol" class="simple">test</a> -->
+    <div class="gallery" data-njb-gallery="a">
     <a href="#modal2" data-njb-header="lol">modal1</a>
     <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" data-njb-title="title 3">link</a>
     <a href="http://www.worldofowls.com/wp-content/uploads/2014/09/gallery-owls-1.jpg">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/736x/66/a5/eb/66a5ebd96a859c119ce18260dd7a8ba5.jpg" data-njb-header="header2">link</a>
     <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" data-njb-header="header 1">link</a>
-  </div> 
+  </div>  
    <div style=" width:500px"> 
   <!-- <div> -->
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
@@ -70,10 +71,15 @@
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>  -->
   <script src="njBox.js"></script>
-  <script src="njBox-gallery.js"></script> 
+   <script src="njBox-gallery.js"></script>  
   <!-- <script src="njBox-popover.js"></script>   -->
   <script>
-    t = new njBox('.gallery')
+    t = new njBox('.gallery').on('item_ready', function(item) {
+      console.log('item_ready', item);
+    })
+    // t = new njBox('.simple').on('position', function() {
+    //   console.log('position');
+    // })
 
     
   </script>

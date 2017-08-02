@@ -1061,7 +1061,6 @@ class njBox extends njBox_base {
     delete h.container_resize;
     delete h.container_scroll;
       
-
     that.dom.wrap
       .off('resize', h.wrap_resize)
       .off('scroll', h.wrap_scroll)

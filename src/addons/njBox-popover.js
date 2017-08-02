@@ -215,19 +215,30 @@
           var that = this,
               h = this._handlers;
           
-          that.dom.container.on('keydown', h.wrap_keydown)
-                            .delegate('[data-njb-close]', 'click', h.wrap_close)
-                            .delegate('[data-njb-ok]', 'click', h.wrap_ok)
-                            .delegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+          //we use handlers from main plugin, but we need to save them with other links, because main plugin delete links after removing listeners
+          h.p_wrap_keydown = h.wrap_keydown;
+          h.p_wrap_close = h.wrap_close;
+          h.p_wrap_ok = h.wrap_ok;
+          h.p_wrap_cancel = h.wrap_cancel;
+
+          that.dom.container.on('keydown', h.p_wrap_keydown)
+                            .delegate('[data-njb-close]', 'click', h.p_wrap_close)
+                            .delegate('[data-njb-ok]', 'click', h.p_wrap_ok)
+                            .delegate('[data-njb-cancel]', 'click', h.p_wrap_cancel)
           
         })
         that.on('listeners_removed', function() {
           var that = this,
               h = this._handlers;
-          that.dom.container.off('keydown', h.wrap_keydown)
-                            .undelegate('[data-njb-close]', 'click', h.wrap_close)
-                            .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
-                            .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+          that.dom.container.off('keydown', h.p_wrap_keydown)
+                            .undelegate('[data-njb-close]', 'click', h.p_wrap_close)
+                            .undelegate('[data-njb-ok]', 'click', h.p_wrap_ok)
+                            .undelegate('[data-njb-cancel]', 'click', h.p_wrap_cancel)
+
+          delete h.p_wrap_keydown
+          delete h.p_wrap_close
+          delete h.p_wrap_ok
+          delete h.p_wrap_cancel
         })
         that.on('clear', function() {
           if(!this._g.popover) return;

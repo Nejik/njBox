@@ -98,7 +98,10 @@ class njBox extends njBox_base {
           that._e(`njBox, wrong selector or element in o.elem (${elem})`);
           return $elem;
         }
-        if ($elem.length > 1) $elem = $($elem[0]);
+        if ($elem.length > 1) {
+          that._e(`njBox found more than one item for current o.elem (${elem}). First was used.`);
+          $elem = $($elem[0]);
+        }
         if ($elem[0].njBox) {
           that._e(`njBox, already inited on this element (${elem})`);
           return $elem;
@@ -253,9 +256,6 @@ class njBox extends njBox_base {
       if (animHide === animShow) modal.removeClass('njb-anim-reverse');
       if(animHide) modal.removeClass(animHide);
       modal[0].clientHeight;//reflow
-
-
-      if (o['class']) this.dom.wrap.removeClass(o['class']);
 
       this._scrollbar('show');
 

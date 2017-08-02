@@ -79,16 +79,15 @@ class njBox {
     this._init();//try to init
     this.state.arguments.show = arguments;
 
-    if (this.state.status !== 'inited') {
-      this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
-      return;
-    }
-    // if (index !== undefined && typeof index === 'number') this.state.start = index - 1;
-    
     //if popup is hiding now, force to end hide and start show
     if(this.state.status === 'hide') {
       clearTimeout(this._g.hiddenCb);
       this._hiddenCb();
+    }
+
+    if (this.state.status !== 'inited') {
+      this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
+      return;
     }
     
 

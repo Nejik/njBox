@@ -167,7 +167,8 @@
           item.dom.modalOuter.css('width', item.dom.modalOuter.css('width'));
         })
         that.on('item_ready', function(item) {
-          item.dom.modalOuter.css('width', 'auto');
+          item.dom.modalOuter.css('width', 'auto')
+          .css('left',"0px").css('top','0px')//fix case, when image after loading inserted and make container higher, so plugin think we can use this new scrollheight, but we cant...
         })
         that.on('position', function () {
           var that = this,
@@ -197,9 +198,12 @@
                         .css('top', state.coords[1] + "px")
           }
         })
-        that.on('item_created', function(item) {
-          if(that._g.popover) item.dom.modal.addClass('njb--popover');
+        that.on('item_create', function(item) {
+          if(that._g.popover) item.dom.modalOuter.addClass('njb-outer--popover');
+          if (o['class']) item.dom.modalOuter.addClass(o['class']);
           item.toInsert = item.dom.modalOuter;
+        })
+        that.on('item_created', function(item) {
         })
         that.on('listeners_added', function() {
           var that = this,

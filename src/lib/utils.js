@@ -105,12 +105,12 @@ export function getItemFromDom(dom, selector) {
 export const defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
-	delayed        : true,//(boolean) Interesting option, that works only for selector and image types. When its true with selector type, dom element will not be touched until show, and will be returned to dom after hiding modal. When its true and type image, images will not be loading on initialization.
+	delayed        : true,//(boolean) Interesting option, that works only for selector and image types. When its true with selector type, dom element will not be touched until show, and will be returned to dom after hiding modal. When its true and type image, images will not be loading on initialization, loading starts when show method calls
 	type           : undefined,//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
 	header         : undefined,//(html) html that will be added as modal header (for first slide)
 	footer         : undefined,//(html) html that will be added as modal footer (for first slide)
 	// we need quotes here because of ie8..
-	'class'        : false,//(string) classnames(separated with space) that will be added to modal wrapper, you can use it for styling (theming)
+	'class'        : false,//(string) classnames(separated with space) that will be added to modal wrapper, you can use it for styling (theming).
 	zindex         : false,//(boolean false || number) zindex that will be set on modal, probably not a good idea to use this option, set it in css and use o.class instead
 
 	container      : 'body',//(selector) appends modal to specific element

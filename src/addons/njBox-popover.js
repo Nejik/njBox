@@ -166,6 +166,9 @@
         that.on('item_inserted', function(item) {
           item.dom.modalOuter.css('width', item.dom.modalOuter.css('width'));
         })
+        that.on('item_ready', function(item) {
+          item.dom.modalOuter.css('width', 'auto');
+        })
         that.on('position', function () {
           var that = this,
               o = this.o,

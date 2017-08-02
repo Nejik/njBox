@@ -76,10 +76,6 @@
           this._g_setQueue(this.state.active);
           that._g_uiUpdate();
         })
-        // this.on('item_inserted', function (item) {
-        //   if (!this._g.gallery) return; 
-        //   // if(this.state.status === 'shown') that.position();
-        // })
         this.on('change', function () {
           that._g_uiUpdate();
         })
@@ -106,11 +102,11 @@
         })
         this.on('listeners_removed', function () {
           var h = this._handlers;
-
-          if (that._g.gallery) {
-            that.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev)
-                         .undelegate('[data-njb-next]', 'click', h.wrap_next)
-          }
+          that.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev)
+                        .undelegate('[data-njb-next]', 'click', h.wrap_next)
+          delete h.wrap_prev
+          delete wrap_next
+          
         })
         this.on('position', function () {
           //we need autoheight for prev and next slide in gallery (active slide autoheighted by main plugin)

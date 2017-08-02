@@ -1,5 +1,13 @@
 # njBox
-Highly customizable pure javascript modal window.
+Highly customizable pure javascript modal window/lightbox/popover.
+
+**Simple easy and the complex possible.**
+
+React wrapper - todo
+
+Angular wrapper - todo
+
+Vue wrapper - todo
 
 ## Install
 

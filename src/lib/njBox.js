@@ -1309,7 +1309,9 @@ class njBox extends njBox_base {
     
     dimensions.window = this._getDomSize(this.dom.window)
     dimensions.container = this._getDomSize(this._g.containerIsBody ? this.dom.window : this.dom.container)
+
     if(this.state.clickedEl) dimensions.clickedEl = this._getDomSize(this.state.clickedEl)
+
     if(o.$elem && o.$elem.length === 1) dimensions.el = this._getDomSize(o.$elem)
 
     return dimensions;
@@ -1347,9 +1349,15 @@ class njBox extends njBox_base {
       }
     } else {
       rectOriginal = domObject.getBoundingClientRect()
-      rectComputed = $.extend({}, rectOriginal)
+      // rectComputed = $.extend({}, rectOriginal)//Object.assign dont work with getBoundingClientRect object...
+      rectComputed = {
+        el:domObject,
+        left: rectOriginal.left,
+        top: rectOriginal.top,
+        right: rectOriginal.right,
+        bottom: rectOriginal.bottom
+      }
       
-      rectComputed.el = domObject;
       rectComputed.width = rectComputed.right - rectComputed.left;
       rectComputed.height = rectComputed.bottom - rectComputed.top;
       rectComputed.scrollWidth = domObject.scrollWidth;

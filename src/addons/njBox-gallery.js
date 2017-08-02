@@ -2,6 +2,7 @@
  * njBox gallery addon
  * nejikrofl@gmail.com
  * Copyright (c) 2017 N.J.
+ * MIT license
 */
 
 (function (njBox_class = window.njBox) {

@@ -1,16 +1,3 @@
-* проверить destroy на поповере
-* баг на follow при заводе мышки с левого верхнего края (координаты 0 0 и сразу hide)
-* возможно стоит сделать прилипание не к scrollheight, а к видимой чати 
-* проверить coords как функцию
-* добавить возможность указывать координаты до применения показывающей анимации, в т.ч. кастомными методами, другими плагинами и т.д.
-* добавить возможность для поповера делать зеркальное отображение а не прилипание к краю при follow
-* починить destroy
-
-
-* хранить defaults в ссылке где-то в инстансе, что-бы был доступ елси нету njbox в глобальном контексте
-* подумать как избавить от обращения к глобальным njBox....
-
-
 * role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
   aria label or aria-labelledby from header option

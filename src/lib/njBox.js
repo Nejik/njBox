@@ -309,11 +309,11 @@ class njBox extends njBox_base {
       this.dom.container.removeClass('njb-relative');
     })
     this.on('destroyed', function() {
-      // this._defaults = 
-      // this._handlers = 
-      // this._templates = 
-      // this._text = 
-      // this.$ = {};
+      this._defaults = 
+      this._handlers = 
+      this._templates = 
+      this._text = 
+      this.$ = {};
     })
   }
   update() {//recreate all slides from this._g.rawItems
@@ -1049,13 +1049,17 @@ class njBox extends njBox_base {
     return prompt_value;
   }
   _removeListeners() {
+    //we should delete manually each handler, because in handlers object can be other handlers from addons
     var h = this._handlers,
         that = this;
 
     that.dom.document.off('click', h.container_out)
+    delete h.container_out;
 
     that.dom.container.off('resize', h.container_resize)
       .off('scroll', h.container_scroll)
+    delete h.container_resize;
+    delete h.container_scroll;
       
 
     that.dom.wrap
@@ -1065,16 +1069,27 @@ class njBox extends njBox_base {
       .undelegate('[data-njb-close]', 'click', h.wrap_close)
       .undelegate('[data-njb-ok]', 'click', h.wrap_ok)
       .undelegate('[data-njb-cancel]', 'click', h.wrap_cancel)
+    delete h.wrap_resize;
+    delete h.wrap_scroll;
+    delete h.wrap_keydown;
+    delete h.wrap_close;
+    delete h.wrap_ok;
+    delete h.wrap_cancel;
 
 
     that.dom.window
       .off('resize', h.window_resize)
       .off('scroll', h.window_scroll)
       .off('orientationchange', h.window_orientation)
+    delete h.window_resize;
+    delete h.window_scroll;
+    delete h.window_orientation;
 
 
     that.dom.focusCatchBefore.off('focus', h.focusCatchBefore)
     that.dom.focusCatchAfter.off('focus', h.focusCatchAfter)
+    delete h.focusCatchBefore;
+    delete h.focusCatchAfter;
 
     this._cb('listeners_removed');
   }

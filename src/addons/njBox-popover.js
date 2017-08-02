@@ -150,7 +150,6 @@
 
           switch (o.trigger) {
             case 'click':
-              debugger;
               that._g.els.off('click', h.trigger_click)
               break;
             case 'hover': 
@@ -189,7 +188,9 @@
             coords = state.arguments.position[0];
           }
           
-          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
+          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0], this.state.clickedEl || this._g.els[0]) : coords
+          if(!coords) coords = 'bottom';
+
           if (o.trigger === 'follow') {
             coords = that._p_getFollowCoords(this._g.followEvent);
           } else if(this._p_isPlacement(coords)) {
@@ -452,6 +453,8 @@
             return 'bottom'
           case 'bottom':
             return 'top'
+          case 'center':
+            return 'center'
         }
       },
       _p_fixBounds(props) {

@@ -1,5 +1,13 @@
 # njBox
-Highly customizable pure javascript modal window.
+Highly customizable pure javascript modal window/lightbox/popover.
+
+**Simple easy and the complex possible.**
+
+React wrapper - todo
+
+Angular wrapper - todo
+
+Vue wrapper - todo
 
 ## Install
 
@@ -273,7 +281,7 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | item_prepare | onitem_prepare | itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
 | item_content_ready | onitem_content_ready | itemObject | When content inserted into item.
 | item_inserted | onitem_inserted | itemObject | After item inserted.
-| item_loaded | onitem_loaded | itemObject | Calls when item fully loaded AND INSERTED IN DOM.
+| item_ready | onitem_ready | itemObject | Calls when item fully loaded AND INSERTED IN DOM.
 | position | onposition | - | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
 | item_img_ready | onitem_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_load | onitem_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]

@@ -72,6 +72,18 @@
 }
 .njb-outer {
   position: absolute;top: 0;left: 0;
+  &--popover {
+    & .njb {
+      max-width: none;
+      box-shadow: 0 0 5px rgba(0,0,0,.5);
+      &--pulse {
+        animation: none;
+      }
+      &--image {
+        max-width:200px;
+      }
+    }
+  }
 }
 .njb-items .njb-outer {
   width: 100%;
@@ -107,14 +119,6 @@
 
   user-select: text;
   will-change: opacity, transform;
-
-  &--popover {
-    max-width: none;
-    box-shadow: 0 0 5px rgba(0,0,0,.5);
-    &.njb--pulse {
-      animation: none;
-    }
-  }
 
   &--loading {
     & .njb__body {
@@ -263,8 +267,8 @@
 }
 
 .njb-preloader {
-	width: 39px;
-	height: 49px;
+	width: 40px;
+	height: 50px;
 	position: relative;
 
   &__inner {

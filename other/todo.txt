@@ -1,23 +1,10 @@
-* потестить картинки в поповеры
-* баг на follow при заводе мышки с левого верхнего края (координаты 0 0 и сразу hide)
-* возможно стоит сделать прилипание не к scrollheight, а к видимой чати 
-* проверить coords как функцию
-* добавить возможность указывать координаты до применения показывающей анимации, в т.ч. кастомными методами, другими плагинами и т.д.
-* добавить возможность для поповера делать зеркальное отображение а не прилипание к краю при follow
-* починить destroy
-
-
-* выкосить глобальный неймспейс и аддоны из него
-* ранить defaults в ссылке где-то в инстансе, что-бы был доступ елси нету njbox в глобальном контексте
-* подумать как избавить от обращения к глобальным njBox....
-
-
 * role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
   aria label or aria-labelledby from header option
   role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
 
 Docs:
+* инициализация асинхронна, можно сделать синхронной t = new njBox('.gallery')._init()
 * пример как сделать o.close inside
 * в tips добавить подсказку что ширину/высоту можно через css ставить
 * пример как открыть програмно без дом элементов
@@ -39,6 +26,7 @@ Docs:
 * координаты позиционирования можно передавать через аргумент .position, через o.placement (o.placement, самый сильный аргумент из o.position)
 * в popover моде нельзя изменить o.container, он всегда будет body
 * добавлен ивент positioned
+* примеры с синхронной инициализацией
 
 Плюсы
 адаптивное по умолчанию
@@ -46,3 +34,15 @@ Docs:
 Keeping track of the last focused element so that focus can return to it once the modal is closed.
 Allowing for multiple options to close the modal window (close button, escape key, mouse click on overlay).
 Trapping focus within the modal so that users can't tab out of it and interact with content that is obscured by the modal.
+
+
+"опасные" методы
+Object.assign
+Array.indexOf
+
+
+//todo 
+templates и text
+//todo в dom аддон
+* this._e('njBox, no elements (o.elem) or content (o.content) for modal.');
+* 

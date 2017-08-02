@@ -1,10 +1,14 @@
 /*!
- * njBox gallery addon
+ * njBox popover addon
  * nejikrofl@gmail.com
  * Copyright (c) 2017 N.J.
+ * MIT license
 */
-(function () {
-  if (window.njBox) njBox.addAddon('popover', {
+
+(function (njBox_class = window.njBox) {
+  if(!njBox_class) return;
+
+  njBox_class.addAddon('popover', {
     options: {
       layout         : 'fixed',//(fixed || absolute || popover) how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. Popover mode works only with popover addon). Its not popover addon specific options, it extends basic option with popover option.
       trigger        : 'click',//(false || click || hover || follow) how popover is triggered
@@ -21,12 +25,14 @@
         
         if(o.layout === 'popover') {
           that._g.popover = true;
+
+          //modify options
+          o.container = 'body';//you cant change container in popover mode
           o.backdrop = that._getPassedOption('backdrop') || false;
           o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-          // o.out = that._getPassedOption('out') || true;
-          o.esc = that._getPassedOption('esc') || false;
+          o.close = that._getPassedOption('close') || false;
+          o.autoheight = false;
           o.autofocus = that._getPassedOption('autofocus') || false;
-          o.container = 'body';//you cant change container in popover mode
           o.focusprevious = false;
           o.click = false;
           o.clickels = false;
@@ -37,6 +43,7 @@
             o.offset = '5 5';
           }
         }
+
         if(!that._g.popover) return;
         
         that.on('inited', function() {
@@ -139,9 +146,11 @@
           }
         })
         that.on('destroy', function() {
+          var h = this._handlers;
+
           switch (o.trigger) {
             case 'click':
-              that._g.els.off('click', trigger_click)
+              that._g.els.off('click', h.trigger_click)
               break;
             case 'hover': 
               that._g.els .off('mouseenter', h.trigger_mouseenter)
@@ -159,12 +168,13 @@
           }
         })
         that.on('item_inserted', function(item) {
-          if (!that._g.popover) return;
           item.dom.modalOuter.css('width', item.dom.modalOuter.css('width'));
         })
+        that.on('item_ready', function(item) {
+          item.dom.modalOuter.css('width', 'auto')
+          .css('left',"0px").css('top','0px')//fix case, when image after loading inserted and make container higher, so plugin think we can use this new scrollheight, but we cant...
+        })
         that.on('position', function () {
-          if (!this._g.popover) return;
-
           var that = this,
               o = this.o,
               state = this.state,
@@ -178,8 +188,9 @@
             coords = state.arguments.position[0];
           }
           
-          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0]) : coords
-          
+          coords = (typeof coords === 'function') ? coords.call(this, this._getActive().dom.modal[0], this.state.clickedEl || this._g.els[0]) : coords
+          if(!coords) coords = 'bottom';
+
           if (o.trigger === 'follow') {
             coords = that._p_getFollowCoords(this._g.followEvent);
           } else if(this._p_isPlacement(coords)) {
@@ -193,9 +204,12 @@
                         .css('top', state.coords[1] + "px")
           }
         })
-        that.on('item_created', function(item) {
-          if(that._g.popover) item.dom.modal.addClass('njb--popover');
+        that.on('item_create', function(item) {
+          if(that._g.popover) item.dom.modalOuter.addClass('njb-outer--popover');
+          if (o['class']) item.dom.modalOuter.addClass(o['class']);
           item.toInsert = item.dom.modalOuter;
+        })
+        that.on('item_created', function(item) {
         })
         that.on('listeners_added', function() {
           var that = this,
@@ -223,9 +237,6 @@
             modal[0].parentNode.removeChild(modal[0]);
             modal.css('left','0')
                   .css('top','0')
-        })
-        that.on('item_img_true', function() {
-          
         })
       },
       _p_getCoords(placement) {
@@ -359,7 +370,6 @@
         var that = this,
             o = that.o,
             clickedElDimensions = dimensions.clickedEl || dimensions.el;//we can use dimensions from initializing element for setting first coords (case when we call .show programmatically)
-
         if(!clickedElDimensions) return placement;
         
         var popoverWiderThanClicked = dimensions.modal.width > clickedElDimensions.width,
@@ -443,6 +453,8 @@
             return 'bottom'
           case 'bottom':
             return 'top'
+          case 'center':
+            return 'center'
         }
       },
       _p_fixBounds(props) {

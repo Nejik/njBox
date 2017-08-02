@@ -1,5 +1,4 @@
 //syntax sugar like jquery
-
 let j = function (selector) {
     return new j.fn.init(selector || '');
 };
@@ -15,6 +14,19 @@ j.match = function (el, selector) {
         || el.msMatchesSelector;
 
     return matchesSelector.call(el, selector);
+}
+j.extend = function() {
+    return Object.assign.apply(Object, Array.prototype.slice.call(arguments));
+}
+j.isPlainObject = function(obj) {
+    return	typeof obj === 'object'
+            && obj !== null
+            && obj.constructor === Object
+            && Object.prototype.toString.call(obj) === '[object Object]';
+    
+}
+j.isWindow = function(obj) {
+    return obj != null && obj == obj.window
 }
 j.fn = j.prototype;
 j.fn.init = function (selector) {
@@ -55,83 +67,11 @@ j.fn.each = function (callback) {
     }
     return this;
 }
-
 j.str2dom = function (html) {
     var div = document.createElement('div');
     div.innerHTML = html;
     return div.childNodes;
 }
-//extend function from jQuery
-j.isArray = function (a) { return j.type(a) === "array" };
-j.isFunction = function (a) { return j.type(a) == "function" };
-j.isPlainObject = function (f) { var b, c = {}, a = {}.hasOwnProperty; if (!f || j.type(f) !== "object" || f.nodeType || j.isWindow(f)) { return false } try { if (f.constructor && !a.call(f, "constructor") && !a.call(f.constructor.prototype, "isPrototypeOf")) { return false } } catch (d) { return false } if (c.ownLast) { for (b in f) { return a.call(f, b) } } for (b in f) { } return b === undefined || a.call(f, b) };
-j.isWindow = function (a) { return a != null && a == a.window };
-j.type = function (c) { var a = a = { "[object Array]": "array", "[object Boolean]": "boolean", "[object Date]": "date", "[object Error]": "error", "[object Function]": "function", "[object Number]": "number", "[object Object]": "object", "[object RegExp]": "regexp", "[object String]": "string" }, b = a.toString; if (c == null) { return c + "" } return typeof c === "object" || typeof c === "function" ? a[b.call(c)] || "object" : typeof c };
-//for extend function we need: j.isArray, j.isFunction, j.isPlainObject, j.isWindow, j.type
-j.extend = function () {
-    var src, copyIsArray, copy, name, options, clone,
-        target = arguments[0] || {},
-        i = 1,
-        length = arguments.length,
-        deep = false;
-
-    // Handle a deep copy situation
-    if (typeof target === "boolean") {
-        deep = target;
-
-        // skip the boolean and the target
-        target = arguments[i] || {};
-        i++;
-    }
-
-    // Handle case when target is a string or something (possible in deep copy)
-    if (typeof target !== "object" && !j.isFunction(target)) {
-        target = {};
-    }
-
-    // extend jQuery itself if only one argument is passed
-    if (i === length) {
-        target = this;
-        i--;
-    }
-
-    for (; i < length; i++) {
-        // Only deal with non-null/undefined values
-        if ((options = arguments[i]) != null) {
-            // Extend the base object
-            for (name in options) {
-                src = target[name];
-                copy = options[name];
-
-                // Prevent never-ending loop
-                if (target === copy) {
-                    continue;
-                }
-
-                // Recurse if we're merging plain objects or arrays
-                if (deep && copy && (j.isPlainObject(copy) || (copyIsArray = j.isArray(copy)))) {
-                    if (copyIsArray) {
-                        copyIsArray = false;
-                        clone = src && j.isArray(src) ? src : [];
-
-                    } else {
-                        clone = src && j.isPlainObject(src) ? src : {};
-                    }
-
-                    // Never move original objects, clone them
-                    target[name] = j.extend(deep, clone, copy);
-
-                    // Don't bring in undefined values
-                } else if (copy !== undefined) {
-                    target[name] = copy;
-                }
-            }
-        }
-    }
-
-    // Return the modified object
-    return target;
-};
 j.inArray = function (element, array, i) {
     return array == null ? -1 : array.indexOf(element, i);
 }
@@ -234,7 +174,7 @@ j.fn.data = function (type) {
     }
 }
 j.fn.attr = function (prop, value) {
-    if (value) {
+    if (value !== undefined) {
         return this.each(function () {
             this.setAttribute(prop, value);
         })
@@ -305,6 +245,11 @@ j.fn.html = function (html) {
         this.innerHTML = html;
     });
 }
+j.fn.text = function (text) {
+    return this.each(function () {
+        this.textContent  = text;
+    });
+}
 j.fn.append = function(content) {
     return insert.call(this, content, 'append');
 }
@@ -315,7 +260,7 @@ function insert(content, type) {
     var els = j(content),
         frag = document.createDocumentFragment();
     
-    //insert all elements in fragment, because prepend method insert elements reversed, and also for perfomance
+    //insert all elements in fragment, because prepend method insert elements reversed
     els.each(function () {
         frag.appendChild( this );
     });
@@ -327,7 +272,4 @@ function insert(content, type) {
         }
     });
 }
-
-
-
 export default j;

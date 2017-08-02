@@ -307,12 +307,13 @@ class njBox extends njBox_base {
       this._removeClickHandler();
 
       this.dom.container.removeClass('njb-relative');
-
-      this._defaults = 
-      this._handlers = 
-      this._text = 
-      this.$ = 
-      this._text = undefined;
+    })
+    this.on('destroyed', function() {
+      // this._defaults = 
+      // this._handlers = 
+      // this._templates = 
+      // this._text = 
+      // this.$ = {};
     })
   }
   update() {//recreate all slides from this._g.rawItems
@@ -1076,12 +1077,6 @@ class njBox extends njBox_base {
     that.dom.focusCatchAfter.off('focus', h.focusCatchAfter)
 
     this._cb('listeners_removed');
-
-    //remove links to all previous handlers
-    var elsClick = h.elsClick;
-    this._handlers = {
-      elsClick: elsClick
-    }
   }
   _scrollbar(type) {
     var o = this.o;

@@ -148,15 +148,14 @@ class njBox {
 
     this._cb('destroy');
 
+    this._cb('destroyed');
+
     this._events =
     this.o =
     this.state = 
     this._g =
     this.items =
-    this._g.rawItems =
-    this.dom = undefined;
-
-    this._cb('destroyed');
+    this.dom = {};
 
     return this;
   }
@@ -239,8 +238,7 @@ class njBox {
       type === 'shown' ||
       type === 'hide' ||
       type === 'hidden' ||
-      type === 'destroy' ||
-      type === 'destroyed'
+      type === 'destroy'
     ) {
       this.state.status = type;
     }

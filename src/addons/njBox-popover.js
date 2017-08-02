@@ -25,12 +25,14 @@
         
         if(o.layout === 'popover') {
           that._g.popover = true;
+
+          //modify options
+          o.container = 'body';//you cant change container in popover mode
           o.backdrop = that._getPassedOption('backdrop') || false;
           o.scrollbar = that._getPassedOption('scrollbar') || 'show';
-          // o.out = that._getPassedOption('out') || true;
-          o.esc = that._getPassedOption('esc') || false;
+          o.close = that._getPassedOption('close') || false;
+          o.autoheight = false;
           o.autofocus = that._getPassedOption('autofocus') || false;
-          o.container = 'body';//you cant change container in popover mode
           o.focusprevious = false;
           o.click = false;
           o.clickels = false;
@@ -144,9 +146,12 @@
           }
         })
         that.on('destroy', function() {
+          var h = this._handlers;
+
           switch (o.trigger) {
             case 'click':
-              that._g.els.off('click', trigger_click)
+              debugger;
+              that._g.els.off('click', h.trigger_click)
               break;
             case 'hover': 
               that._g.els .off('mouseenter', h.trigger_mouseenter)

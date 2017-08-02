@@ -105,8 +105,7 @@
           that.dom.wrap.undelegate('[data-njb-prev]', 'click', h.wrap_prev)
                         .undelegate('[data-njb-next]', 'click', h.wrap_next)
           delete h.wrap_prev
-          delete wrap_next
-          
+          delete h.wrap_next
         })
         this.on('position', function () {
           //we need autoheight for prev and next slide in gallery (active slide autoheighted by main plugin)

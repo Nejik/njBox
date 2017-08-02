@@ -26,8 +26,7 @@ import j from 'lib/j'
 var njBox = (function(window, undefined, setTimeout, document) {
 
 //use jquery if avaliable
-let $ = window.$ || window.jQuery;
-if(!$) $ = j;
+let $ = window.jQuery || window.$ || j;
 
 class njBox extends njBox_base {
   constructor(el, options) {

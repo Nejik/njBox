@@ -14,11 +14,11 @@
 
   njBox_class.addAddon('gallery', {
     options: {
-      gallery: '',//(selector) child items selector, for gallery elements.
+      gallery: '',//(selector) child items selector, for gallery elements (galleries created only with this option)
       arrows: true,//(boolean) should we add navigation arrows
       start: false,//(number) slide number, from which we should show gallery (not zero based, first slide is number 1)
       loop: true,//(boolean), show first image when call next on last slide and vice versa. Requires three or more images. If there are less than 3 slides, option will be set to false automatically.
-      preload: '1 1',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
+      preload: '1 1',//(boolean false || string) space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded always, even if you set false in this option)
     },
     templates: {
       count: '<div class="njb-ui__count"><span data-njb-current>1</span> / <span data-njb-total>1</span></div>',

@@ -159,18 +159,24 @@ In this example "content" option calculated in next priority:
 | duration | auto | string \|\| number \|\| auto | duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem yet ^^)
 | jquery | undefined |  | !!! jQuery NOT required for plugin, plugin can work with it to support old browsers !!! link to jquery (for modules without global scope) P.S. Plugin will try to found jquery in global namespace even without this option.
 | autobind | [data-toggle~="box"], [data-toggle~="modal"] | selector | selector that will be used for autobind (can be used only with changing global default properties) Usage: njBox.defaults.autobind = '.myAutoBindSelector'
-| _focusable | a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable] | selector | this elements we will try to focus in popup shown after option o.autofocus.
 | buttonrole | 'button' | button \|\| boolean false | this role will be set to elements, which opens modal window
 | role | 'dialog' | dialog \|\| alertdialog \|\| boolean false | role that will be set to modal dialog https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_alertdialog_role
 | label | false | string \|\| boolean false | add aria-label attribute to support screenreaders
 | labelledby | false | string \|\| boolean false | add aria-labelledby attribute to support screenreaders
 | describedby | false | string \|\| boolean false | add aria-describedby attribute to support screenreaders
-| gallery | '' | selector | child items selector, for gallery elements (galleries created with this option)
+| _focusable | in description | selector | Default: **a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]**. This elements we will try to focus in popup shown after option o.autofocus.
+| **Gallery options** | | |  
+| gallery | '' | selector | child items selector, for gallery elements (galleries created only with this option)
 | arrows | true | boolean | should we add navigation arrows
 | start | false | number | slide number, from which we should show gallery (not zero based, first slide is number 1)
 | loop | true | boolean | show first slide when call `next` on last slide and vice versa. Requires three or more slides. If there are less than 3 slides, option will be set to false automatically
-| preload | '1 1' | boolean false \|\| string | space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded alwsys, even if you set false in this option)
-
+| preload | '1 1' | boolean false \|\| string | space separated string with 2 numbers, how much images we should preload before and after active slide (1 image before and after will be preloaded always, even if you set false in this option)
+| **Popover options** | | | 
+| trigger | 'click' | boolean false \|\| click \|\| hover \|\| follow | how popover is triggered
+| placement | 'bottom' | string \|\| array \|\| function | coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as second, 'this' context is set to the popover instance.
+| reverse | true | boolean | should we reverse direction left/right top/bottom if no space for popover?
+| offset | '10 10' | string \|\| array | (default '5 5' for trigger:'follow' case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
+| boundary | true | boolean | should popover stay in window boundaries?
 
 ### templates
 

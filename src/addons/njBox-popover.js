@@ -11,10 +11,10 @@
   njBox_class.addAddon('popover', {
     options: {
       layout         : 'fixed',//(fixed || absolute || popover) how popup will be positioned. For most cases fixed is good, but when we insert popup inside other element, not document, absolute position sets automatically. Popover mode works only with popover addon). Its not popover addon specific options, it extends basic option with popover option.
-      trigger        : 'click',//(false || click || hover || follow) how popover is triggered
+      trigger        : 'click',//(boolean false || click || hover || follow) how popover is triggered
       placement      : 'bottom',//(string || array || function) coordinates or designations for positioning popover. Coordinates as string should be space separated 2 numbers (e.g. "100 100") or if it is array, it should be array with 2 numbers (e.g. [100,100]). Designations can be - top || right || bottom || left || center. Top,right,bottom,left are relative to clicked element, but "center" relative to window. Also when a function is used to determine the placement, it is called with the popover DOM node as its first argument and the triggering element DOM node as second, 'this' context is set to the popover instance.
       reverse        : true,//(boolean) should we reverse direction left/right top/bottom if no space for popover
-      offset         : '10 10',//(string or array) (default '5 5' for trigger follow case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
+      offset         : '10 10',//(string || array) (default '5 5' for trigger:'follow' case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
 	    boundary       : true//(boolean) popover specific option. Should popover stay in window boundaries?
     },
     prototype: {

@@ -367,11 +367,18 @@ class njBox extends njBox_base {
           var shortName = p.match(/^njb(.*)/)[1],
             shortNameLowerCase = shortName.charAt(0).toLowerCase() + shortName.slice(1);
 
-          prefixedData[shortNameLowerCase] = transformType(data[p]);
+          prefixedData[shortNameLowerCase] = data[p];
         }
       }
 
       return prefixedData;
+    }
+
+    //transform types from string. We cant do this in choosePrefixedData, because we should also transform data from data-njb-options
+    for (var opt in dataProcessed) {
+      if (dataProcessed.hasOwnProperty(opt)) {
+        dataProcessed[opt] = transformType(dataProcessed[opt])
+      }
     }
 
 
@@ -618,7 +625,7 @@ class njBox extends njBox_base {
       //insert close button
       if (o.close === 'inside') {
         dom.close = this._createEl('close');
-        dom.close.attr('title', o.text.close);
+        dom.close.attr('title', this._text.close);
 
         modalFragment.appendChild(dom.close[0]);
       }

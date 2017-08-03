@@ -63,7 +63,6 @@ class njBox {
     this._cb('items_gathered', this._g.rawItems);
 
     this.items = this._createItems(this._g.rawItems)
-    this._cb('items_create');
     this._cb('items_created', this.items);
     if (!this.items.length) {
       this._e('njBox, smth goes wrong, plugin don\'t create any item to show', true);
@@ -89,15 +88,10 @@ class njBox {
       this._e('njBox, show, plugin not inited or in not inited state(probably plugin is already visible or destroyed, or smth else..)');
       return;
     }
-    
 
     if (this._cb('show') === false) return;//callback show (we can cancel showing popup, if show callback will return false)
 
     this._cb('show_prepare');
-    this._cb('show_prepared');
-
-    this._cb('dom_insert');
-    this._cb('dom_inserted');
 
     this._cb('animation_show');
 
@@ -121,7 +115,6 @@ class njBox {
     if (this._cb('hide') === false) return;//callback hide
 
     this._cb('hide_prepare');
-    this._cb('hide_prepared');
 
     this._cb('animation_hide');
     
@@ -230,6 +223,7 @@ class njBox {
     if (clear) this._clear();
   }
   _cb(type) {//cb - callback
+    console.log(type);
     var o = this.o,
       callbackResult;
 
@@ -288,7 +282,7 @@ class njBox {
     this._events = this._events || {};
     if (event in this._events === false) return;
     for (var i = 0; i < this._events[event].length; i++) {
-      this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
+      if(typeof this._events[event][i] === 'function') this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
     }
     return this;
   }

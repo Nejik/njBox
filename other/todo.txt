@@ -1,3 +1,5 @@
+* нету ивента, который бы сигнализировал что итем в доме и со статусом loaded (етсь только для картинок, мб селектора)
+
 * role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
   aria label or aria-labelledby from header option

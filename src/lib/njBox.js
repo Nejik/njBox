@@ -88,7 +88,6 @@ class njBox extends njBox_base {
       }
 
       this._g.animation = this._calculateAnimations();
-      this._cb('animation_calculated', this._g.animation);
 
       function selectElement(elem) {
         var $elem = $(elem);
@@ -114,8 +113,6 @@ class njBox extends njBox_base {
       //create popup container dom elements
       this.dom = this._createDom();
       this.dom.insertInto = this.dom.items;
-
-      this._cb('dom_ready', this.dom);
 
       var containerIsBody = this._g.containerIsBody = this.dom.container[0] === this.dom.body[0];
       //check if container not relative position
@@ -154,25 +151,24 @@ class njBox extends njBox_base {
       this._addListeners();
 
       this._uiUpdate();
-    })
-    this.on('dom_insert', function() {
+
+      this._cb('dom_insert');
+      //insert modal into dom
+      if(this._g.insertWrap) {
+        this.dom.container.append(this.dom.wrap);
+      }
       this._drawItem({
         item: this._getActive(),
         container: this.dom.insertInto,
         prepend: false
       });
-      //insert modal into dom
-      if(this._g.insertWrap) {
-        this.dom.container.append(this.dom.wrap);
+      //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
+      this.dom.wrap[0].style.display = 'none';
+      this.dom.wrap[0].clientHeight;
+      this.dom.wrap[0].style.display = 'block';
 
-        //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
-        this.dom.wrap[0].style.display = 'none';
-        this.dom.wrap[0].clientHeight;
-        this.dom.wrap[0].style.display = 'block';
-      }
-    })
-    this.on('dom_inserted', function() {
       this.position();//set all positions
+      this._cb('dom_inserted');
     })
     this.on('inited', function() {
       //add initial click handlers
@@ -1229,12 +1225,8 @@ class njBox extends njBox_base {
     var o = this.o,
         {item, container, prepend} = props,
         itemToInsert = item.toInsert;
-    
-    this._cb('item_prepare', item);
 
-    if (item.state.contentInserted) {
-      this._cb('item_content_ready', item);
-    } else if(o.delayed && (item.type === 'image' || item.type === 'selector')) {
+    if(!item.state.contentInserted && o.delayed && (item.type === 'image' || item.type === 'selector')) {
       this._insertItemContent({item, delayed: false});
     }
 
@@ -1245,7 +1237,7 @@ class njBox extends njBox_base {
     }
 
     this._cb('item_inserted', item);
-    if(item.state.contentInserted) this._cb('item_ready', item);
+    if(item.state.status === 'loaded') this._cb('item_ready', item);
   }
   _set_focus(item, last) {
     var o = this.o,

@@ -263,15 +263,41 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 
 | Title  | Callback name | Arguments | Description |
 | :--- | :--- | :---: | :--- |
-| inited | oninited | - | When instance inited(all data gathered, dom created, events prepared, etc.) P.S. init method calls async in next event loop or in show method whichever comes first.
+| init | oninited | - | First event, here you can work or set some defaults. 
+| options_set | onoptions_set | - | When options set... Here you can manipulate options, add/change. (this.o)
+| options_gathered | onoptions_gathered | optionsObject, element | Options gathered from dom element (data-njb-* attributes, href, title, etc)
+| options_setted | onoptions_setted | optionsObject | **Helper for options_set. See description below table.**
+| dom_create | ondom_create | - | When most global dom elements creates, wrapper, ui, etc (this.dom)
+| dom_created | ondom_created | - | **Helper for dom_create. See description below table.**
+| items_gather | onitems_gather | - | When the rough data is collected (this._g.rawItems). From this we will create items (slides) for show.
+| items_gathered | onitems_gathered | itemsArray | **Helper for items_gather. See description below table.**
+| item_normalized | onitem_normalized | itemNormalizedObject, itemRawDataObject | When from raw data we create normalized item to show.
+| item_create | onitem_create | itemObject, index | When we create dom for item from state. Index can be used in array with all items (this.items).
+| item_loaded | onitem_item_loaded | itemObject | **Can be async!** When content inserted in item, this event can be async in images slides for examples.
+| item_created | onitem_created | itemObject, index | **Helper for item_create. See description below table.**
+| items_created | onitems_created | itemsArray | When all items created. For usual modal or popover it always will be 1 item.
+| inited | oninited | - | When plugin initialized and all preliminary work done.
 | show | onshow | - | When modal begin to show. <br /> P.S. If you return false in onshow callback, showing modal will be canceled.
+| show_prepare | onshow_prepare | - | When you should do some related stuff before showing modal. As example at this step plugin hides scrollbar, shows backdrop overlay, etc.
+| listeners_added | onlisteners_added | - | Here you can add your custom event listeners.
+| show_prepared | onshow_prepared | - | **Helper for show_prepare. See description below table.**
+| dom_insert | ondom_insert | - | When inserting global wrapper/ui into page.
+| item_inserted | onitem_inserted | itemObject | When inserting item to plugin wrapper. (as example used in gallery addon, when you need to do some actions when new slide inserted into page)
+| item_ready | onitem_ready | itemObject | When item(slide) in dom and fully loaded. As example, image type can be inserted in dom, but still loading with preloader, those not ready, and only after loading this event will fire.
+| dom_inserted | ondom_inserted | - | **Helper for dom_insert. See description below table.**
+| position | onposition | - | When position needs changes and we should set coordinates for our element.
+| positioned | onpositioned | - | **Helper for position. See description below table.**
+| animation_show | onanimation_show | - | When animation starts.
 | shown | onshown | - | After show animation finished.
 | hide | onhide | - | When modal begin to hide. <br /> P.S. If you return false in onhide callback, hiding modal will be canceled.
+| hide_prepare | onhide_prepare | - | When you should do some related stuff before hiding modal. As example at this step plugin shows scrollbar, hides backdrop overlay, etc.
+| listeners_removed | onlisteners_removed | - | Here you can remove your custom event listeners.
+
+
 | hidden | onhidden | - | After hide animation finished.
 | **Advanced&nbsp;events** | | | **Events below basically used for creating addons enhancing functionality of plugin, but of course you can use it also.**
 | options_gathered | onoptions_gathered | dataObject, domEl | When options gathered from dom element. P.S. You can modify options in this object
 | options_setted | onoptions_setted | optionsObject | When all gather options steps complete, object with this options will be used in plugin
-| domready | ondomready | domObject | When all global dom elements needed for plugin is created P.S. Mainly els from this.dom object
 | item_gathered | onitem_gathered | dataObject, domEl | **Gallery addon only.** Called for every item(slide). When options for each item(slide) gathered from dom element. P.S. You can modify options in this object
 | items_raw | onitems_raw | object | When plugin gather els and data for items. Item is a unit to show (for example in gallery each slide is item)
 | item_created | onitem_created | itemObject, index | Called for every item(slide). When dom created for each item. P.S. dom element you can find in item.dom object
@@ -282,7 +308,6 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | item_content_ready | onitem_content_ready | itemObject | When content inserted into item.
 | item_inserted | onitem_inserted | itemObject | After item inserted.
 | item_ready | onitem_ready | itemObject | Calls when item fully loaded AND INSERTED IN DOM.
-| position | onposition | - | When calculation position triggered (window/container scroll/resize). In position we make autoheight and different calculation for position:absolute.
 | item_img_ready | onitem_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_load | onitem_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_true | onitem_img_true | itemObject | When image is ready, depending on o.img option
@@ -292,6 +317,7 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | clear | onclear | - |After hiding when we remove all unnecessary data. <br />Mostly for making addons.
 | cb | oncb | event, event_arguments | Global callback that calls for EVERY event (first argument) that you can use for making some global changes. <br /> P.S. Using this callback allow you to listen callback twice, first event will fire in oncb callback where you can do some magic with all events, and later when you initialize modal in code with usual oninited, onshow, etc callbacks.
 
+toto description for "ed" events
 We can use events in 2 ways:
 
 1. Using callbacks

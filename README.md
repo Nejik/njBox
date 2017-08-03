@@ -1,6 +1,23 @@
 # njBox
 Highly customizable pure javascript modal window/lightbox/popover.
 
+* [Install](#install)
+  * [npm](#npm)
+  * [manual](#manual)
+* [Dependencies](#dependencies)
+* [Usage](#usage)
+* [Customization](#customization)
+  * [Options](#options)
+  * [Templates](#templates)
+  * [Text](#text)
+  * [Changing default settings globally](#changing-default-settings-globally)
+* [API](#api)
+* [Events](#events)
+* [Delegate attributes](#delegate-attributes)
+* [Tips](#tips)
+* [Examples](#examples)
+* [License](#license)
+
 React wrapper - todo
 
 Vue wrapper - todo
@@ -25,7 +42,7 @@ Angular wrapper - todo
 
 ## Dependencies
 
-Plugin have **no dependencies** and support all modern browsers (ie11+). But, if you need to support older browsers, you can include jQuery that supports older browsers, plugin will find and use it, you don't need to configure anything here. Also if you need ie10, 9 for example, you can insert some polyfills without jQuery at all.
+Plugin have **no dependencies** and support all modern browsers (ie11+). But, if you need to support older browsers, you can include jQuery, plugin will find and use it, you don't need to configure anything here. Also if you need ie10, 9 for example, you can insert some polyfills without jQuery at all.
 
 ## Usage
 
@@ -126,7 +143,7 @@ In this example "content" option calculated in next priority:
 
 "content from separate data" eventually won and modal will show this text.
 
-### Options list:
+### Options
 
 | Name  | Default | Type | Description |
 | :--- | :---: | :--- | :--- |
@@ -178,7 +195,7 @@ In this example "content" option calculated in next priority:
 | offset | '10 10' | string \|\| array | (default '5 5' for trigger:'follow' case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
 | boundary | true | boolean | should popover stay in window boundaries?
 
-### templates
+### Templates
 
 ```js
 templates: {
@@ -202,7 +219,7 @@ templates: {
 }
 ```
 
-### text
+### Text
 
 ```js
 text: {

@@ -287,38 +287,22 @@ njBox.addAddon(name, addon)//register addon, addon structure you can see in njBo
 | dom_inserted | ondom_inserted | - | **Helper for dom_insert. See description below table.**
 | position | onposition | - | When position needs changes and we should set coordinates for our element.
 | positioned | onpositioned | - | **Helper for position. See description below table.**
-| animation_show | onanimation_show | - | When animation starts.
-| shown | onshown | - | After show animation finished.
+| animation_show | onanimation_show | - | When showing animation starts.
+| shown | onshown | - | When show animation finished.
 | hide | onhide | - | When modal begin to hide. <br /> P.S. If you return false in onhide callback, hiding modal will be canceled.
 | hide_prepare | onhide_prepare | - | When you should do some related stuff before hiding modal. As example at this step plugin shows scrollbar, hides backdrop overlay, etc.
 | listeners_removed | onlisteners_removed | - | Here you can remove your custom event listeners.
-
-
-| hidden | onhidden | - | After hide animation finished.
-| **Advanced&nbsp;events** | | | **Events below basically used for creating addons enhancing functionality of plugin, but of course you can use it also.**
-| options_gathered | onoptions_gathered | dataObject, domEl | When options gathered from dom element. P.S. You can modify options in this object
-| options_setted | onoptions_setted | optionsObject | When all gather options steps complete, object with this options will be used in plugin
-| item_gathered | onitem_gathered | dataObject, domEl | **Gallery addon only.** Called for every item(slide). When options for each item(slide) gathered from dom element. P.S. You can modify options in this object
-| items_raw | onitems_raw | object | When plugin gather els and data for items. Item is a unit to show (for example in gallery each slide is item)
-| item_created | onitem_created | itemObject, index | Called for every item(slide). When dom created for each item. P.S. dom element you can find in item.dom object
-| data_gathered | ondata_gathered | dataObject, domEl | On gathering data from dom element (data-njb-* atrributes, title, content, etc.) <br /> P.S. In ondata_gathered callback you can modify dataObject if you need some custom logic on gathering data.
-| item_domready | onitem_domready | itemObject | When dom for item created (called for each slide in gallery). <br /> P.S. in onitem_domready callback you can make your custom logic on dom elements for each slide under itemObject.dom.* (If customization templates not enough Oo)
-| events_setted | onevents_setted | - |When event handlers attached. <br />Mostly for making addons.
-| item_prepare | onitem_prepare | itemObject | Before insert item. Called before inserting delayed content. <br /> Read in tips section about delayed content.
-| item_content_ready | onitem_content_ready | itemObject | When content inserted into item.
-| item_inserted | onitem_inserted | itemObject | After item inserted.
-| item_ready | onitem_ready | itemObject | Calls when item fully loaded AND INSERTED IN DOM.
-| item_img_ready | onitem_img_ready | itemObject | When image starts downloading and we have first info about width/height, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
+| animation_hide | onanimation_hide | - | When hiding animation starts.
+| clear | onclear | - | When hide animation finished and we should remove stuff from dom and similar work.
+| hidden | onhidden | - | When hide animation finishedand all stuff removed from dom.
+| item_img_ready | onitem_img_ready | itemObject | When we have data about image size, but image not fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
 | item_img_load | onitem_img_load | itemObject | When image fully loaded. P.S. image dom element can be found in itemObject.dom.img[0]
-| item_img_true | onitem_img_true | itemObject | When image is ready, depending on o.img option
+| item_img_true | onitem_img_true | itemObject | When image is ready for inserting in dom, depending on o.img option. P.S. image dom element can be found in itemObject.dom.img[0]
 | ok | onok | - | When closing by clicking on element with data-njb-ok attribute. Used for callbacks in dialogs. Fires before hide event.
-| cancel | oncancel | - | Called always, except case when clicked element with data-njb-ok. Used for callbacks in dialogs. Fires before hide event.
-| events_removed | onevents_removed | - | When event handlers detached. <br />Mostly for making addons.
-| clear | onclear | - |After hiding when we remove all unnecessary data. <br />Mostly for making addons.
+| cancel | oncancel | - | When closing by clicking on element with data-njb-cancel attribute. Used for callbacks in dialogs. Fires before hide event.
 | cb | oncb | event, event_arguments | Global callback that calls for EVERY event (first argument) that you can use for making some global changes. <br /> P.S. Using this callback allow you to listen callback twice, first event will fire in oncb callback where you can do some magic with all events, and later when you initialize modal in code with usual oninited, onshow, etc callbacks.
 
-toto description for "ed" events
-We can use events in 2 ways:
+* Helper events pursue a single goal - when they fire, all user/addons callbacks related to helper fired. It's important for addons, as example we can use options_set event. One addon change some option, and second addon also changes this option. You can use options_setted event to be sure all callbacks/addons fires and now options are final.
 
 1. Using callbacks
 ```js

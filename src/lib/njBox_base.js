@@ -223,7 +223,6 @@ class njBox {
     if (clear) this._clear();
   }
   _cb(type) {//cb - callback
-    console.log(type);
     var o = this.o,
       callbackResult;
 

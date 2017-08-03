@@ -106,31 +106,30 @@ export const defaults = {
 	elem           : '',//(selector || dom\jQuery element) dom element for triggering modal
 	content        : undefined,//(string || function) content for modal
 	delayed        : true,//(boolean) Interesting option, that works only for selector and image types. When its true with selector type, dom element will not be touched until show, and will be returned to dom after hiding modal. When its true and type image, images will not be loading on initialization, loading starts when show method calls
-	type           : undefined,//(html || selector || text || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
-	header         : undefined,//(html) html that will be added as modal header (for first slide)
-	footer         : undefined,//(html) html that will be added as modal footer (for first slide)
+	type           : undefined,//(html || selector || text || image || template) type of content, if selector used, whole element will be inserted in modal. Template similar to html, but template inserted without .njb__body tag(header/footer also not inserted), directly to .njb
+	header         : undefined,//(html) html that will be added as modal header
+	footer         : undefined,//(html) html that will be added as modal footer
 	// we need quotes here because of ie8..
 	'class'        : false,//(string) classnames(separated with space) that will be added to modal wrapper, you can use it for styling (theming).
 	zindex         : false,//(boolean false || number) zindex that will be set on modal, probably not a good idea to use this option, set it in css and use o.class instead
 
 	container      : 'body',//(selector) appends modal to specific element
-	layout         : 'fixed',//(fixed || absolute || popover), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element, not document, absolute position sets automatically, popover mode works only with popover addon)
+	layout         : 'fixed',//(fixed || absolute || popover), how popup will be positioned. For most cases fixed is good, but when we insert popup inside element(not document), absolute position sets automatically, popover mode works only with popover addon)
 
 	click          : true,//(boolean) should we set click handler on element(o.elem)?
-	clickels       : '',//(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
+	clickels       : false,//(selector || dom\jQuery element) additional elements that can trigger same modal window (very often on landing pages you need few buttons to open one modal window)
 
-	backdrop       : true,//(boolean) should we show backdrop?
+	backdrop       : true,//(boolean) should we show backdrop (black overlay)?
 	backdropassist : true,//(boolean) if true, animation durations of modal will automatically sets to backdrop to be in sync
 	scrollbar      : 'hide',//(show || hide) should we hide scrollbar from page?
 	out            : true,//(boolean) click outside modal will close it, false also adds fancy animation when somebody tries to close modal with outside click
 	esc            : true,//(boolean) close modal when esc button pressed?
 	close          : 'outside',//(inside || outside || boolean false) add close button inside or outside popup or don't add at all
-	autoheight     : 'image',//(boolean || image) should we set maximum height of modal? if image is selected, only images will be autoheighted
+	autoheight     : 'image',//(boolean || image) should we fit modal height to window height? if image is selected, only images will be autoheighted
 	autofocus      : true,//(boolean, selector) set focus to element, after modal is shown, also you may use autofocus attribute without this option
-	focusprevious  : true,//(boolean) focus previous modal window after closing curren modal (case when we open two or more modal windows)
+	focusprevious  : true,//(boolean) focus previous modal window after hiding current modal. (only for case when we open two or more modal windows)
 	title          : undefined,//(string || boolean false) title (usually for image)
-	title_attr     : 'title',//(string || boolean false) attribute from which we gather title for slide (used basically in images)
-
+	titleattr     : 'title',//(string || boolean false) attribute from which we gather title 
 	img            : 'ready',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	anim           : 'scale',//(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 	animclass      : 'animated',//(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
@@ -138,7 +137,7 @@ export const defaults = {
 
 	
 
-	jquery         : undefined,//link to jquery (for modules without global scope)
+	jquery         : undefined,//!!! jQuery NOT required for plugin, plugin can work with it to support old browsers !!! link to jquery (for modules without global scope) P.S. Plugin will try to found jquery in global namespace even without this option.
 	autobind       : '[data-toggle~="box"], [data-toggle~="modal"]',//(selector) selector that will be used for autobind (can be used only with changing global default properties) Set it after njBox.js is inserted njBox.defaults.autobind = '.myAutoBindSelector'
 
 	//accessibility options

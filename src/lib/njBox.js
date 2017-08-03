@@ -139,6 +139,8 @@ class njBox extends njBox_base {
       this._insertItemContent({item, delayed: this.o.delayed});
     })
     this.on('show_prepare', function() {
+      var wrap = this.dom.wrap;
+
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
 
       delete this.returnValue;
@@ -155,7 +157,7 @@ class njBox extends njBox_base {
       this._cb('dom_insert');
       //insert modal into dom
       if(this._g.insertWrap) {
-        this.dom.container.append(this.dom.wrap);
+        this.dom.container.append(wrap);
       }
       this._drawItem({
         item: this._getActive(),
@@ -163,9 +165,9 @@ class njBox extends njBox_base {
         prepend: false
       });
       //force reflow, we need because firefox has troubles with njb element width, while inside autoheighted image
-      this.dom.wrap[0].style.display = 'none';
-      this.dom.wrap[0].clientHeight;
-      this.dom.wrap[0].style.display = 'block';
+      wrap[0].style.display = 'none';
+      wrap[0].clientHeight;
+      wrap[0].style.display = 'block';
 
       this.position();//set all positions
       this._cb('dom_inserted');
@@ -350,9 +352,9 @@ class njBox extends njBox_base {
     }
 
     //get title
-    if (o.title_attr) {
-      var title_attr = $el.attr(o.title_attr);
-      if (title_attr) dataProcessed.title = title_attr;
+    if (o.titleattr) {
+      var titleattr = $el.attr(o.titleattr);
+      if (titleattr) dataProcessed.title = titleattr;
     }
 
     $.extend(dataProcessed, choosePrefixedData(dataO))

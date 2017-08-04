@@ -138,7 +138,16 @@ class njBox extends njBox_base {
 
       this._insertItemContent({item, delayed: this.o.delayed});
     })
+    this.on('inited', function() {
+      //add initial click handlers
+      this._addClickHandler();
+      //todo
+      // if (o.buttonrole && this._g.els) this._g.els.attr('role', o.buttonrole);
+    })
     this.on('show_prepare', function() {
+      var e = this.state.clickedEvent;
+      (e && e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+
       var wrap = this.dom.wrap;
 
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding
@@ -171,12 +180,6 @@ class njBox extends njBox_base {
 
       this.position();//set all positions
       this._cb('dom_inserted');
-    })
-    this.on('inited', function() {
-      //add initial click handlers
-      this._addClickHandler();
-      //todo
-      // if (o.buttonrole && this._g.els) this._g.els.attr('role', o.buttonrole);
     })
     this.on('animation_show', function() {
       var that = this,
@@ -755,7 +758,8 @@ class njBox extends njBox_base {
 
       that._preloader('hide', item);
 
-      item.dom.bodyInput.html(this._text.imageError.replace('%url%', item.content));
+      item.dom.bodyInput.html(that._text.imageError.replace('%url%', item.content));
+      item.dom.modal.removeClass('njb--image').addClass('njb--content')
 
       that._cb('img_e', item);//img_ready, img_load callbacks
 
@@ -904,10 +908,8 @@ class njBox extends njBox_base {
       if (e.originalEvent) e = e.originalEvent;//work with original event
 
       if ('which' in e && (e.which !== 1 || e.which === 1 && e.ctrlKey && e.shiftKey)) return;//handle only left button click without key modificators
-      (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
       if ($(el).closest('.njb-close-system, .njb-arrow').length) return;
-
 
       that.state.clickedEvent = e;
       that.state.clickedEl = el;

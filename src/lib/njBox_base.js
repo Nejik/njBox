@@ -265,7 +265,7 @@ class njBox {
     } else if(type === 'hide' && callbackResult === false) {
       this.state.status = 'shown';
     }
-
+    
     return callbackResult;
   }
 

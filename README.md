@@ -22,8 +22,11 @@ Angular wrapper - todo
   * [Text](#text)
   * [Changing default settings globally](#changing-default-settings-globally)
 * [Events](#events)
-* [Tips](#tips)
+* [Tips && tricks](#tips-tricks)
 * [Examples](#examples)
+* [Modal instance structure](#modal-instance-structure)
+  * [Receiving instance](#receiving-instance)
+  * [Instance description](#instance-description)
 * [License](#license)
 
 ## Install
@@ -93,11 +96,11 @@ var gallery = new njBox({
 ```
 
 ### "Native" dialogs (alert, confirm, prompt)
-Plugin has builtin imitation for such dialogs. 
+Plugin has built in imitations for default browser dialogs. 
 ```js
 njBox.alert(message, okCallback, cancelCallback)
 njBox.confirm(message, okCallback, cancelCallback)
-njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue
+njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue. Placeholder argument can be omitted.
 ```
 Methods are static, called from class. Example:
 ```js
@@ -105,6 +108,19 @@ njBox.alert('Are you sure you want to delete this message?', function() {
   console.log('yes callback')
 }, function() {
   console.log('no callback')
+})
+
+//with placeholder
+njBox.prompt('Are you sure you want to delete this message?', 'Some placeholder here', function(valueFromInput) {
+  console.log('yes callback', valueFromInput)
+}, function(valueFromInput) {
+  console.log('no callback', valueFromInput)
+})
+//or without placeholder
+njBox.prompt('Are you sure you want to delete this message?', function(valueFromInput) {
+  console.log('yes callback', valueFromInput)
+}, function(valueFromInput) {
+  console.log('no callback', valueFromInput)
 })
 ```
 
@@ -119,6 +135,7 @@ For init you should set set data-toggle="modal" or data-toggle="box" attribute. 
 For options you should set data-njb-* attributes.
 If you have many options, they can be setted via one attribute in json format - data-njb-options='{"backdrop":false, "close":"inside", "scrollbar":"show"}' **Please note, that it should be a VALID JSON**
 
+P.S. You can't use callbacks with html api.
 
 ```html
 <a href="#modalDiv" id="myModal" data-toggle="modal" 
@@ -130,6 +147,7 @@ If you have many options, they can be setted via one attribute in json format - 
                                  data-njb-options='{"backdrop":false, "close":"inside", "scrollbar":"show"}'>
 Show popup</a>
 ```
+
 ### Delegate attributes
 Delegate attributes also part of HTML API. For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api (but of course you can), you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
 
@@ -160,7 +178,7 @@ Markers for dom creation:
 
 P.S. All public method are chainable (like jQuery methods)
 
-"new njBox" returns instance of modal. Later you can call public methods on this instance.
+"new njBox" returns [instance](#modal-instance-structure) of modal. Later you can call public methods on this instance.
 ```js
 //create instance
 var modal = new njBox('#myModalLink');
@@ -196,20 +214,6 @@ njBox.alert(message, okCallback, cancelCallback)
 njBox.confirm(message, okCallback, cancelCallback)
 njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue
 ```
-
-
-You can pass an object with custom options in js initialization or use data-njb-* if you want html api.
-Also you can pass all options as json in one attribute njb-options.
-
-P.S. You can't use callbacks with html api.
-
-HTML API example
-
-```html
-<a href="#modalDiv" id="myModal" data-toggle="modal" data-njb-backdrop="false" data-njb-close="inside" data-njb-scrollbar="show">Show popup</a>
-```
-
-JS options example
 
 ```js
 var modal = new njBox({
@@ -276,7 +280,7 @@ In this example "content" option calculated in next priority:
 | focusprevious | true | boolean | focus previous modal window after hiding current modal. (only for case when we open two or more modal windows)
 | title | undefined | string \|\| boolean false | title (usually for image)
 | titleattr | title | string \|\| boolean false | attribute from which we gather title
-| img | ready | load \|\| ready | we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images and show image faster)
+| img | ready | load \|\| ready | we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images and show image much faster)
 | anim | 'scale' | false \|\| string | name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
 | animclass | animated | string | additional class that will be added to modal window during animation (can be used for `animate.css` or other css animation libraries)
 | duration | auto | string \|\| number \|\| auto | duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen this problem yet ^^)
@@ -397,7 +401,7 @@ njBox.defaults.backdrop =  false;
 | cancel | oncancel | - | When closing by clicking on element with data-njb-cancel attribute. Used for callbacks in dialogs. Fires before hide event.
 | cb | oncb | event, event_arguments | Global callback that calls for EVERY event (first argument) that you can use for making some global changes. <br /> P.S. Using this callback allow you to listen callback twice, first event will fire in oncb callback where you can do some magic with all events, and later when you initialize modal in code with usual oninited, onshow, etc callbacks.
 
-* Helper events pursue a single goal - when they fire, all user/addons callbacks related to helper fired. It's important for addons, as example we can use options_set event. One addon change some option, and second addon also changes this option. You can use options_setted event to be sure all callbacks/addons fires and now options are final.
+* Helper events pursue a single goal - when they fire, all user/addons callbacks related to helper already fired. It's important for addons, as example we can use options_set event. One addon change some option, and second addon also changes this option. You can use options_setted event to be sure all callbacks/addons fires and now options are final.
 
 1. Using callbacks
 ```js
@@ -429,9 +433,126 @@ var modal = new njBox({elem:'#myModalLink'})
                                             })
 ```
 
-## Tips
+## Tips && tricks
+1. By default initialization of plugin is async. If you need sync initialization you can call it directly
+```js
+var modal = new njBox({elem:'.el'})._init();
+```
+2. Common case when you need custom close button. You can do it by adding data-njb-close attribute to some element inside modal without any javascript. As variant you can set close option to "inside".
+```html
+<div id="modal">
+  some content
+  <button data-njb-close>close modal</button>
+</div>
+```
+3. You can open modal only with html. See [Usage](#usage) section.
+4. You can open modal only with js. "content" option is required.
+```js
+  var modal = new njBox({content:'<h1>My awesome modal</h1>'})
+  modal.show();
+  //or
+  new njBox({content:'<h1>My awesome modal</h1>'}).show()
+```
+5. Options "content" and "placement"(from gallery addon) can be a function. As example lets see on static njBox.alert method.
+```js
+export function alert(content, okCb, cancelCb) {
+  return new njBox({
+    content: function () {
+      return (
+`<div class="njb__body">
+${content || this._text._missedContent}
+</div>
+<div class="njb__footer">
+  <button data-njb-ok>${this._text.ok}</button>
+</div>`);
+    },
+    type: 'template',
+    role: 'alertdialog',
+    out: false,
+    onok: okCb,
+    oncancel: cancelCb
+  }).show()
+}
+
+```
+6. return false from show/hide callbacks will prevent action. As example - situation when window width is small - open image link directly in browser, without popup.
+```html
+<a href="linkToImage" class="el">Show image</a>
+```
+```js
+var modal = new njBox({
+  content: 'test content',
+  onshow: function() {
+    var open = true;
+    if(window.innerWidth <= 480) {
+      open = false;
+    }
+
+    return window.innerWidth <= 480;
+  }
+})
+
+```
 
 ## Examples
+
+## Modal instance structure
+
+### Receiving instance
+```new njBox()``` returns modal instance. Also every public method return instance, thats why all public methods chainable like jQuery methods. You can get accesss to instance by 4 ways:
+1. save to variables on creation
+```js
+var modalInstance = new njBox();
+
+var modalInstance = new njBox().show();
+```
+2. use static method njBox.get(elem)
+```js
+var modalInstance = njBox.get(selector)
+```
+3. from dom property on inited element (of course after initialization and you should remember that initialization is async, examples in [Tips && tricks](#tips-tricks))
+```html
+<a href="#modal" class="modalLink">open modal</a>
+```
+```js
+var modalInstance = document.querySelector('.modalLink').njBox
+```
+4. "this" in all callbacks binds to modalInstance
+```js
+new njBox({
+  elem: '.el',
+  onshown: function() {
+    var modalInstance = this;
+    this.hide();
+  }
+})
+new njBox({
+      elem: '.el'
+    }).on('shown', function() {
+      this.hide();
+    })
+```
+
+### Instance description
+Now lets see to instance structure:
+```js
+  var modal = {
+    $: function(){},//link to jQuery if she included in page, if no - link to light custom wrapper that have same as jquery syntax
+    dom: {},//object with links to created by plugin dom elements (wrappers, buttons, ui)
+    items: [],//array with object items (slides) to show. For usual modal always 1 item will be present, for galleries here will be object for every slide
+    o: {},//options, object with computed options
+    state: {},//internal state of plugin (this state resetted after every hiding modal)
+    _defaults: {},//default settings
+    _events: {},//all callbacks lives here
+    _g: {},//internal global state that not resetted after every hide
+    _handlers: {},//all links to event handlers lives here
+    _templates: {},//self-explanatory object. html templates.
+    _text: {}//all text lives here
+  }
+```
+Public and static njBox methods can be found [here](#js-api).
+
+
 
 ## License
 

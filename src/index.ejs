@@ -54,9 +54,12 @@
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
-    <div>Hic commodi aperiam nemo accusamus perspiciatis quas quam laborum inventore magni consequatur. Rerum sapiente odio ex aliquam repellat dolor possimus, totam quibusdam non cumque deserunt, ducimus  ducimus deserunt, ducimus dducimus <a  href="http://www.worldofowls.com/wp-content/uploads/2014/09/gallery-owls-1.jpg" class="el" data-njb-options='{"backdrop":false, "close":"inside", "scrollbar":"show"}' >click2click2clickclick2click2click22</a> iusto.</div>
+    <div><a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="el">click2click2clickclick2click2click22</a> iusto.</div>
   </div>
-  
+  <div id="modal">
+    some content
+    <button data-njb-close>close modal</button>
+  </div>
   
   <div id="modal1" class="njb-hidden">
     <h1 id="test">modal title</h1>
@@ -78,14 +81,10 @@
   <!-- <script src="njBox-gallery.js"></script>     -->
   <!-- <script src="njBox-popover.js"></script>    -->
   <script>
-    t = new njBox('.el', {
-      content: 'lol'
+    modal = new njBox({
+      elem: '.el'
     })
-    njBox.prompt('Are you sure you want to delete this message?', function(val) {
-      console.log('yes', val);
-    }, function(val) {
-      console.log( 'no', val);
-    })
+    console.log(modal)
   </script>
 </body>
 

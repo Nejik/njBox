@@ -1,28 +1,30 @@
 # njBox
 Highly customizable pure javascript modal window/lightbox/popover.
 
-* [Install](#install)
-  * [npm](#npm)
-  * [manual](#manual)
-* [Dependencies](#dependencies)
-* [Usage](#usage)
-* [Customization](#customization)
-  * [Options](#options)
-  * [Templates](#templates)
-  * [Text](#text)
-  * [Changing default settings globally](#changing-default-settings-globally)
-* [API](#api)
-* [Events](#events)
-* [Delegate attributes](#delegate-attributes)
-* [Tips](#tips)
-* [Examples](#examples)
-* [License](#license)
-
 React wrapper - todo
 
 Vue wrapper - todo
 
 Angular wrapper - todo
+
+* [Install](#install)
+  * [npm](#npm)
+  * [manual](#manual)
+* [Dependencies](#dependencies)
+* [Usage](#usage)
+  * ["Native" dialogs (alert, confirm, prompt)](#native-dialogs-alert-confirm-prompt)
+* [Customization](#customization)
+  * [HTML API](#html-api)
+  * [Delegate attributes](#delegate-attributes)
+  * [JS API](#js-api)
+  * [Options](#options)
+  * [Templates](#templates)
+  * [Text](#text)
+  * [Changing default settings globally](#changing-default-settings-globally)
+* [Events](#events)
+* [Tips](#tips)
+* [Examples](#examples)
+* [License](#license)
 
 ## Install
 
@@ -90,7 +92,111 @@ var gallery = new njBox({
 })
 ```
 
+### "Native" dialogs (alert, confirm, prompt)
+Plugin has builtin imitation for such dialogs. 
+```js
+njBox.alert(message, okCallback, cancelCallback)
+njBox.confirm(message, okCallback, cancelCallback)
+njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue
+```
+Methods are static, called from class. Example:
+```js
+njBox.alert('Are you sure you want to delete this message?', function() {
+  console.log('yes callback')
+}, function() {
+  console.log('no callback')
+})
+```
+
 ## Customization
+
+### HTML API
+Plugin supports declarative html api.
+You can initialize and set options with html only, without any js.
+
+For init you should set set data-toggle="modal" or data-toggle="box" attribute. (can be changed in njBox.defaults.autobind)
+
+For options you should set data-njb-* attributes.
+If you have many options, they can be setted via one attribute in json format - data-njb-options='{"backdrop":false, "close":"inside", "scrollbar":"show"}' **Please note, that it should be a VALID JSON**
+
+
+```html
+<a href="#modalDiv" id="myModal" data-toggle="modal" 
+                                 data-njb-backdrop="false"
+                                 data-njb-close="inside" 
+                                 data-njb-scrollbar="show">
+<!-- or -->
+<a href="#modalDiv" id="myModal" data-toggle="modal"
+                                 data-njb-options='{"backdrop":false, "close":"inside", "scrollbar":"show"}'>
+Show popup</a>
+```
+### Delegate attributes
+Delegate attributes also part of HTML API. For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api (but of course you can), you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
+
+List of interactive attributes:
+
+| Title  | Description |
+| :--- | :--- |
+| data&#x2011;njb&#x2011;close | Closes modal 
+| data&#x2011;njb&#x2011;return | On hide with data-njb-ok and data-njb-cancel buttons plugin will try to find input with this attribute and get value from it. Value will be stored in instance.returnValue variable, until next show, and will be avaliable as argument in onok, oncancel callbacks.
+| data&#x2011;njb&#x2011;ok | Closes modal. onok callback will be triggered.
+| data&#x2011;njb&#x2011;cancel | Closes modal. oncancel callback will be triggered.
+| autofocus | On show, plugin will try to find element with this attribute and focus it
+| data&#x2011;njb&#x2011;prev | **Gallery addon only.** Go to previous slide in gallery
+| data&#x2011;njb&#x2011;next | **Gallery addon only.** Go to next slide in gallery
+
+Markers for dom creation:
+
+| Title  | Description |
+| :--- | :--- |
+| data&#x2011;njb&#x2011;header | In this element plugin will insert header text.
+| data&#x2011;njb&#x2011;footer | In this element plugin will insert footer text.
+| data&#x2011;njb&#x2011;body | In this element plugin will insert content of item(slide).
+| data&#x2011;njb&#x2011;title | In this element title of current item(slide) will be inserted.
+| data&#x2011;njb&#x2011;current | **Gallery addon only.** In this element current active index will be inserted.
+| data&#x2011;njb&#x2011;total |  **Gallery addon only.** In this element total amount of slides will be inserted.
+
+### JS API
+
+P.S. All public method are chainable (like jQuery methods)
+
+"new njBox" returns instance of modal. Later you can call public methods on this instance.
+```js
+//create instance
+var modal = new njBox('#myModalLink');
+//use api
+modal	
+.show(index)//index - for gallery, from what index we should show gallery
+.hide()
+.position()//can be used, when you made your custom ui... or whatever
+.destroy()
+.update()//update just recreate all slides with current settings (can be used when you add images to gallery dynamically)
+.on(event, handler)//add event listener
+.off(event, handler)//remove event listener
+
+//Gallery addon methods
+.prev()
+.next()
+.goTo(index)
+
+```
+
+Also plugin have some useful static methods and properties on njBox class.
+```js
+njBox.get(selector)//method tat return instance of modal from this selector/dom element
+njBox.autobind(selector)//autoinitialize modals (bootstrap style) from data-attributes. It fires automatically on document.ready
+njBox.addons//object with included addons (gallery, popover for example)
+njBox.defaults//object with default options P.S. you can change it before any initialization
+njBox.templates//object with default templates P.S. you can change it before any initialization
+njBox.text//object with default text P.S. you can change it before any initialization
+njBox.addAddon(name, addon)//register addon, addon structure you can see in njBox-gallery.js addon
+
+//imitation of defaut dialog methods
+njBox.alert(message, okCallback, cancelCallback)
+njBox.confirm(message, okCallback, cancelCallback)
+njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue
+```
+
 
 You can pass an object with custom options in js initialization or use data-njb-* if you want html api.
 Also you can pass all options as json in one attribute njb-options.
@@ -100,7 +206,7 @@ P.S. You can't use callbacks with html api.
 HTML API example
 
 ```html
-<a href="#modalDiv" id="myModal" data-njb-backdrop="false" data-njb-close="inside" data-njb-scrollbar="show">Show popup</a>
+<a href="#modalDiv" id="myModal" data-toggle="modal" data-njb-backdrop="false" data-njb-close="inside" data-njb-scrollbar="show">Show popup</a>
 ```
 
 JS options example
@@ -248,47 +354,6 @@ njBox.defaults.scrollbar = 'show';
 njBox.defaults.backdrop =  false;
 ```
 
-## API
-
-P.S. All public method are chainable (like jQuery methods)
-
-"new njBox" returns instance of modal. Later you can call public methods on this instance.
-```js
-//create instance
-var modal = new njBox('#myModalLink');
-//use api
-modal	
-.show(index)//index - for gallery, from what index we should show gallery
-.hide()
-.position()//can be used, when you made your custom ui... or whatever
-.destroy()
-.update()//update just recreate all slides with current settings (can be used when you add images to gallery dynamically)
-.on(event, handler)//add event listener
-.off(event, handler)//remove event listener
-
-//Gallery addon methods
-.prev()
-.next()
-.goTo(index)
-
-```
-
-Also plugin have some useful static methods and properties on njBox class.
-```js
-njBox.get(selector)//method tat return instance of modal from this selector/dom element
-njBox.autobind(selector)//autoinitialize modals (bootstrap style) from data-attributes. It fires automatically on document.ready
-njBox.addons//object with included addons (gallery, popover for example)
-njBox.defaults//object with default options P.S. you can change it before any initialization
-njBox.templates//object with default templates P.S. you can change it before any initialization
-njBox.text//object with default text P.S. you can change it before any initialization
-njBox.addAddon(name, addon)//register addon, addon structure you can see in njBox-gallery.js addon
-
-//imitation of defaut dialog methods
-njBox.alert(message, okCallback, cancelCallback)
-njBox.confirm(message, okCallback, cancelCallback)
-njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue
-```
-
 ## Events
 
 | Title  | Callback name | Arguments | Description |
@@ -363,31 +428,6 @@ var modal = new njBox({elem:'#myModalLink'})
                                               console.log('My modal is hidden!')
                                             })
 ```
-## Delegate attributes
-For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api (but of course you can), you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
-
-List of interactive attributes:
-
-| Title  | Description |
-| :--- | :--- |
-| data&#x2011;njb&#x2011;close | Closes modal 
-| data&#x2011;njb&#x2011;return | On hide, plugin will try to find input with this attribute and get value from it. Value will be stored in instance.returnValue variable, until next show, and will be avaliable as argument in onok, oncancel callbacks.
-| data&#x2011;njb&#x2011;prev | Go to previous slide in gallery
-| data&#x2011;njb&#x2011;next | Go to next slide in gallery
-| data&#x2011;njb&#x2011;ok | Closes modal. onok callback will be triggered.
-| data&#x2011;njb&#x2011;cancel | Closes modal. oncancel callback will be triggered.
-| autofocus | On show, plugin will try to find element with this attribute and focus it
-
-Markers for dom creation:
-
-| Title  | Description |
-| :--- | :--- |
-| data&#x2011;njb&#x2011;header | In this element plugin will insert header text.
-| data&#x2011;njb&#x2011;footer | In this element plugin will insert footer text.
-| data&#x2011;njb&#x2011;body | In this element plugin will insert content of item(slide).
-| data&#x2011;njb&#x2011;title | In this element title of current item(slide) will be inserted.
-| data&#x2011;njb&#x2011;current | In this element current active index will be inserted.
-| data&#x2011;njb&#x2011;total |  In this element total amount of slides will be inserted.
 
 ## Tips
 

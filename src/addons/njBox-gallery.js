@@ -479,62 +479,61 @@
           item: item
         }
       },
-      _g_uiUpdate(index) {
-        index = index || this.state.active;
-
-        var o = this.o,
-          item = this.items[index];
+      _g_uiUpdate(index = this.state.active) {
+        var dom = this.dom,
+            o = this.o,
+            item = this.items[index];
 
         if (!item) this._error('njBox, can\'t update ui info from item index - ' + index);
 
         //set item counts
-        this.dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
-        this.dom.wrap.find('[data-njb-total]').html(this.items.length || '')
+        dom.wrap.find('[data-njb-current]').html(index + 1 || '')//+1 because indexes are zero-based
+        dom.wrap.find('[data-njb-total]').html(this.items.length || '')
 
         //arrow classes
         if (index === 0) {
           this.state.gallery_first = true;
-          this.dom.ui.addClass('njb-ui--first');
+          dom.ui.addClass('njb-ui--first');
         } else {
           this.state.gallery_first = false;
-          this.dom.ui.removeClass('njb-ui--first');
+          dom.ui.removeClass('njb-ui--first');
         }
 
         if (index === this.items.length - 1) {
           this.state.gallery_last = true;
-          this.dom.ui.addClass('njb-ui--last');
+          dom.ui.addClass('njb-ui--last');
         } else {
           this.state.gallery_last = false;
-          this.dom.ui.removeClass('njb-ui--last');
+          dom.ui.removeClass('njb-ui--last');
         }
 
         //only one class
         if (this.items.length === 1) {
           this.state.gallery_only = true;
-          this.dom.ui.addClass('njb-ui--only');
+          dom.ui.addClass('njb-ui--only');
         } else {
           this.state.gallery_only = false;
-          this.dom.ui.removeClass('njb-ui--only');
+          dom.ui.removeClass('njb-ui--only');
         }
 
         if (o.loop && this.items.length >= 3) {
           this.state.gallery_noloop = false;
-          this.dom.ui.removeClass('njb-ui--no-loop');
+          dom.ui.removeClass('njb-ui--no-loop');
         } else {
           this.state.gallery_noloop = true;
-          this.dom.ui.addClass('njb-ui--no-loop');
+          dom.ui.addClass('njb-ui--no-loop');
         }
 
         if (this.state.gallery_noloop) {
           if (this.state.gallery_first) {
-            this.dom.prev.attr('disabled', true)
+            dom.prev.attr('disabled', true)
           } else {
-            this.dom.prev[0].removeAttribute('disabled')
+            dom.prev[0].removeAttribute('disabled')
           }
           if (this.state.gallery_last) {
-            this.dom.next.attr('disabled', true)
+            dom.next.attr('disabled', true)
           } else {
-            this.dom.next[0].removeAttribute('disabled')
+            dom.next[0].removeAttribute('disabled')
           }
         }
       },

@@ -1,6 +1,6 @@
 export function alert(content, okCb, cancelCb) {
   return new njBox({
-    content: function (item) {
+    content: function () {
       return (
         `<div class="njb__body">
 ${content || this._text._missedContent}
@@ -19,7 +19,7 @@ ${content || this._text._missedContent}
 
 export function confirm(content, okCb, cancelCb) {
   return new njBox({
-    content: function (item) {
+    content: function () {
       return (
         `<div class="njb__body">
 ${content || this._text._missedContent}
@@ -45,13 +45,13 @@ export function prompt(content, placeholder, okCb, cancelCb) {
   }
 
   return new njBox({
-    content: function (item) {
+    content: function () {
       return (
-        `<div class="njb__body">
+`<div class="njb__header">
 ${content || this._text._missedContent}
-<div>
-  <input data-njb-return type="text" placeholder="${placeholder || ''}" />
 </div>
+<div class="njb__body">
+  <input data-njb-return type="text" placeholder="${placeholder || ''}" />
 </div>
 <div class="njb__footer">
   <button data-njb-ok>${this._text.ok}</button>

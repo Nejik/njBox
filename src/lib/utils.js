@@ -144,9 +144,9 @@ export const defaults = {
 	_focusable     : 'a[href], area[href], details, iframe, object, embed, input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',//(selector) this elements we will try to focus in popup shown after option o.autofocus
 	buttonrole     : 'button',//(button || boolean false) this role will be set to elements, which opens modal window
 	role           : 'dialog',//(dialog || alertdialog || boolean false) role that will be set to modal dialog https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_alertdialog_role
-	label          : false,//(string) add aria-label attribute to support screenreaders
-	labelledby     : false,//(id selector) add aria-labelledby attribute to support screenreaders
-	describedby    : false//(id selector) add aria-describedby attribute to support screenreaders
+	label          : false,//(string || boolean false) add aria-label attribute to support screenreaders
+	labelledby     : false,//(string || boolean false) add aria-labelledby attribute to support screenreaders
+	describedby    : false//(string || boolean false) add aria-describedby attribute to support screenreaders
 }
 export const templates = {
 	wrap          : '<div class="njb-wrap"><div class="njb-items"></div></div>',

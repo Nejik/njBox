@@ -273,6 +273,12 @@ class njBox extends njBox_base {
         }
       }
     })
+    this.on('hide', function() {
+      if(!this.state.okCb && !this.state.cancelCb) {
+        this.returnValue = this._getReturnValue();
+        this._cb('cancel', this.returnValue);
+      }
+    })
     this.on('hidden', function() {
       if (this.o.focusprevious) this._focusPreviousModal();
     })
@@ -985,7 +991,11 @@ class njBox extends njBox_base {
 
       that.returnValue = that._getReturnValue();
 
-      if (that._cb('ok', that.returnValue) === false) return;
+      if (that._cb('ok', that.returnValue) === false) {
+        return;
+      } else {
+        that.state.okCb = true;
+      }
 
       that.hide();
     }
@@ -994,7 +1004,8 @@ class njBox extends njBox_base {
 
       that.returnValue = that._getReturnValue();
 
-      if (that._cb('cancel', that.returnValue) === false) return;
+      that._cb('cancel', that.returnValue);
+      that.state.cancelCb = true;
 
       that.hide();
     }

@@ -259,6 +259,12 @@ class njBox {
     if (o && typeof o['on' + type] === 'function') {
       callbackResult = o['on' + type].apply(this, clearArgs);
     }
+    
+    if(type === 'show' && callbackResult === false) {
+      this.state.status = 'inited';
+    } else if(type === 'hide' && callbackResult === false) {
+      this.state.status = 'shown';
+    }
 
     return callbackResult;
   }

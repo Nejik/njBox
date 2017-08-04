@@ -1,6 +1,4 @@
-* preventDefault не нужен если возвращен false из колбэка show
-* если возвращен false, то и  state.status должен быть inited
-
+* потестить передачу jquery в тестовых методах, сейчас поидее оно не используется при инициализации
 
 
 * role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
@@ -9,19 +7,13 @@
   role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
 
 Docs:
-* сделать пример для max-height: calc(100vh - 100px - 20px);
-* data_gathered, item_domready, item_prepare, item_inserted
-* примеры как сделать триггер ивентов на дом элемент/документ
-* пример static margin top https://github.com/dolce/iziModal/issues/68
+* примеры
+* примеры с анимациями animate.css
 * сделать пример с методом update, для динамической галлереи
 * preload в любом случае происходит на 1 слайд влево/вправо, а дополнительный можно настроить опцией preload
-* пример с анимациями из animate.css
 * пример с oncb колбэком
-* потестить передачу jquery в тестовых методах, сейчас поидее оно не используется при инициализации
 * координаты позиционирования можно передавать через аргумент .position, через o.placement (o.placement, самый сильный аргумент из o.position)
 * в popover моде нельзя изменить o.container, он всегда будет body
-* добавлен ивент positioned
-* в tips добавить подсказку что ширину/высоту можно через css ставить
 * потестить return false из oncb
 
 

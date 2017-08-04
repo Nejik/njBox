@@ -13,7 +13,9 @@ Angular wrapper - todo
 * [Dependencies](#dependencies)
 * [Usage](#usage)
   * ["Native" dialogs (alert, confirm, prompt)](#native-dialogs-alert-confirm-prompt)
+* [Examples](#examples)
 * [Customization](#customization)
+  * [Animation](#animation)
   * [HTML API](#html-api)
   * [Delegate attributes](#delegate-attributes)
   * [JS API](#js-api)
@@ -23,7 +25,6 @@ Angular wrapper - todo
   * [Changing default settings globally](#changing-default-settings-globally)
 * [Events](#events)
 * [Tips && tricks](#tips-tricks)
-* [Examples](#examples)
 * [Modal instance structure](#modal-instance-structure)
   * [Receiving instance](#receiving-instance)
   * [Instance description](#instance-description)
@@ -123,6 +124,7 @@ njBox.prompt('Are you sure you want to delete this message?', function(valueFrom
   console.log('no callback', valueFromInput)
 })
 ```
+## Examples
 
 ## Customization
 
@@ -434,26 +436,26 @@ var modal = new njBox({elem:'#myModalLink'})
 ```
 
 ## Tips && tricks
-1. By default initialization of plugin is async. If you need sync initialization you can call it directly
+* By default initialization of plugin is async. If you need sync initialization you can call it directly
 ```js
 var modal = new njBox({elem:'.el'})._init();
 ```
-2. Common case when you need custom close button. You can do it by adding data-njb-close attribute to some element inside modal without any javascript. As variant you can set close option to "inside".
+* Common case when you need custom close button. You can do it by adding data-njb-close attribute to some element inside modal without any javascript. As variant you can set close option to "inside".
 ```html
 <div id="modal">
   some content
   <button data-njb-close>close modal</button>
 </div>
 ```
-3. You can open modal only with html. See [Usage](#usage) section.
-4. You can open modal only with js. "content" option is required.
+* You can open modal only with html. See [Usage](#usage) section.
+* You can open modal only with js. "content" option is required.
 ```js
   var modal = new njBox({content:'<h1>My awesome modal</h1>'})
   modal.show();
   //or
   new njBox({content:'<h1>My awesome modal</h1>'}).show()
 ```
-5. Options "content" and "placement"(from gallery addon) can be a function. As example lets see on static njBox.alert method.
+* Options "content" and "placement"(from gallery addon) can be a function. As example lets see on static njBox.alert method.
 ```js
 export function alert(content, okCb, cancelCb) {
   return new njBox({
@@ -475,7 +477,7 @@ ${content || this._text._missedContent}
 }
 
 ```
-6. return false from show/hide callbacks will prevent action. As example - situation when window width is small - open image link directly in browser, without popup.
+* return false from show/hide callbacks will prevent action. As example - situation when window width is small - open image link directly in browser, without popup.
 ```html
 <a href="linkToImage" class="el">Show image</a>
 ```
@@ -491,11 +493,35 @@ var modal = new njBox({
     return window.innerWidth <= 480;
   }
 })
-
 ```
-
-## Examples
-
+* Static margin top. Some people wants plugin not centered and be fixed somwhere at top like bootstrap, and here you can find way to do this. Plugin make centering via pure ccs, so we can change it via css styles.
+```css
+  .modalStaticTop .njb-outer:before {
+    display: none;
+  }
+  .modalStaticTop .njb {
+    margin-top: 50px;
+  }
+```
+```js
+new njBox({
+  elem: '.el',
+  class: 'modalStaticTop'
+})
+```
+* Fixed width/height. Because of pure css centering, you can set your custom width/height via usual css. But its not good idea, due to loss of responsiveness.
+```css
+  .fixedWidthHeight .njb {
+    width: 600px;
+    height: 450px;
+  }
+```
+```js
+new njBox({
+  elem: '.el',
+  class: 'fixedWidthHeight'
+})
+```
 ## Modal instance structure
 
 ### Receiving instance

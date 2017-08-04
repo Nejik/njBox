@@ -35,6 +35,10 @@
         /* outline: 1px solid tomato;   */
        /* display: inline-block; */
     }
+    .modalStaticTop .njb {
+      width: 600px;
+      height: 450px;
+    }
   </style>
   <title>njBox</title>
 </head>
@@ -54,7 +58,7 @@
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
     <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
-    <div><a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="el">click2click2clickclick2click2click22</a> iusto.</div>
+    <div><a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="el" data-njb-content="lol132">click2click2clickclick2click2click22</a> iusto.</div>
   </div>
   <div id="modal">
     some content
@@ -82,8 +86,9 @@
   <!-- <script src="njBox-popover.js"></script>    -->
   <script>
     modal = new njBox({
-      elem: '.el'
-    })
+      elem: '.el',
+      class: 'modalStaticTop'
+    })._init();
     console.log(modal)
   </script>
 </body>

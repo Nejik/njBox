@@ -1,11 +1,7 @@
 # njBox
-Highly customizable pure javascript modal window/lightbox/popover.
+Highly customizable **vanilla** javascript modal window/lightbox/popover.
 
-React wrapper - todo
-
-Vue wrapper - todo
-
-Angular wrapper - todo
+React/Vue/Angular wrapper - todo
 
 * [Install](#install)
   * [npm](#npm)
@@ -13,6 +9,9 @@ Angular wrapper - todo
 * [Dependencies](#dependencies)
 * [Usage](#usage)
   * ["Native" dialogs (alert, confirm, prompt)](#native-dialogs-alert-confirm-prompt)
+* [Addons](#addons)
+  * [Gallery addon](#gallery-addon)
+  * [Popover addon](#popover-addon)
 * [Examples](#examples)
 * [Customization](#customization)
   * [Animation](#animation)
@@ -124,6 +123,78 @@ njBox.prompt('Are you sure you want to delete this message?', function(valueFrom
   console.log('no callback', valueFromInput)
 })
 ```
+## Addons
+njBox very very friendly to customization, seems you can customize everything you want.
+
+A convenient way to expand functionality of main plugin are addons, they add new cool features to main plugin, you can use them all together. Now njBox had 2 addons: lightbox gallery addon and popover addon. Usage is very simple, just add files after njBox.js.
+```html
+<script src="njBox.js"></script>
+<script src="njBox-gallery.js"></script>
+<script src="njBox-popover.js"></script>
+```
+Css for this addons already inside njBox.css.
+
+### Gallery addon
+While main plugin allows to show single images, this addon adds possibility of galleries (lightboxes).
+For creating gallery, option "gallery" required. Also "wrap" element is required for gallery items, initialization can be produced only on one element, while all items inside.
+
+Options added with gallery addon: gallery, arrows, start, loop, preload. Descriptions you can read in [options section](#options)
+
+**Not only images can be inside, you can use any type of content.**
+
+HTML API example
+```html
+<div data-njb-gallery="a" data-toggle="modal">
+  <a href="#modal" data-njb-header="some header in this slide">modal link</a>
+  <a href="img1.jpg" title="title via atribute">image one</a>
+  <a href="img2.jpg" data-njb-title="title via data atribute">image two</a>
+  <a href="img3.jpg">image three</a>
+  <a href="img4.jpg">image four</a>
+</div>
+```
+JS API example
+```html
+<div class="gallery">
+  <a href="#modal" data-njb-header="some header in this slide">modal link</a>
+  <a href="img1.jpg" title="title via atribute">image one</a>
+  <a href="img2.jpg" data-njb-title="title via data atribute">image two</a>
+  <a href="img3.jpg">image three</a>
+  <a href="img4.jpg">image four</a>
+</div>
+```
+```js
+var gallery = new njBox({
+  elem: '.gallery',
+  gallery: 'a'
+})
+```
+
+
+### Popover addon
+Besides classic modal windows you can simply create tooltips/popovers with just adding popover addon!
+For creating tooltip/popover, option "layout:popover" required.
+
+Options added with popover addon: 'layout:popover', trigger, placement, reverse, offset, boundary. Descriptions you can read in [options section](#options)
+
+
+HTML API example
+```html
+<button data-toggle="modal" data-njb-layout="popover" data-njb-content="My tooltip!">some text</button>
+```
+
+JS API example
+```html
+<button class="tooltip">some text</button>
+```
+```js
+var tooltip = new njBox({
+  elem: '.tooltip',
+  layout: 'popover',
+  content: 'My tooltip!'
+})
+```
+
+
 ## Examples
 
 ## Customization
@@ -177,10 +248,9 @@ Markers for dom creation:
 | data&#x2011;njb&#x2011;total |  **Gallery addon only.** In this element total amount of slides will be inserted.
 
 ### JS API
+"new njBox" returns [instance](#modal-instance-structure) of modal. Later you can call public methods on this instance.
 
 P.S. All public method are chainable (like jQuery methods)
-
-"new njBox" returns [instance](#modal-instance-structure) of modal. Later you can call public methods on this instance.
 ```js
 //create instance
 var modal = new njBox('#myModalLink');
@@ -229,32 +299,6 @@ var modal = new njBox({
   onshidden: function() {}//more callbacks in advanced section
 })
 ```
-Options priority example:
-
-1. defaults from njBox.defaults
-2. options passed as object in constructor (e.g. new njBox({content:"constructor"})
-3. global JSON data object from data-njb-options (e.g. data-njb-options='{"content": "test2"}')
-4. content form "href" attribute if it is link (only for "content" option) (e.g. &lt;a href="#modal"&gt;show modal&lt;/a&gt;)
-4. content from "title" attribute (or other attribute form options, only for "title" option) (e.g. &lt;a href="pathToImg" title="My awesome image!"&gt;show modal&lt;/a&gt;)
-5. data-njb-* separate options (e.g. data-njb-content="test3")
-
-Example
-
-```html
-<a href="content from href" class="modal" data-njb-content="content from separate data" data-njb-options='{"content": "content from data options"}'>image</a>
-```
-```js
-var modal = new njBox({elem: '.modal', content: 'content from constructor'});
-```
-In this example "content" option calculated in next priority:
-1) njBox plugin: meow, put some content here... (default text if "content" is undefined)
-2) content from constructor
-3) content from data options
-4) content from href
-5) content from data-njb-content
-
-"content from separate data" eventually won and modal will show this text.
-
 ### Options
 
 | Name  | Default | Type | Description |
@@ -306,6 +350,30 @@ In this example "content" option calculated in next priority:
 | reverse | true | boolean | should we reverse direction left/right top/bottom if no space for popover?
 | offset | '10 10' | string \|\| array | (default '5 5' for trigger:'follow' case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
 | boundary | true | boolean | should popover stay in window boundaries?
+
+Options priority:
+
+1. defaults from njBox.defaults
+2. options passed as object in constructor (e.g. new njBox({content:"constructor"})
+3. global JSON data object from data-njb-options (e.g. data-njb-options='{"content": "test2"}')
+4. content form "href" attribute if it is link (only for "content" option) (e.g. &lt;a href="#modal"&gt;show modal&lt;/a&gt;)
+4. content from "title" attribute (or other attribute form options, only for "title" option) (e.g. &lt;a href="pathToImg" title="My awesome image!"&gt;show modal&lt;/a&gt;)
+5. data-njb-* separate options (e.g. data-njb-content="test3")
+
+```html
+<a href="content from href" class="modal" data-njb-content="content from separate data" data-njb-options='{"content": "content from data options"}'>image</a>
+```
+```js
+var modal = new njBox({elem: '.modal', content: 'content from constructor'});
+```
+In this example "content" option calculated in next priority:
+1) njBox plugin: meow, put some content here... (default text if "content" is undefined)
+2) content from constructor
+3) content from data options
+4) content from href
+5) content from data-njb-content
+
+"content from separate data" eventually won and modal will show this text.
 
 ### Templates
 

@@ -35,16 +35,12 @@
         /* outline: 1px solid tomato;   */
        /* display: inline-block; */
     }
-    .modalStaticTop .njb {
-      width: 600px;
-      height: 450px;
-    }
   </style>
   <title>njBox</title>
 </head>
 
 <body>
-    <button data-toggle="modal" data-njb-layout="popover" data-njb-content="tooltip!">some text</button>
+    <button data-toggle="modal" data-njb-anim="zoomInDown zoomOutDown">some text</button>
      <!-- <a href="#!" data-njb-content="popover text" class="simple">test</a> 
   <div class="gallery" data-njb-gallery="a" data-toggle="box">
     <a href="#modal2" data-njb-header="lol">modal1</a>
@@ -86,11 +82,11 @@
   <script src="njBox-gallery.js"></script>
   <script src="njBox-popover.js"></script> 
   <script>
-    modal = new njBox({
-      elem: '.el',
-      class: 'modalStaticTop'
-    })._init();
-    console.log(modal)
+    // modal = new njBox({
+    //   elem: '.el',
+    //   anim: 'fade'
+    // })._init();
+    // console.log(modal)
   </script>
 </body>
 

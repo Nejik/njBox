@@ -15,13 +15,14 @@ React/Vue/Angular wrapper - todo
 * [Examples](#examples)
 * [Customization](#customization)
   * [Animation](#animation)
+    * [Integration with Animate.css](#integration-with-animatecss)
   * [HTML API](#html-api)
   * [Delegate attributes](#delegate-attributes)
   * [JS API](#js-api)
   * [Options](#options)
   * [Templates](#templates)
   * [Text](#text)
-  * [Changing default settings globally](#changing-default-settings-globally)
+  * [Changing default settings](#changing-default-settings)
 * [Events](#events)
 * [Tips && tricks](#tips-tricks)
 * [Modal instance structure](#modal-instance-structure)
@@ -176,7 +177,6 @@ For creating tooltip/popover, option "layout:popover" required.
 
 Options added with popover addon: 'layout:popover', trigger, placement, reverse, offset, boundary. Descriptions you can read in [options section](#options)
 
-
 HTML API example
 ```html
 <button data-toggle="modal" data-njb-layout="popover" data-njb-content="My tooltip!">some text</button>
@@ -198,6 +198,37 @@ var tooltip = new njBox({
 ## Examples
 
 ## Customization
+
+### Animation
+Everyone loves beautiful animations. We made a very easy way to add animations to your modals.
+
+For such purpose you have few options. Main option is "anim" (see [options](#options)) it's space separated string for show/hide animations.
+All what this option does is adding this classes to modal. Built in animations are: scale and fade. Default - scale.
+
+```html
+  <a href="#modal" data-toggle="modal" data-njb-anim="fade">show modal</a>
+```
+
+#### Integration with Animate.css
+Using this library very very easy. Just add css animate.css file in you ```<head>```. Then use desired animations in "anim" option.
+This library required additional 'animated' class. For this purposes you can use 'animclass' options. This options by default set to 'animated' so you dont need to do anything for this library, but can change for other libraries.
+
+Example:
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="njBox.min.css">
+    <link rel="stylesheet" href="animate.min.css">
+  </head>
+  <body>
+    <button data-toggle="modal" data-njb-anim="zoomInDown zoomOutDown" data-njb-content="content">some text</button>
+    <script src="njBox.js"></script>
+  </body>
+</html>
+
+```
+
 
 ### HTML API
 Plugin supports declarative html api.
@@ -419,7 +450,7 @@ text: {
 }
 ```
 
-### Changing default settings globally
+### Changing default settings
 If you need to change default settings to all modals in your project, you can do it via changing njBox.defaults
 
 ```js

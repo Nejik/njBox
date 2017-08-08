@@ -51,7 +51,7 @@
     "gulp-util": "^3.0.8",
     "node-notifier": "^4.6.1",
     "postcss-assets": "^4.1.0",
-    "postcss-cssnext": "^2.9.0",
+    "postcss-cssnext": "^3.0.2",
     "postcss-import": "^9.1.0",
     "postcss-loader": "^1.2.2",
     "postcss-reporter": "^3.0.0",

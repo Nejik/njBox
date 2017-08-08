@@ -10,24 +10,7 @@ const cssReporter = require('postcss-reporter');
 let postcssConfig = {
   //just comment: in webpack we should sent object with field plugins and array of plugins, but in gulp we should send only array, not object
   plugins: [
-    cssImport({
-      root: config.root,
-      path: [// node_modules exists in resolve paths by default and we don't need to place it here
-        config.components,
-        config.src,
-        config.css.dir
-      ]
-    }),
-    cssNext,
-    cssAssets({
-      basePath: config.src
-    }),
-    cssMqPacker({
-      sort: true
-    }),
-    cssReporter({
-      throwError:true
-    })
+    cssNext
   ]
 }
 

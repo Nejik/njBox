@@ -55,8 +55,9 @@ Plugin have **no dependencies** and support all modern browsers (ie11+). But, if
 You can initialize plugin in few ways:
 1) Bootstrap style autoinitialization (HTML api, without js at all), all settings you should set in data-njb-* attributes
 
-[Simple modal example](https://codepen.io/nejik/pen/oeWZWK)
+[Codepen example: simple modal HTML API](https://codepen.io/nejik/pen/oeWZWK)
 
+[Codepen example: gallery HTML API](https://codepen.io/nejik/pen/RZVgWY)
 ```html
 <a href="#modalDiv" data-toggle="modal">Show popup</a>
 <!-- or -->
@@ -70,6 +71,10 @@ You can initialize plugin in few ways:
 </div>
 ```
 2. Javascript style (if you need callbacks or advanced api)
+
+[Codepen example: simple modal JS API](https://codepen.io/nejik/pen/PKmjbg)
+
+[Codepen example: gallery JS API](https://codepen.io/nejik/pen/vJmZmQ)
 
 HTML
 
@@ -100,6 +105,9 @@ var gallery = new njBox({
 
 ### "Native" dialogs (alert, confirm, prompt)
 Plugin has built in imitations for default browser dialogs. 
+Callbacks not required!
+
+[Codepen example: "native dialogs"](https://codepen.io/nejik/pen/ZJKKjY)
 ```js
 njBox.alert(message, okCallback, cancelCallback)
 njBox.confirm(message, okCallback, cancelCallback)
@@ -108,22 +116,24 @@ njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from inpu
 Methods are static, called from class. Example:
 ```js
 njBox.alert('Are you sure you want to delete this message?', function() {
-  console.log('yes callback')
+  console.log('ok callback')
 }, function() {
-  console.log('no callback')
+  console.log('cancel callback')
 })
 
 //with placeholder
 njBox.prompt('Are you sure you want to delete this message?', 'Some placeholder here', function(valueFromInput) {
-  console.log('yes callback', valueFromInput)
+  console.log('ok callback', valueFromInput)
 }, function(valueFromInput) {
-  console.log('no callback', valueFromInput)
+  console.log('cancel callback', valueFromInput)
 })
 //or without placeholder
 njBox.prompt('Are you sure you want to delete this message?', function(valueFromInput) {
-  console.log('yes callback', valueFromInput)
+  //valueFromInput also avaliable as this.returnValue
+  console.log('ok callback', valueFromInput)
 }, function(valueFromInput) {
-  console.log('no callback', valueFromInput)
+  // valueFromInput also avaliable as this.returnValue
+  console.log('cancel callback', valueFromInput)
 })
 ```
 ## Addons
@@ -144,6 +154,8 @@ For creating gallery, option "gallery" required. Also "wrap" element is required
 Options added with gallery addon: gallery, arrows, start, loop, preload. Descriptions you can read in [options section](#options)
 
 **Not only images can be inside, you can use any type of content in gallery.**
+
+[Codepen example: gallery from multiple content types](https://codepen.io/pen?template=prPRYP)
 
 HTML API example
 ```html
@@ -199,6 +211,35 @@ var tooltip = new njBox({
 
 ## Examples
 
+You can find a lot of examples in collection at [codepen!](https://codepen.io/collection/Djybjw/)
+
+* [simple modal HTML API](https://codepen.io/nejik/pen/oeWZWK)
+
+* [gallery HTML API](https://codepen.io/nejik/pen/RZVgWY)
+
+* [simple modal JS API](https://codepen.io/nejik/pen/PKmjbg)
+
+* [gallery JS API](https://codepen.io/nejik/pen/vJmZmQ)
+
+* ["native dialogs"](https://codepen.io/nejik/pen/ZJKKjY)
+
+* [gallery from multiple content types](https://codepen.io/pen?template=prPRYP)
+
+* [animation with Animate.css](https://codepen.io/nejik/pen/jLmwgB)
+
+* [custom close button](https://codepen.io/nejik/pen/prPrra)
+
+* [custom close button with disabled native close](https://codepen.io/nejik/pen/rzmzYq)
+
+* [data-njb-return, data-njb-ok, data-njb-cancel](https://codepen.io/nejik/pen/oeWedN)
+
+* [mixed options form HTML and JS](https://codepen.io/nejik/pen/prPrQZ)
+
+* [callbacks](https://codepen.io/nejik/pen/QMvMPr)
+
+* [events](https://codepen.io/nejik/pen/YxVrzp)
+
+
 ## Customization
 
 ### Animation
@@ -206,6 +247,8 @@ Everyone loves beautiful animations. We made a very easy way to add animations t
 
 For such purpose you have few options. Main option is "anim" (see [options](#options)) it's space separated string for show/hide animations.
 All what this option does is adding this classes to modal. Built in animations are: scale and fade. Default - scale.
+
+**By default plugin just reverse show animation when hiding if no hide animation presented (like anim="bounceIn")**
 
 ```html
   <a href="#modal" data-toggle="modal" data-njb-anim="fade">show modal</a>
@@ -215,7 +258,7 @@ All what this option does is adding this classes to modal. Built in animations a
 Using this library very very easy. Just add css animate.css file in you ```<head>```. Then use desired animations in "anim" option.
 This library required additional 'animated' class. For this purposes you can use 'animclass' options. This options by default set to 'animated' so you dont need to do anything for this library, but can change for other libraries.
 
-Example:
+[Codepen example: animation with Animate.css](https://codepen.io/nejik/pen/jLmwgB)
 
 ```html
 <html>
@@ -243,6 +286,8 @@ If you have many options, they can be setted via one attribute in json format - 
 
 P.S. You can't use callbacks with html api.
 
+[Codepen example: simple modal HTML API](https://codepen.io/nejik/pen/oeWZWK)
+
 ```html
 <a href="#modalDiv" id="myModal" data-toggle="modal" 
                                  data-njb-backdrop="false"
@@ -256,6 +301,12 @@ Show popup</a>
 
 ### Delegate attributes
 Delegate attributes also part of HTML API. For most events we using delegate method that binds on elements with specific attribute. For example if you need custom close button in your modal, you don't need to manage it with js api (but of course you can), you can add to button ```data-njb-close``` attribute. Also this attributes used as markers for dom creation, if you need to customize templates.
+
+[Codepen example: custom close button](https://codepen.io/nejik/pen/prPrra)
+
+[Codepen example: custom close button with disabled native close](https://codepen.io/nejik/pen/rzmzYq)
+
+[Codepen example: data-njb-return, data-njb-ok, data-njb-cancel](https://codepen.io/nejik/pen/oeWedN)
 
 List of interactive attributes:
 
@@ -284,6 +335,8 @@ Markers for dom creation:
 "new njBox" returns [instance](#modal-instance-structure) of modal. Later you can call public methods on this instance.
 
 P.S. All public method are chainable (like jQuery methods)
+
+[Codepen example: simple modal JS API](https://codepen.io/nejik/pen/PKmjbg)
 ```js
 //create instance
 var modal = new njBox('#myModalLink');
@@ -329,7 +382,7 @@ var modal = new njBox({
   onshow: function() {},
   onshown: function() {},
   onhide: function() {},
-  onshidden: function() {}//more callbacks in advanced section
+  onhidden: function() {}//more callbacks in advanced section
 })
 ```
 ### Options
@@ -383,6 +436,9 @@ var modal = new njBox({
 | reverse | true | boolean | should we reverse direction left/right top/bottom if no space for popover?
 | offset | '10 10' | string \|\| array | (default '5 5' for trigger:'follow' case) Offset of the popover relative to its target for all triggers except follow. For follow trigger it is offset from mouse coordinates.
 | boundary | true | boolean | should popover stay in window boundaries?
+
+**Options will be gathered and from element (HTML API) and from options object from js api**
+[Codepen example: mixed options form HTML and JS](https://codepen.io/nejik/pen/prPrQZ)
 
 Options priority:
 
@@ -507,6 +563,9 @@ njBox.defaults.backdrop =  false;
 * Helper events pursue a single goal - when they fire, all user/addons callbacks related to helper already fired. It's important for addons, as example we can use options_set event. One addon change some option, and second addon also changes this option. You can use options_setted event to be sure all callbacks/addons fires and now options are final.
 
 1. Using callbacks
+
+[Codepen example: callbacks](https://codepen.io/nejik/pen/QMvMPr)
+
 ```js
 var modal = new njBox({
   elem:'#myModalLink',
@@ -521,6 +580,9 @@ var modal = new njBox({
 });
 ```
 2. Listen events on created modal instance with .on method
+
+[Codepen example: events](https://codepen.io/nejik/pen/YxVrzp)
+
 ```js
 var modal = new njBox({elem:'#myModalLink'});
 modal.on('shown', function() {

@@ -147,8 +147,10 @@ class njBox extends njBox_base {
     })
     this.on('show_prepare', function() {
       var e = this.state.clickedEvent;
-      (e && e.preventDefault) ? e.preventDefault() : e.returnValue = false;
-
+      if (e) {
+        (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+      }
+      
       var wrap = this.dom.wrap;
 
       if (!this.state.focused) this.state.focused = document.activeElement;//for case when modal can be opened programmatically, with this we can focus element after hiding

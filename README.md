@@ -55,6 +55,8 @@ Plugin have **no dependencies** and support all modern browsers (ie11+). But, if
 You can initialize plugin in few ways:
 1) Bootstrap style autoinitialization (HTML api, without js at all), all settings you should set in data-njb-* attributes
 
+[Simple modal example](https://codepen.io/nejik/pen/oeWZWK)
+
 ```html
 <a href="#modalDiv" data-toggle="modal">Show popup</a>
 <!-- or -->

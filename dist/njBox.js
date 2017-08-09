@@ -252,7 +252,9 @@ var njBox = function (window, undefined, setTimeout, document) {
         });
         this.on('show_prepare', function () {
           var e = this.state.clickedEvent;
-          e && e.preventDefault ? e.preventDefault() : e.returnValue = false;
+          if (e) {
+            e.preventDefault ? e.preventDefault() : e.returnValue = false;
+          }
 
           var wrap = this.dom.wrap;
 

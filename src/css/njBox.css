@@ -161,7 +161,7 @@
 
 	  transition: transform 200ms, opacity 200ms, margin-right 200ms;
 
-   @nest .njb-wrap--visible .njb-ui--title & {
+   .njb-wrap--visible .njb-ui--title & {
     opacity: 1;
 	  transform: translateY(0);
    }
@@ -193,7 +193,7 @@
 	  transition: transform 200ms, opacity 200ms, margin-right 200ms;
 	  user-select: none;
 
-    @nest .njb-ui--only & {
+    .njb-ui--only & {
       display: none;
     }
 
@@ -210,7 +210,7 @@
       	transition: 100ms;
       }
 
-      @nest .njb-ui--no-loop.njb-ui--first & {
+      .njb-ui--no-loop.njb-ui--first & {
         display: none;
       }
     }
@@ -227,7 +227,7 @@
       	transition: 100ms;
       }
 
-      @nest .njb-ui--no-loop.njb-ui--last & {
+      .njb-ui--no-loop.njb-ui--last & {
         display: none;
       }
     }
@@ -480,12 +480,12 @@
     opacity: 1;
   }
 
-  @nest .njb & {
+  .njb & {
     top: 0px;
     right: 0px;
     animation:none;
   }
-  @nest .njb-wrap--visible & {
+  .njb-wrap--visible & {
     animation: closeSystemIn 250ms;
   }
 }
@@ -501,7 +501,7 @@
     opacity: 1;
   }
 
-  @nest .njb-wrap--visible & {
+  .njb-wrap--visible & {
     animation: prevIn 250ms;
   }
 }
@@ -517,20 +517,20 @@
     opacity: 1;
   }
 
-  @nest .njb-wrap--visible & {
+  .njb-wrap--visible & {
     animation: nextIn 250ms;
   }
 }
 
 /*here we use nested selector ".njb--content .njb" because we also can have ".njb--image .njb" with image, and for this case we need other design  */
 .njb--content {
-  & {
-    border-radius: 2px;
-    background-color: #fff;
-    @nest .njb-items & {
-      margin: 10px;
-    }
+  border-radius: 2px;
+  background-color: #fff;
+
+  .njb-items & {
+    margin: 10px;
   }
+  
   & .njb__header {
     padding: 5px;
   }

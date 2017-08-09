@@ -5,87 +5,42 @@
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <!--<meta name="theme-color" content="#0094e2"> -->
-  <meta name="description" content="">
 
-  <link rel="stylesheet" href="njBox.css">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  
-  <style>
-    .lorem {
-      height: 2000px;
-    }
-    #modal, #modal2 {
-      max-width: 500px;
-      display: none;
-    }
-    .test4 {
-      /*display: none;*/
-    }
-    .popover1 {
-      color:red;
-    }
-    .test5 {
-      width: 500px;
-
-      /*height:500px;*/
-      border: 1px solid #000;
-    }
-    .el {
-        /* outline: 1px solid tomato;   */
-       /* display: inline-block; */
-    }
-  </style>
+  <!-- <link rel="stylesheet" href="njBox.css"> -->
   <title>njBox</title>
 </head>
 
 <body>
-     <a href="#!" data-njb-content="popover text" class="simple" data-toggle="modal">test</a> 
-  <!-- <div class="gallery" data-njb-gallery="a" data-toggle="box">
-    <a href="#modal2" data-njb-header="lol">modal1</a>
-    <a href="https://media4.s-nbcnews.com/j/newscms/2016_36/1685951/ss-160826-twip-05_8cf6d4cb83758449fd400c7c3d71aa1f.nbcnews-ux-2880-1000.jpg" data-njb-title="title 3">link</a>
-    <a href="http://www.worldofowls.com/wp-content/uploads/2014/09/gallery-owls-1.jpg">link</a>
-    <a href="https://s-media-cache-ak0.pinimg.com/736x/66/a5/eb/66a5ebd96a859c119ce18260dd7a8ba5.jpg" data-njb-header="header2">link</a>
-    <a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" data-njb-header="header 1">link</a>
-  </div>   -->
-   <div style=" width:500px"> 
-  <!-- <div> -->
-    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
-    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
-    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
-    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consequatur quas enim molestias vel blanditiis velit tempore repudiandae atque architecto unde quam ducimus veniam iusto nisi, commodi aspernatur sapiente voluptas. Quisquam.</div>
-    <div><a href="https://s-media-cache-ak0.pinimg.com/originals/49/04/b4/4904b4609076eed933073ad4254d15bc.jpg" class="el" data-njb-content="lol132">click2click2clickclick2click2click22</a> iusto.</div>
+  <div>
+    Usual modal
   </div>
-  <div id="modal">
-    some content
-    <button data-njb-close>close modal</button>
+  <button data-toggle="modal" data-njb-content="content">Usual modal</button>
+  <div>
+    Gallery
   </div>
-  
-  <div id="modal1" class="njb-hidden">
-    <h1 id="test">modal title</h1>
-    Hello Dmitry
-    <input type="text" data-njb-return>
+  <div class="gallery" data-njb-gallery="a" data-toggle="modal">
+    <a href="http://lorempixel.com/400/200" data-njb-type="image">img1</a>
+    <a href="http://lorempixel.com/500/400" data-njb-type="image">img2</a>
+    <a href="http://lorempixel.com/1024/768" data-njb-type="image">img3</a>
+    <a href="http://lorempixel.com/1280/1024" data-njb-type="image">img4</a>
+    <a href="http://lorempixel.com/1900/1600" data-njb-type="image">img5</a>
+  </div>
+  <div>
+    Popover
+  </div>
 
-    <!-- <button data-njb-close>Confirm</button> -->
-    <button data-njb-ok>ok</button>
-    <button data-njb-ok>cancel</button>
-  </div>
-  <div id="modal2" class="njb-hidden">
-    <input type="text" name="" title="second input" aria-label="aria input"><br>
-   </div>
-    <!-- <script
-  src="http://code.jquery.com/jquery-3.2.1.min.js"
-  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-  crossorigin="anonymous"></script>  -->
-  <script src="njBox.js"></script>
-  <script src="njBox-gallery.js"></script>
-  <script src="njBox-popover.js"></script> 
+
+  <% if (htmlWebpackPlugin.options.devServer) { %>
+  <script src="<%= htmlWebpackPlugin.options.devServer%>/webpack-dev-server.js"></script>
+  <% } %>
+  <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+  <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
+  <% } %>
+  <script src="njBox-gallery.js"></script> 
+  <script src="njBox-popover.js"></script>
+
   <script>
-    // modal = new njBox({
-    //   elem: '.el',
-    //   anim: 'fade'
-    // })._init();
-    // console.log(modal)
+    
   </script>
 </body>
 

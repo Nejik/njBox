@@ -610,12 +610,10 @@ class njBox extends njBox_base {
       if (item.header) {
         dom.header = this._createEl('header');
 
-        //insert header info
+        //create header dom el
         dom.headerInput = getItemFromDom(dom.header, 'data-njb-header')
         if (!dom.headerInput.length) {
           this._e('njBox, error in o.templates.header');
-        } else {
-          modalFragment.insertBefore(dom.header[0], modalFragment.firstChild)
         }
       }
 
@@ -623,12 +621,10 @@ class njBox extends njBox_base {
       if (item.footer) {
         dom.footer = this._createEl('footer');
 
-        //insert footer info
+        //create footer dom el
         dom.footerInput = getItemFromDom(dom.footer, 'data-njb-footer')
         if (!dom.footerInput.length) {
           this._e('njBox, error in njBox.templates.footer');
-        } else {
-          modalFragment.appendChild(dom.footer[0])
         }
       }
 
@@ -676,10 +672,16 @@ class njBox extends njBox_base {
         bodyItemToInsert = dom.bodyInput;
 
     function contentAddedCallback() {
-      //insert header content
-      if (dom.headerInput) dom.headerInput.html(item.header)
-      //insert footer content
-      if (dom.footerInput) dom.footerInput.html(item.footer)
+      //insert header
+      if (dom.headerInput) {
+        dom.headerInput.html(item.header)
+        dom.modal.prepend(dom.header)
+      }
+      //insert footer
+      if (dom.footerInput) {
+        dom.footerInput.html(item.footer)
+        dom.modal.append(dom.footer)
+      }
       item.state.status = 'loaded';
 
       that._cb('item_loaded', item);
@@ -798,7 +800,7 @@ class njBox extends njBox_base {
         that._cb('item_img_load', item);//img_load callback
 
         if (o.img === 'load') {
-          insertImg();
+          // insertImg();
         }
       }
       $img.on('load', item._handlerLoad)

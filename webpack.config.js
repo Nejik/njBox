@@ -1,103 +1,131 @@
-const env = process.env.NODE_ENV || 'development';
-
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const webpack = require('webpack');
 const extend = require('extend');
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const WriteFilePlugin = require('write-file-webpack-plugin');
 
-const addonsConfig = require('./webpack.addons');
 
-let commonConfig = {
-  entry: {
-    njBox: path.resolve(__dirname, 'src/lib/njBox.js')
-  },
+const config = require('./project.config.js');
+const pkg = require('./package.json');
+
+
+const babelConfig = Object.assign({}, pkg.babel, {
+  babelrc: false,
+  cacheDirectory: true
+});
+
+const webpackConfig = {
+  name: 'addons',
+  // The base directory for resolving the entry option
+  context: config.src,
+
+  // The entry point for the bundle
+  entry: config.js.srcAddons,
+
+  // Options affecting the output of the compilation
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
-    library: 'njBox',
-    libraryTarget: "umd",
-    umdNamedDefine: true
+    path: config.js.dist,
+    publicPath: config.publicPath,
+    // filename: config.isDevelopment ? 'bundle.js?[hash]' : 'bundle.[hash].js',
+    filename: config.js.concat,
+    // chunkFilename: config.isDevelopment ? '[id].js?[chunkhash]' : '[id].[chunkhash].js',
+    chunkFilename: '[id].js',
+    sourcePrefix: '  ',
+
+    // library: 'njBox',
+    // libraryTarget: "umd",
+    // umdNamedDefine: true
   },
+
+  resolve: {
+    modules: [
+      config.src,
+      config.components,
+      config.css.dir,
+      "node_modules"
+    ]
+  },
+
+  // Switch loaders to debug or release mode
+  // debug: config.isDevelopment,
+
+  // Developer tool to enhance debugging, source maps
+  // http://webpack.github.io/docs/configuration.html#devtool
+  devtool: config.isDevelopment ? 'inline-source-map' : false,
+
+  // What information should be printed to the console
+  stats: {
+    colors: true,
+    reasons: false,
+    hash: false,
+    version: false,
+    timings: true,
+    chunks: false,
+    chunkModules: false,
+    cached: false,
+    cachedAssets: false,
+  },
+
+  // The list of plugins for Webpack compiler
   plugins: [
+    // new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.DefinePlugin({
-      'process.env': {
-        'NODE_ENV': JSON.stringify(env)
-      }
+      'process.env.NODE_ENV': config.isDevelopment ? '"development"' : '"production"',
+      __DEV__: config.isDevelopment,
     }),
+    // Emit a JSON file with assets paths
+    // https://github.com/sporto/assets-webpack-plugin#options
   ],
-  devtool: 'source-map',
+
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['es2015'],
-            plugins: [
-              "add-module-exports"
-            ]
+        test: /.js?$/,
+        use: [
+          {
+            loader: `babel-loader?${JSON.stringify(babelConfig)}`
           }
-        }
+        ],
+        // loader: `babel-loader?${JSON.stringify(babelConfig)}`,
+        exclude: /node_modules/
+      },
+      {
+        test: /\.(svg|jpg|jpeg|png)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[path][name].[ext]',
+            }
+          }
+        ]
       }
-    ]
-  },
-  devServer: {
-    contentBase: './dist',
-    port: 3000,
-    hot: true
+    ],
   }
-}
-if(env === 'development') {
-  commonConfig.plugins.push(new webpack.HotModuleReplacementPlugin())
-  commonConfig.plugins.push(new HtmlWebpackPlugin({
-    template: path.resolve(__dirname, 'src/index.ejs'),
-    inject: false
-  }))
-  commonConfig.module.rules.push({
-    test: /\.css$/,
-    use: [
-      'style-loader',
-      { loader: 'css-loader', options: { importLoaders: 1 } },
-      'postcss-loader'
-    ]
-  })
-}
-if(env === 'build') {
-  commonConfig.devtool = false;
-  commonConfig.module.rules.push({
-    test: /\.css$/,
-    use: ExtractTextPlugin.extract({
-      fallback: 'style-loader',
-      use: [
-        { loader: 'css-loader', options: { importLoaders: 1 } },
-        'postcss-loader'
-      ]
-    })
-  })
-  commonConfig.plugins.push(new ExtractTextPlugin("[name].css"))
-}
-if(env === 'production') {
-  commonConfig.output.filename = '[name].min.js';
-  commonConfig.devtool = false;
-  commonConfig.plugins.push(new ExtractTextPlugin("[name].min.css"))
-  commonConfig.plugins.push(new webpack.LoaderOptionsPlugin({
-    minimize: true,
-    debug: false
-  }))
-  commonConfig.plugins.push(new webpack.optimize.UglifyJsPlugin())
-  commonConfig.module.rules.push({
-    test: /\.css$/,
-    use: ExtractTextPlugin.extract({
-      fallback: 'style-loader',
-      use: [
-        { loader: 'css-loader', options: { importLoaders: 1 } },
-        'postcss-loader'
-      ]
-    })
-  })
+};
+
+if (config.isDevelopment) {
+  Object.keys(webpackConfig.entry).forEach(function (obj) {
+    webpackConfig.entry[obj].unshift('webpack-hot-middleware/client?name=addons&overlay=false&reload=true&noInfo=true');
+  });
+
+  webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
+  webpackConfig.plugins.push(new webpack.NoEmitOnErrorsPlugin());
+} else {
+  webpackConfig.plugins.push(new webpack.optimize.AggressiveMergingPlugin());
+  // webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({ compress: { warnings: config.isVerbose } }));
 }
 
-module.exports = [commonConfig, addonsConfig];
+let libWebpackConfig = extend(true, {}, webpackConfig)
+libWebpackConfig.name = 'lib';
+libWebpackConfig.entry = config.js.srcLib;
+if (config.isDevelopment) {
+  Object.keys(libWebpackConfig.entry).forEach(function (obj) {
+    libWebpackConfig.entry[obj].unshift('webpack-hot-middleware/client?name=lib&overlay=false&reload=true&noInfo=true');
+  });
+}
+libWebpackConfig.output.library = 'njBox';
+libWebpackConfig.output.libraryTarget = "umd";
+libWebpackConfig.output.umdNamedDefine = true;
+
+module.exports = [libWebpackConfig, webpackConfig]

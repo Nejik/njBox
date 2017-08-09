@@ -4,7 +4,6 @@
  * Copyright (c) 2017 N.J.
  * MIT license
 */
-import '../css/njBox.css'
 
 import njBox_base from './njBox_base.js'
 
@@ -14,15 +13,15 @@ import {
   defaults,
   templates,
   text
-} from './utils.js';
+} from 'lib/utils.js';
 
 import {
   alert,
   confirm,
   prompt
-} from './dialogs.js'
+} from 'lib/dialogs.js'
 
-import j from './j'
+import j from 'lib/j'
 
 var njBox = (function(window, undefined, setTimeout, document) {
 
@@ -749,7 +748,7 @@ class njBox extends njBox_base {
       $img = $(img),
       ready,
       loaded;
-    
+
     item.state.status = 'loading';
     item.dom.img = $img;
 

@@ -48,10 +48,10 @@ class njBox extends njBox_base {
       opts.elem = el;
     }
     super(opts);
-    this._in();
+    this._i();
   }
   
-  _in() {
+  _i() {
     this.on('init', function() {
       this._defaults = njBox.defaults;
       this._templates = njBox.templates;

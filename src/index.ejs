@@ -14,10 +14,6 @@
     .block p {
       margin: 0;
     }
-    .njb__header {
-      padding: 10px 0;
-      background-color: #fff;
-    }
   </style>
   <title>njBox</title>
 </head>
@@ -27,7 +23,7 @@
     <p>
       Usual modal
     </p>
-    <button data-toggle="modal" data-njb-content="http://lookw.ru/1/118/1380311798-357963.jpg" data-njb-type="image" data-njb-header="header" data-njb-img="load">Usual modal</button>
+    <button data-toggle="modal" data-njb-content="http://lookw.ru/1/118/1380311798-357963.jpg" data-njb-type="image" data-njb-header="header" title="ololo">Usual modal</button>
   </div>
   <div class="block">
     <p>
@@ -59,7 +55,7 @@
 
   <script>
     var t = new njBox('.gallery', {
-      img: 'load'
+      
     })._init();
     console.log(t);
   </script>

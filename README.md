@@ -141,7 +141,7 @@ For creating gallery, option "gallery" required. Also "wrap" element is required
 
 Options added with gallery addon: gallery, arrows, start, loop, preload. Descriptions you can read in [options section](#options)
 
-**Not only images can be inside, you can use any type of content.**
+**Not only images can be inside, you can use any type of content in gallery.**
 
 HTML API example
 ```html
@@ -666,14 +666,14 @@ new njBox({
 Now lets see to instance structure:
 ```js
   var modal = {
-    $: function(){},//link to jQuery if she included in page, if no - link to light custom wrapper that have same as jquery syntax
+    $: function(){},//link to jQuery if it included in page, if no - link to light custom wrapper that have same as jquery syntax
     dom: {},//object with links to created by plugin dom elements (wrappers, buttons, ui)
     items: [],//array with object items (slides) to show. For usual modal always 1 item will be present, for galleries here will be object for every slide
     o: {},//options, object with computed options
     state: {},//internal state of plugin (this state resetted after every hiding modal)
     _defaults: {},//default settings
     _events: {},//all callbacks lives here
-    _g: {},//internal global state that not resetted after every hide
+    _g: {},//internal global state that not resetted after every hide like "this.state"
     _handlers: {},//all links to event handlers lives here
     _templates: {},//self-explanatory object. html templates.
     _text: {}//all text lives here

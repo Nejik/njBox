@@ -48,10 +48,10 @@ class njBox extends njBox_base {
       opts.elem = el;
     }
     super(opts);
-    this._initialization();
+    this._in();
   }
   
-  _initialization() {
+  _in() {
     this.on('init', function() {
       this._defaults = njBox.defaults;
       this._templates = njBox.templates;
@@ -604,7 +604,7 @@ class njBox extends njBox_base {
       //find data-njb-body in item body element
       dom.bodyInput = getItemFromDom(dom.body, 'data-njb-body')
 
-      modalFragment.appendChild(dom.body[0])
+      // modalFragment.appendChild(dom.body[0])
 
       //insert header
       if (item.header) {
@@ -633,7 +633,7 @@ class njBox extends njBox_base {
         dom.close = this._createEl('close');
         dom.close.attr('title', this._text.close);
 
-        modalFragment.appendChild(dom.close[0]);
+        // modalFragment.appendChild(dom.close[0]);
       }
 
       modal.append(modalFragment)
@@ -645,7 +645,12 @@ class njBox extends njBox_base {
       modal.addClass('njb--content');
     }
 
+    this._repairItemDom(dom)
     return dom;
+  }
+  _repairItemDom(dom) {
+    dom.modal.append(dom.body);
+    dom.modal.append(dom.close);
   }
   _type(content) {//detect content type
     var type = 'html';
@@ -752,6 +757,8 @@ class njBox extends njBox_base {
       ready,
       loaded;
     
+    if(item.state.status === 'loading') return;//dont do anything, just wait until callbacks are called
+
     item.state.status = 'loading';
     item.dom.img = $img;
 
@@ -800,7 +807,7 @@ class njBox extends njBox_base {
         that._cb('item_img_load', item);//img_load callback
 
         if (o.img === 'load') {
-          // insertImg();
+          insertImg();
         }
       }
       $img.on('load', item._handlerLoad)
@@ -867,7 +874,8 @@ class njBox extends njBox_base {
                               .attr('title', this._text.preloader);
 
         item.dom.modal.addClass('njb--loading');
-        item.dom.bodyInput.append(item.dom.preloader)
+        item.dom.modal.html('')
+        item.dom.modal.append(item.dom.preloader)
         break;
 
       case 'hide':
@@ -877,6 +885,7 @@ class njBox extends njBox_base {
         item.dom.modal.removeClass('njb--loading');
         delete item.dom.preloader;
         delete item.state.preloader;
+        this._repairItemDom(item.dom);//we should repair dom, becase in inserting we remove all content from modal
 
         break;
     }

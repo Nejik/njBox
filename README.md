@@ -621,6 +621,10 @@ new njBox({
   class: 'fixedWidthHeight'
 })
 ```
+* If you need to use image from url like this (http://lorempixel.com/400/200) without proper extension (.jpg, .png, etc) autodetection of image will fail, just set type manual.
+```html
+<a href="http://lorempixel.com/400/200" data-njb-type="image">img1</a>
+```
 ## Modal instance structure
 
 ### Receiving instance

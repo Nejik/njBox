@@ -3,6 +3,13 @@ Highly customizable **vanilla** javascript modal window/lightbox/popover.
 
 React/Vue/Angular wrapper - todo
 
+[DOTA 2 popup example](https://codepen.io/nejik/pen/PKmJQe)
+
+Overwatch popup example - todo
+
+World of Warcraft tooltip - todo
+
+
 * [Install](#install)
   * [npm](#npm)
   * [manual](#manual)

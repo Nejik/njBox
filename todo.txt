@@ -1,7 +1,6 @@
 * сделать возможность кастомизировать кнопки ok/cancel в диалогах
 * потестить передачу jquery в тестовых методах, сейчас поидее оно не используется при инициализации
 * сделать нормальный umd и описать его в readme, не забыть про инициализацию addon-ов
-* сломался source-map
 
 * role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.
@@ -9,8 +8,6 @@
   role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
 
 Docs:
-* примеры
-* примеры с анимациями animate.css
 * сделать пример с методом update, для динамической галлереи
 * preload в любом случае происходит на 1 слайд влево/вправо, а дополнительный можно настроить опцией preload
 * пример с oncb колбэком

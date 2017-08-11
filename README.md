@@ -110,38 +110,12 @@ var gallery = new njBox({
 ```
 
 ### "Native" dialogs (alert, confirm, prompt)
-Plugin has built in imitations for default browser dialogs. 
-Callbacks not required!
+You can easily imitate native dialogs with njBox!
 
-[Codepen example: "native dialogs"](https://codepen.io/nejik/pen/ZJKKjY)
-```js
-njBox.alert(message, okCallback, cancelCallback)
-njBox.confirm(message, okCallback, cancelCallback)
-njBox.prompt(message, placeholder, okCallback, cancelCallback)//result from input you can gather from first argument in callbacks and in this.returnValue. Placeholder argument can be omitted.
-```
-Methods are static, called from class. Example:
-```js
-njBox.alert('Are you sure you want to delete this message?', function() {
-  console.log('ok callback')
-}, function() {
-  console.log('cancel callback')
-})
+[Codepen example: "alert"](https://codepen.io/nejik/pen/vJZwwJ)
+[Codepen example: "confirm"](https://codepen.io/nejik/pen/prwmXB)
+[Codepen example: "prompt"](https://codepen.io/nejik/pen/rzwENa)
 
-//with placeholder
-njBox.prompt('Are you sure you want to delete this message?', 'Some placeholder here', function(valueFromInput) {
-  console.log('ok callback', valueFromInput)
-}, function(valueFromInput) {
-  console.log('cancel callback', valueFromInput)
-})
-//or without placeholder
-njBox.prompt('Are you sure you want to delete this message?', function(valueFromInput) {
-  //valueFromInput also avaliable as this.returnValue
-  console.log('ok callback', valueFromInput)
-}, function(valueFromInput) {
-  // valueFromInput also avaliable as this.returnValue
-  console.log('cancel callback', valueFromInput)
-})
-```
 ## Addons
 njBox very very friendly to customization, seems you can customize everything you want.
 

@@ -16,12 +16,6 @@ import {
   text
 } from './utils.js';
 
-import {
-  alert,
-  confirm,
-  prompt
-} from './dialogs.js'
-
 import j from './j'
 
 var njBox = (function(window, undefined, setTimeout, document) {
@@ -52,7 +46,6 @@ class njBox extends njBox_base {
   }
   
   _i() {
-    console.log(1);
     this.on('init', function() {
       this._defaults = njBox.defaults;
       this._templates = njBox.templates;
@@ -1513,11 +1506,6 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
     njBox.autobind(njBox.defaults.autobind);
   })
 }
-
-
-njBox.alert = alert;
-njBox.confirm = confirm;
-njBox.prompt = prompt;
 
 return njBox;
 })(window, undefined, setTimeout, document);

@@ -1,13 +1,11 @@
 # njBox
-What is it?
 Highly customizable **vanilla** javascript modal window. 
+
 Also plugin can do lightboxes and tooltips/popovers.
 
 React/Vue/Angular wrapper - todo
 
 [DOTA 2 popup example](https://codepen.io/nejik/pen/PKmJQe)
-
-Overwatch popup/World of Warcraft tooltip examples - todo
 
 * [Install](#install)
   * [npm](#npm)

@@ -6,8 +6,6 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css"> 
-  
   <style>
     .block {
       margin-bottom: 20px;
@@ -24,7 +22,10 @@
     <p>
       Usual modal
     </p>
-    <button class="el" data-njb-content="http://lookw.ru/1/118/1380311798-357963.jpg">Usual modal</button>
+    <button class="el" data-njb-content='#modal'>Usual modal</button>
+  </div>
+  <div id="modal" class="njb-hidden">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/9P4kjROkn8I" frameborder="0" allowfullscreen></iframe>
   </div>
   <div class="block">
     <p>
@@ -57,8 +58,7 @@
   <script>
     var t = new njBox('.el', {
 
-    })._init();
-    njBox.alert();
+    })
   </script>
 </body>
 

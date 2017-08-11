@@ -638,9 +638,12 @@ class njBox extends njBox_base {
 
     if (item.type === 'image') {
       modal.addClass('njb--image');
+    } else if(item.type === 'selector') {
+      modal.addClass('njb--selector');
     } else {
       modal.addClass('njb--content');
     }
+    // modal.addClass('njb--'+item.type)
 
     this._repairItemDom(dom)
     return dom;
@@ -766,7 +769,7 @@ class njBox extends njBox_base {
       that._preloader('hide', item);
 
       item.dom.bodyInput.html(that._text.imageError.replace('%url%', item.content));
-      item.dom.modal.removeClass('njb--image').addClass('njb--content')
+      item.dom.modal.removeClass('njb--'+item.type)
 
       that._cb('img_e', item);//img_ready, img_load callbacks
 

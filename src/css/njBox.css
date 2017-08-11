@@ -125,19 +125,21 @@
       overflow: visible;
     }
   }
+
+  & img {
+    width: auto;
+    width:auto\9;
+    height:auto;
+    max-width: 100%;
+
+    vertical-align: middle;/*remove space under the picture*/
+
+    box-sizing: border-box;
+  }
+  & iframe {
+    vertical-align: middle;/*remove space under iframe*/
+  }
 }
-
-.njb img {
-  width: auto;
-  width:auto\9;
-  height:auto;
-  max-width: 100%;
-
-  vertical-align: middle;/*remove space under the picture*/
-
-  box-sizing: border-box;
-}
-
 
 /*ui*/
 .njb-ui {
@@ -543,6 +545,9 @@
   & .njb__footer {
     padding: 5px;
   }
+}
+.njb--selector {
+  background-color: #000;
 }
 .njb--image {
   text-align: center;

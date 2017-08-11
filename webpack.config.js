@@ -26,7 +26,7 @@ let commonConfig = {
       }
     }),
   ],
-  devtool: 'source-map',
+  devtool: 'eval',
   module: {
     rules: [
       {

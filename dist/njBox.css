@@ -459,15 +459,11 @@
 
 
 .fade, .fadeIn {
-
   -webkit-animation: fade 250ms ease-in-out forwards;
-
           animation: fade 250ms ease-in-out forwards;
 }
 .fadeOut {
-
   -webkit-animation: fade 200ms ease-in-out reverse forwards;
-
           animation: fade 200ms ease-in-out reverse forwards;
 }
 @-webkit-keyframes fade {
@@ -494,9 +490,7 @@
           animation: scale 250ms ease-in-out forwards;
 }
 .scaleOut {
-
   -webkit-animation: scale 200ms ease-in-out reverse forwards;
-
           animation: scale 200ms ease-in-out reverse forwards;
 }
 @-webkit-keyframes scale {

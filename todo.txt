@@ -7,8 +7,6 @@
   role="alertdialog" http://www.scottohara.me/blog/2016/09/07/revised-modal-window.html
 
 Docs:
-* примеры
-* примеры с анимациями animate.css
 * сделать пример с методом update, для динамической галлереи
 * preload в любом случае происходит на 1 слайд влево/вправо, а дополнительный можно настроить опцией preload
 * пример с oncb колбэком
@@ -16,6 +14,7 @@ Docs:
 * в popover моде нельзя изменить o.container, он всегда будет body
 * потестить return false из oncb
 
+проверить не сломались ли анимации в https://codepen.io/nejik/pen/jLmwgB из-за изменения дефолтного animclass
 
 Плюсы
 адаптивное по умолчанию

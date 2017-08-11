@@ -16,12 +16,6 @@ import {
   text
 } from './utils.js';
 
-import {
-  alert,
-  confirm,
-  prompt
-} from './dialogs.js'
-
 import j from './j'
 
 var njBox = (function(window, undefined, setTimeout, document) {
@@ -231,18 +225,19 @@ class njBox extends njBox_base {
           modal = that._getActive().dom.modal,
           animShow = this._g.animation.show,
           animHide = this._g.animation.hide,
-          animHideDur = this._g.animation.showDur;
+          animHideDur = this._g.animation.hideDur;
 
       modal[0].removeAttribute('open');
       this.dom.wrap.removeClass('njb-wrap--visible')
 
+      // debugger;
       if (animHide) {
         if (o.animclass) modal.addClass(o.animclass);
         if (animHide === animShow) modal.addClass('njb-anim-reverse');
         modal.addClass(animHide);
 
         that._g.hiddenCb = setTimeout(() => {
-            //check if showing not initialized while hiding animation
+          //check if showing not initialized while hiding animation
           if(that.state.status === 'hide') that._hiddenCb()
         }, animHideDur)
       } else {
@@ -952,7 +947,10 @@ class njBox extends njBox_base {
       that.position();
     }
     h.container_out = function (e) {
+      //1. dont immidiate hide on clicking calling element
+      //2. dont react until full show to disable misclicks
       if(that.state.clickedEl && that.state.clickedEl === e.target || that.state.status !== 'shown') return;
+
       var $el = $(e.target),
         prevent = $el.closest('.njb, .njb-ui').length;
       if (prevent) return;
@@ -1508,11 +1506,6 @@ if (typeof window !== 'undefined') {//autobind only in browser and on document r
     njBox.autobind(njBox.defaults.autobind);
   })
 }
-
-
-njBox.alert = alert;
-njBox.confirm = confirm;
-njBox.prompt = prompt;
 
 return njBox;
 })(window, undefined, setTimeout, document);

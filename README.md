@@ -225,6 +225,8 @@ You can find a lot of examples in collection at [codepen!](https://codepen.io/co
 
 * [custom prompt](https://codepen.io/nejik/pen/rzwENa)
 
+* [youtube video example](https://codepen.io/nejik/pen/wqeLrO)
+
 
 ## Customization
 

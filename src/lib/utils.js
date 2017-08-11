@@ -132,7 +132,7 @@ export const defaults = {
 	titleattr     : 'title',//(string || boolean false) attribute from which we gather title 
 	img            : 'ready',//(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	anim           : 'scale',//(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
-	animclass      : 'animated',//(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
+	animclass      : '',//(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration       : 'auto',//(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen such problem yet ^^)
 
 	

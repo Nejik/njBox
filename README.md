@@ -1,14 +1,13 @@
 # njBox
-Highly customizable **vanilla** javascript modal window/lightbox/popover.
+What is it?
+Highly customizable **vanilla** javascript modal window. 
+Also plugin can do lightboxes and tooltips/popovers.
 
 React/Vue/Angular wrapper - todo
 
 [DOTA 2 popup example](https://codepen.io/nejik/pen/PKmJQe)
 
-Overwatch popup example - todo
-
-World of Warcraft tooltip - todo
-
+Overwatch popup/World of Warcraft tooltip examples - todo
 
 * [Install](#install)
   * [npm](#npm)
@@ -263,7 +262,7 @@ All what this option does is adding this classes to modal. Built in animations a
 
 #### Integration with Animate.css
 Using this library very very easy. Just add css animate.css file in you ```<head>```. Then use desired animations in "anim" option.
-This library required additional 'animated' class. For this purposes you can use 'animclass' options. This options by default set to 'animated' so you dont need to do anything for this library, but can change for other libraries.
+This library required additional 'animated' class. For this purposes you can use 'animclass' options (animclass: 'animated')
 
 [Codepen example: animation with Animate.css](https://codepen.io/nejik/pen/jLmwgB)
 

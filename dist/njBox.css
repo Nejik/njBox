@@ -147,18 +147,21 @@
     }
 
 .njb img {
-  width: auto;
-  width:auto\9;
-  height:auto;
-  max-width: 100%;
+    width: auto;
+    width:auto\9;
+    height:auto;
+    max-width: 100%;
 
-  vertical-align: middle;/*remove space under the picture*/
+    vertical-align: middle;/*remove space under the picture*/
 
-  -webkit-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 
-          box-sizing: border-box;
-}
+            box-sizing: border-box;
+  }
 
+.njb iframe {
+    vertical-align: middle;/*remove space under iframe*/
+  }
 
 /*ui*/
 .njb-ui {
@@ -696,6 +699,9 @@
 .njb--content .njb__footer {
     padding: 5px;
   }
+.njb--selector {
+  background-color: #000;
+}
 .njb--image {
   text-align: center;
 }

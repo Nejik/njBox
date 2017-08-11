@@ -953,7 +953,10 @@ class njBox extends njBox_base {
       that.position();
     }
     h.container_out = function (e) {
+      //1. dont immidiate hide on clicking calling element
+      //2. dont react until full show to disable misclicks
       if(that.state.clickedEl && that.state.clickedEl === e.target || that.state.status !== 'shown') return;
+      
       var $el = $(e.target),
         prevent = $el.closest('.njb, .njb-ui').length;
       if (prevent) return;

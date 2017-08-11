@@ -371,7 +371,7 @@
 
 
 .scale, .scaleIn {
-  animation: scale 250ms ease-in-out forwards;
+  animation: scale 2500ms ease-in-out forwards;
 }
 .scaleOut {
   animation: scale 200ms ease-in-out reverse forwards;

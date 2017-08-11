@@ -231,7 +231,7 @@ class njBox extends njBox_base {
           modal = that._getActive().dom.modal,
           animShow = this._g.animation.show,
           animHide = this._g.animation.hide,
-          animHideDur = this._g.animation.showDur;
+          animHideDur = this._g.animation.hideDur;
 
       modal[0].removeAttribute('open');
       this.dom.wrap.removeClass('njb-wrap--visible')
@@ -242,7 +242,7 @@ class njBox extends njBox_base {
         modal.addClass(animHide);
 
         that._g.hiddenCb = setTimeout(() => {
-            //check if showing not initialized while hiding animation
+          //check if showing not initialized while hiding animation
           if(that.state.status === 'hide') that._hiddenCb()
         }, animHideDur)
       } else {

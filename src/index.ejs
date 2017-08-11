@@ -6,7 +6,8 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- <link rel="stylesheet" href="njBox.css"> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css"> 
+  
   <style>
     .block {
       margin-bottom: 20px;
@@ -23,7 +24,7 @@
     <p>
       Usual modal
     </p>
-    <button data-toggle="modal" data-njb-content="http://lookw.ru/1/118/1380311798-357963.jpg" data-njb-type="image" data-njb-header="header" title="ololo">Usual modal</button>
+    <button class="el" data-njb-content="http://lookw.ru/1/118/1380311798-357963.jpg" data-njb-animclass="animated" data-njb-anim="rollIn hinge">Usual modal</button>
   </div>
   <div class="block">
     <p>
@@ -54,9 +55,10 @@
   <script src="njBox-popover.js"></script>
 
   <script>
-    var t = new njBox('.gallery', {
+    var t = new njBox('.el', {
       
     })._init();
+    console.log(t);
   </script>
 </body>
 

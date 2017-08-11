@@ -1,9 +1,9 @@
-*hinge не отрабатывает полностью, исчезает раньше окончания анимации
 * баг при <button data-toggle="modal" data-njb-content="#modal" data-njb-anim="scale fade">Standart animation show - scale, hide - fade</button>
 * не прерывается анимация показа, если до окончания попробовать спрятать Оо
 * сделать возможность кастомизировать кнопки ok/cancel в диалогах
 * потестить передачу jquery в тестовых методах, сейчас поидее оно не используется при инициализации
 * сделать нормальный umd и описать его в readme, не забыть про инициализацию addon-ов
+* сломался source-map
 
 * role dialog вешать на wrap, а неактивные слайды прятать специальным аттрибутом
 * If there's no inherit modal heading element set for the modal's aria-labelledby attribute to reference, then the script will look for the first heading within the modal and set that to be the     modal's label source.

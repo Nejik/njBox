@@ -236,6 +236,7 @@ class njBox extends njBox_base {
       modal[0].removeAttribute('open');
       this.dom.wrap.removeClass('njb-wrap--visible')
 
+      // debugger;
       if (animHide) {
         if (o.animclass) modal.addClass(o.animclass);
         if (animHide === animShow) modal.addClass('njb-anim-reverse');

@@ -354,11 +354,9 @@
 
 
 .fade, .fadeIn {
-
   animation: fade 250ms ease-in-out forwards;
 }
 .fadeOut {
-
   animation: fade 200ms ease-in-out reverse forwards;
 }
 @keyframes fade {
@@ -376,7 +374,6 @@
   animation: scale 250ms ease-in-out forwards;
 }
 .scaleOut {
-
   animation: scale 200ms ease-in-out reverse forwards;
 }
 @keyframes scale {

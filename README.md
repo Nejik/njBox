@@ -249,12 +249,15 @@ You can find a lot of examples in collection at [codepen!](https://codepen.io/co
 ## Customization
 
 ### Animation
-Everyone loves beautiful animations. We made a very easy way to add animations to your modals.
+Everyone loves beautiful animations. I made a very easy way to add animations to your modals.
 
 For such purpose you have few options. Main option is "anim" (see [options](#options)) it's space separated string for show/hide animations.
-All what this option does is adding this classes to modal. Built in animations are: scale and fade. Default - scale.
+All what this option does is adding this classes to modal. 
 
-**By default plugin just reverse show animation when hiding if no hide animation presented (like anim="bounceIn")**
+Built in animations are: scale, scaleIn, scaleOut, fade, fadeIn, fadeOut. Default naimation - scale.
+
+**!!! IMPORTANT !!!** If you want one animation for showing and hiding, simple set option anim like this (anim:'scale'). For hiding wil be used reversed animation of show animation with adding .njb-anim-reverse class.
+But if you want different animation for showing and hiding you **CANNOT** set anim:'scale fade', you **SHOULD** set anim:'scaleIn fadeOut'. **By default plugin just reverse show animation when hiding if no hide animation presented**
 
 ```html
   <a href="#modal" data-toggle="modal" data-njb-anim="fade">show modal</a>

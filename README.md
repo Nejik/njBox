@@ -111,7 +111,9 @@ var gallery = new njBox({
 You can easily imitate native dialogs with njBox!
 
 [Codepen example: "alert"](https://codepen.io/nejik/pen/vJZwwJ)
+
 [Codepen example: "confirm"](https://codepen.io/nejik/pen/prwmXB)
+
 [Codepen example: "prompt"](https://codepen.io/nejik/pen/rzwENa)
 
 ## Addons
@@ -191,6 +193,8 @@ var tooltip = new njBox({
 
 You can find a lot of examples in collection at [codepen!](https://codepen.io/collection/Djybjw/)
 
+* [DOTA2 popup example](https://codepen.io/nejik/pen/PKmJQe)
+
 * [simple modal HTML API](https://codepen.io/nejik/pen/oeWZWK)
 
 * [gallery HTML API](https://codepen.io/nejik/pen/RZVgWY)
@@ -198,8 +202,6 @@ You can find a lot of examples in collection at [codepen!](https://codepen.io/co
 * [simple modal JS API](https://codepen.io/nejik/pen/PKmjbg)
 
 * [gallery JS API](https://codepen.io/nejik/pen/vJmZmQ)
-
-* ["native dialogs"](https://codepen.io/nejik/pen/ZJKKjY)
 
 * [gallery from multiple content types](https://codepen.io/pen?template=prPRYP)
 
@@ -216,6 +218,12 @@ You can find a lot of examples in collection at [codepen!](https://codepen.io/co
 * [callbacks](https://codepen.io/nejik/pen/QMvMPr)
 
 * [events](https://codepen.io/nejik/pen/YxVrzp)
+
+* [custom alert](https://codepen.io/nejik/pen/vJZwwJ)
+
+* [custom confirm](https://codepen.io/nejik/pen/prwmXB)
+
+* [custom prompt](https://codepen.io/nejik/pen/rzwENa)
 
 
 ## Customization

@@ -40,6 +40,10 @@ Overwatch popup/World of Warcraft tooltip examples - todo
 
 ### npm
 
+```
+npm i njbox -S
+```
+
 ### manual
 
 1. Download `njBox.min.css` and `njBox.min.js` files from the `dist` folder.

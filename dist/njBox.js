@@ -96,9 +96,7 @@ var _njBox_base3 = _interopRequireDefault(_njBox_base2);
 
 var _utils = __webpack_require__(3);
 
-var _dialogs = __webpack_require__(4);
-
-var _j = __webpack_require__(5);
+var _j = __webpack_require__(4);
 
 var _j2 = _interopRequireDefault(_j);
 
@@ -252,7 +250,13 @@ var njBox = function (window, undefined, setTimeout, document) {
         });
         this.on('show_prepare', function () {
           var e = this.state.clickedEvent;
-          e && e.preventDefault ? e.preventDefault() : e.returnValue = false;
+          if (e) {
+            if (e.preventDefault) {
+              e.preventDefault();
+            } else {
+              e.returnValue = false;
+            }
+          }
 
           var wrap = this.dom.wrap;
 
@@ -334,11 +338,12 @@ var njBox = function (window, undefined, setTimeout, document) {
               modal = that._getActive().dom.modal,
               animShow = this._g.animation.show,
               animHide = this._g.animation.hide,
-              animHideDur = this._g.animation.showDur;
+              animHideDur = this._g.animation.hideDur;
 
           modal[0].removeAttribute('open');
           this.dom.wrap.removeClass('njb-wrap--visible');
 
+          // debugger;
           if (animHide) {
             if (o.animclass) modal.addClass(o.animclass);
             if (animHide === animShow) modal.addClass('njb-anim-reverse');
@@ -1090,7 +1095,10 @@ var njBox = function (window, undefined, setTimeout, document) {
           that.position();
         };
         h.container_out = function (e) {
+          //1. dont immidiate hide on clicking calling element
+          //2. dont react until full show to disable misclicks
           if (that.state.clickedEl && that.state.clickedEl === e.target || that.state.status !== 'shown') return;
+
           var $el = $(e.target),
               prevent = $el.closest('.njb, .njb-ui').length;
           if (prevent) return;
@@ -1660,10 +1668,6 @@ var njBox = function (window, undefined, setTimeout, document) {
     });
   }
 
-  njBox.alert = _dialogs.alert;
-  njBox.confirm = _dialogs.confirm;
-  njBox.prompt = _dialogs.prompt;
-
   return njBox;
 }(window, undefined, setTimeout, document);
 
@@ -2165,7 +2169,7 @@ var defaults = exports.defaults = {
 	titleattr: 'title', //(string || boolean false) attribute from which we gather title 
 	img: 'ready', //(load || ready) we should wait until img will fully loaded or show as soon as size will be known (ready is useful for progressive images)
 	anim: 'scale', //(false || string) name of animation, or string with space separated 2 names of show/hide animation (default same as `scale scale`). 2 predefined animations are built in: scale and fade.
-	animclass: 'animated', //(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
+	animclass: '', //(string) additional class that will be added to modal window during animation (can be used for animate.css or other css animation libraries)
 	duration: 'auto', //(string || number || auto) duration of animations, or string with space separated 2 durations of show/hide animation. You can set 'auto 100' if you want to set only duration for hide. It should be used when problems with auto detection (but I have not seen such problem yet ^^)
 
 
@@ -2207,64 +2211,6 @@ var text = exports.text = {
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-function alert(_content, okCb, cancelCb) {
-  return new njBox({
-    content: function content() {
-      return '<div class="njb__body">\n' + (_content || this._text._missedContent) + '\n</div>\n<div class="njb__footer">\n  <button data-njb-ok>' + this._text.ok + '</button>\n</div>';
-    },
-    type: 'template',
-    role: 'alertdialog',
-    out: false,
-    onok: okCb,
-    oncancel: cancelCb
-  }).show();
-}
-
-exports.alert = alert;
-function confirm(_content2, okCb, cancelCb) {
-  return new njBox({
-    content: function content() {
-      return '<div class="njb__body">\n' + (_content2 || this._text._missedContent) + '\n</div>\n<div class="njb__footer">\n  <button data-njb-ok>' + this._text.ok + '</button>\n  <button data-njb-cancel>' + this._text.cancel + '</button>\n</div>';
-    },
-    type: 'template',
-    role: 'alertdialog',
-    out: false,
-    onok: okCb,
-    oncancel: cancelCb
-  }).show();
-}
-
-exports.confirm = confirm;
-function prompt(_content3, placeholder, okCb, cancelCb) {
-  if (typeof placeholder === 'function') {
-    cancelCb = okCb;
-    okCb = placeholder;
-    placeholder = '';
-  }
-
-  return new njBox({
-    content: function content() {
-      return '<div class="njb__header">\n' + (_content3 || this._text._missedContent) + '\n</div>\n<div class="njb__body">\n  <input data-njb-return type="text" placeholder="' + (placeholder || '') + '" />\n</div>\n<div class="njb__footer">\n  <button data-njb-ok>' + this._text.ok + '</button>\n  <button data-njb-cancel>' + this._text.cancel + '</button>\n</div>';
-    },
-    type: 'template',
-    role: 'alertdialog',
-    out: false,
-    onok: okCb,
-    oncancel: cancelCb
-  }).show();
-}
-exports.prompt = prompt;
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

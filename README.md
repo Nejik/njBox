@@ -38,6 +38,10 @@ React/Vue/Angular wrapper - todo
 
 ### npm
 
+```
+npm i njbox -S
+```
+
 ### manual
 
 1. Download `njBox.min.css` and `njBox.min.js` files from the `dist` folder.

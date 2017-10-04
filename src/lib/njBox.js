@@ -141,8 +141,12 @@ class njBox extends njBox_base {
     })
     this.on('show_prepare', function() {
       var e = this.state.clickedEvent;
-      if (e) {
-        (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+      if(e) {
+        if (e.preventDefault) {
+          e.preventDefault()
+        } else {
+          e.returnValue = false;
+        }
       }
       
       var wrap = this.dom.wrap;

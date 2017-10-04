@@ -251,7 +251,11 @@ var njBox = function (window, undefined, setTimeout, document) {
         this.on('show_prepare', function () {
           var e = this.state.clickedEvent;
           if (e) {
-            e.preventDefault ? e.preventDefault() : e.returnValue = false;
+            if (e.preventDefault) {
+              e.preventDefault();
+            } else {
+              e.returnValue = false;
+            }
           }
 
           var wrap = this.dom.wrap;
@@ -761,12 +765,9 @@ var njBox = function (window, undefined, setTimeout, document) {
 
         if (item.type === 'image') {
           modal.addClass('njb--image');
-        } else if (item.type === 'selector') {
-          modal.addClass('njb--selector');
         } else {
           modal.addClass('njb--content');
         }
-        // modal.addClass('njb--'+item.type)
 
         this._repairItemDom(dom);
         return dom;
@@ -905,7 +906,7 @@ var njBox = function (window, undefined, setTimeout, document) {
           that._preloader('hide', item);
 
           item.dom.bodyInput.html(that._text.imageError.replace('%url%', item.content));
-          item.dom.modal.removeClass('njb--' + item.type);
+          item.dom.modal.removeClass('njb--image').addClass('njb--content');
 
           that._cb('img_e', item); //img_ready, img_load callbacks
 

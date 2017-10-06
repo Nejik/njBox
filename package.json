@@ -1,6 +1,6 @@
 {
   "name": "njbox",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Highly customizable pure javascript modal window/lightbox/popover.",
   "author": "Dmitry <nejikrofl@gmail.com>",
   "license": "MIT",

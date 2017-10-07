@@ -1508,7 +1508,7 @@ njBox.autobind = function (selector) {
     })
   }) 
 }
-if (typeof window !== 'undefined') {//autobind only in browser and on document ready
+if (window.njBox) {//autobind only in browser and on document ready
   $(function () {
     njBox.autobind(njBox.defaults.autobind);
   })

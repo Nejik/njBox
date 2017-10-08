@@ -1664,7 +1664,7 @@ var njBox = function (window, undefined, setTimeout, document) {
       });
     });
   };
-  if (typeof window !== 'undefined') {
+  if (window.njBox) {
     //autobind only in browser and on document ready
     $(function () {
       njBox.autobind(njBox.defaults.autobind);
